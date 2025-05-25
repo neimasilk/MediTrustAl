@@ -1,54 +1,54 @@
-# Proyek MediTrustAl
+# MediTrustAl Project
 
-## Deskripsi Proyek
+## Project Description
 
-MediTrustAl adalah platform komprehensif yang dirancang untuk mengatasi berbagai tantangan dalam layanan kesehatan global dan lokal, termasuk di Hangzhou dan Cina. Tantangan ini meliputi fragmentasi data, kesulitan dalam memanfaatkan volume besar data naratif klinis, kurangnya analitik prediktif canggih untuk mendukung pengambilan keputusan proaktif, serta isu krusial terkait privasi dan keamanan data pasien. MediTrustAl mengintegrasikan Natural Language Processing (NLP), Artificial Intelligence (AI), dan teknologi Blockchain secara sinergis.
+MediTrustAl is a comprehensive platform designed to address various challenges in global and local healthcare services, including in Hangzhou and China. These challenges include data fragmentation, difficulty in leveraging large volumes of clinical narrative data, a lack of sophisticated predictive analytics to support proactive decision-making, and crucial issues related to patient data privacy and security. MediTrustAl synergistically integrates Natural Language Processing (NLP), Artificial Intelligence (AI), and Blockchain technology.
 
-Inovasi inti MediTrustAl terletak pada kombinasi unik dari ketiga teknologi ini:
-* **NLP** untuk mengekstrak makna dan wawasan berharga dari data medis tidak terstruktur seperti catatan dokter dan laporan patologi.
-* **AI** untuk menyediakan analitik prediktif, perawatan yang dipersonalisasi, dan dukungan keputusan klinis.
-* **Blockchain** untuk menjamin keamanan, privasi, interoperabilitas data, serta tata kelola yang transparan dan terdesentralisasi.
+MediTrustAl's core innovation lies in the unique combination of these three technologies:
+* **NLP** to extract meaning and valuable insights from unstructured medical data such as doctor's notes and pathology reports.
+* **AI** to provide predictive analytics, personalized care, and clinical decision support.
+* **Blockchain** to guarantee security, privacy, data interoperability, and transparent and decentralized governance.
 
-Proyek ini bertujuan untuk meningkatkan kualitas layanan kesehatan, efisiensi operasional bagi penyedia layanan, pemberdayaan pasien melalui kontrol lebih besar atas data kesehatan mereka, dan mempercepat kemajuan penelitian medis.
+This project aims to improve the quality of healthcare services, operational efficiency for service providers, patient empowerment through greater control over their health data, and accelerate medical research progress.
 
-## Tujuan Proyek (Visi Platform)
+## Project Goal (Platform Vision)
 
-MediTrustAl bertujuan untuk menciptakan ekosistem layanan kesehatan yang terhubung, cerdas, aman, dan berpusat pada pasien. Visi ini melampaui sekadar manajemen data, menuju pemberdayaan semua pemangku kepentingan dalam sistem kesehatan melalui pemanfaatan sinergis teknologi canggih.
+MediTrustAl aims to create a connected, intelligent, secure, and patient-centric healthcare ecosystem. This vision goes beyond mere data management, towards empowering all stakeholders in the health system through the synergistic utilization of advanced technologies.
 
-## Lingkup Proyek (Berdasarkan MVP Awal)
+## Project Scope (Based on Initial MVP)
 
-Fokus awal (Minimum Viable Product - MVP) akan mencakup pengembangan komponen inti platform dan validasi konsep teknis, termasuk:
-* Pengembangan modul NLP dasar untuk ekstraksi informasi kunci dari rekam medis berbahasa Mandarin.
-* Pengembangan model AI prediktif awal untuk 1-2 kasus penggunaan prioritas yang relevan dengan Hangzhou.
-* Implementasi arsitektur blockchain dasar (misalnya, testnet permissioned pribadi) untuk manajemen identitas terdesentralisasi (DID) dan mekanisme izin akses sederhana.
-* Pengembangan antarmuka pengguna (UI) awal untuk pasien dan dokter guna mendemonstrasikan fungsionalitas inti.
+The initial focus (Minimum Viable Product - MVP) will cover the development of core platform components and validation of the technical concept, including:
+* Development of a basic NLP module for key information extraction from Mandarin-language medical records.
+* Development of initial predictive AI models for 1-2 priority use cases relevant to Hangzhou.
+* Implementation of a basic blockchain architecture (e.g., private permissioned testnet) for decentralized identity management (DID) and simple access permission mechanisms.
+* Development of an initial user interface (UI) for patients and doctors to demonstrate core functionalities.
 
-## Teknologi yang Digunakan
+## Technologies Used
 
 * Natural Language Processing (NLP)
 * Artificial Intelligence (AI) / Machine Learning (ML) / Deep Learning (DL)
-* Blockchain (kemungkinan consortium atau private permissioned)
-* Standar interoperabilitas seperti HL7 FHIR.
-* Ontologi medis seperti SNOMED CT, ICD-10/11, dan ontologi medis Tiongkok (misalnya, CDMO).
+* Blockchain (likely a consortium or private permissioned blockchain)
+* Interoperability standards like HL7 FHIR.
+* Medical ontologies such as SNOMED CT, ICD-10/11, and Chinese medical ontologies (e.g., CDMO).
 
-## Struktur Proyek & Metodologi
+## Project Structure & Methodology
 
-Proyek ini akan mengikuti metodologi "Vibe Coding Indonesia V1.0". Semua dokumen perencanaan dan progres akan disimpan dalam folder `memory-bank`.
+This project will follow the "Vibe Coding Indonesia V1.0" methodology. All planning and progress documents will be stored in the `memory-bank/` folder.
 
-## Cara Memulai (Untuk Pengembang)
+## How to Get Started (For Developers)
 
-1.  Pastikan Anda memiliki akses ke semua alat yang direkomendasikan dalam panduan "Vibe Coding Indonesia V1.0".
-2.  Biasakan diri Anda dengan semua dokumen di dalam folder `memory-bank/`:
-    * `dokumen-desain-produk.md`: Untuk memahami visi, fitur, dan target pengguna.
-    * `tumpukan-teknologi.md`: Untuk detail mengenai teknologi yang digunakan.
-    * `rencana-implementasi.md`: Untuk langkah-langkah implementasi MVP.
-    * `architecture.md`: Untuk memahami arsitektur sistem.
-3.  Ikuti siklus pengembangan iteratif yang dijelaskan dalam panduan "Vibe Coding", dimulai dengan meninjau `status-todolist-saran.md` dan membuat `baby-step.md` dengan bantuan AI perencanaan (misalnya, Gemini).
+1.  Ensure you have access to all recommended tools in the "Vibe Coding Indonesia V1.0" guide.
+2.  Familiarize yourself with all documents within the `memory-bank/` folder:
+    * `product-design-document.md`: To understand the vision, features, and target users.
+    * `tech-stack.md`: For details on the technologies used.
+    * `implementation-plan.md`: For MVP implementation steps.
+    * `architecture.md`: To understand the system architecture.
+3.  Follow the iterative development cycle described in the "Vibe Coding" guide, starting by reviewing `status-todolist-suggestions.md` and creating `baby-step.md` with the help of a planning AI (e.g., Gemini).
 
-## Kontribusi
+## Contribution
 
-Panduan kontribusi akan ditambahkan di masa mendatang. Untuk saat ini, ikuti alur kerja "Vibe Coding".
+Contribution guidelines will be added in the future. For now, follow the "Vibe Coding" workflow.
 
-## Lisensi
+## License
 
-Lisensi akan ditentukan kemudian.
+The license will be determined later.
