@@ -55,12 +55,18 @@ Based on the project proposal (meditrustal\_proposal\_en\_detailed\_v2), the fol
 
 ### **2.3. Application Layer (User Portals & Backend APIs)**
 
-* **Backend Development:**  
-  * **Recommendation:** **Node.js (with TypeScript)** or **Python (with Django/FastAPI)**.  
-  * **Rationale:**  
-    * **Node.js:** Excellent for I/O-bound applications, real-time features (potentially needed for notifications/alerts), and has a large ecosystem. TypeScript adds static typing for better maintainability.  
-    * **Python (Django/FastAPI):** Leverages the same language as the AI/NLP stack, potentially simplifying team structure. FastAPI is modern, fast, and good for building APIs. Django is robust and full-featured.  
-  * **API Design:** RESTful APIs or GraphQL, depending on frontend needs.  
+* **Backend Development:**
+  * **Recommendation:** **Python (with FastAPI)** has been selected for the initial MVP development. Node.js (with TypeScript) or Python (with Django) remain as potential alternatives for future microservices or specific needs if they arise.
+  * **Rationale for FastAPI (MVP):**
+    * Leverages Python, consistent with the AI/NLP stack, potentially simplifying team structure and knowledge sharing.
+    * FastAPI is modern, high-performance, and excellent for building APIs rapidly.
+    * Automatic data validation and serialization with Pydantic.
+    * Built-in support for asynchronous programming.
+  * **Linting & Formatting (Python):** Black will be used for code formatting, and Flake8 for linting, with configurations in `pyproject.toml` and `.flake8` respectively.
+  * **Rationale (Original General):**
+    * **Node.js:** Excellent for I/O-bound applications, real-time features (potentially needed for notifications/alerts), and has a large ecosystem. TypeScript adds static typing for better maintainability.
+    * **Python (Django/FastAPI):** Leverages the same language as the AI/NLP stack, potentially simplifying team structure. FastAPI is modern, fast, and good for building APIs. Django is robust and full-featured.
+  * **API Design:** RESTful APIs or GraphQL, depending on frontend needs.
 * **Frontend Development (Patient, Doctor, Researcher, Admin Portals):**  
   * **Recommendation:** **React.js** or **Vue.js**.  
   * **Rationale:**  

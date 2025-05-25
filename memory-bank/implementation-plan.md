@@ -21,16 +21,63 @@ This document outlines the step-by-step plan for developing the Minimum Viable P
 
 ### **Step 1.1: Project Setup and Basic Backend Structure**
 
-* **Instruction:**  
-  1. Initialize a new project directory structure.  
-  2. Set up the chosen backend framework (e.g., Node.js with Express/TypeScript or Python with FastAPI/Django, as per tech-stack.md).  
-  3. Create a basic "hello world" API endpoint (e.g., /api/v1/status) that returns a success message and current timestamp.  
-  4. Set up basic linting, formatting, and a .gitignore file appropriate for the chosen backend stack.  
-  5. Initialize a Git repository.  
-* **Test:**  
-  * The project directory is created with a logical structure.  
-  * The backend server can be started without errors.  
-  * Accessing the /api/v1/status endpoint via a tool like curl or Postman returns a JSON response with a success message and the current server timestamp.  
+* **Instruction:**
+  1. Initialize a new project directory structure as follows:
+     ```
+     MediTrustAl_Project/
+     ├── src/
+     │   └── app/
+     │       ├── api/      # For API endpoint definitions (e.g., status_routes.py)
+     │       ├── core/     # For configuration, settings (e.g., config.py)
+     │       ├── models/   # For Pydantic models (e.g., status_models.py)
+     │       └── main.py   # Main FastAPI application instance
+     ├── tests/            # For automated tests
+     ├── memory-bank/      # Existing planning documents
+     ├── .gitignore
+     ├── README.md
+     └── requirements.txt  # For Python dependencies
+     ```
+  2. Set up the backend framework using **Python with FastAPI**.
+     * Create `requirements.txt` with the following initial dependencies:
+       ```
+       fastapi
+       uvicorn[standard]  # Includes python-dotenv and performance extras
+       black
+       flake8
+       ```
+     * Install dependencies (e.g., `pip install -r requirements.txt`).
+     * Create a basic `main.py` in `src/app/` to initialize the FastAPI app.
+  3. Create a basic API endpoint `/api/v1/status` that returns a success message, current ISO 8601 timestamp, and service version.
+     * The JSON response should be structured as follows:
+       ```json
+       {
+         "status": "success",
+         "message": "API is running and healthy.",
+         "timestamp": "YYYY-MM-DDTHH:MM:SS.ffffffZ", // ISO 8601 format
+         "service_version": "0.1.0"
+       }
+       ```
+  4. Set up basic linting and formatting using **Black** (for formatting) and **Flake8** (for linting).
+     * Create `pyproject.toml` for Black configuration with the following content:
+       ```toml
+       [tool.black]
+       line-length = 88
+       ```
+     * Create `.flake8` for Flake8 configuration with the following content:
+       ```ini
+       [flake8]
+       max-line-length = 88
+       extend-ignore = 
+           W503, # line break before binary operator (Black compatibility)
+           E203  # whitespace before ':' (Black compatibility)
+       ```
+     * Add entries for common Python and IDE files/folders to `.gitignore` (e.g., `__pycache__/`, `*.pyc`, `.env`, `venv/`, `.venv/`, `env/`, `.vscode/`, `.idea/`, `*.egg-info/`, `build/`, `dist/`).
+  5. Initialize a Git repository.
+* **Test:**
+  * The project directory is created with the specified structure.
+  * The backend server (Uvicorn with FastAPI app) can be started without errors (e.g., `uvicorn app.main:app --reload --port 8000` from within `src/`).
+  * Accessing the `http://localhost:8000/api/v1/status` endpoint via a tool like `curl` or a browser returns a JSON response matching the specified structure with a valid current timestamp.
+  * Linting (Flake8) and formatting (Black) tools run without errors on the initial files.
   * Git repository is initialized.
 
 ### **Step 1.2: Basic Blockchain Network Setup (Local Development)**
