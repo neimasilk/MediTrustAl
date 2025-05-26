@@ -43,19 +43,19 @@
 * **Suggested Baby-Step:**
     1.  **Task:** Project Initialization & Version Control.
         * **Details:**
-            * Create the main project folder named `MediTrustAl_Project` on your local machine.
-            * Inside it, create a subfolder `src` (for source code) and copy the existing `memory-bank` folder (with its contents) into `MediTrustAl_Project`.
-            * Open a terminal inside the `MediTrustAl_Project` folder.
-            * Run `git init` to initialize a new Git repository.
-            * Create a `.gitignore` file and add common entries for the language/frameworks to be used (e.g., `__pycache__/`, `*.pyc`, `node_modules/`, `build/`, `dist/`, `.env`, etc.).
-            * Create a new repository on GitHub (or your chosen platform) named `MediTrustAl`.
-            * Follow GitHub's instructions to connect your local repository to the remote (usually involves `git remote add origin <YOUR_REMOTE_URL>`).
-            * Make an initial commit: `git add .`, then `git commit -m "Initial project setup with Vibe Coding documents"`.
-            * Push the initial commit to the remote: `git push -u origin main` (or `master` depending on your default configuration).
+            * *(Tidak relevan jika Anda sudah bekerja langsung di dalam repositori yang telah di-clone.)* Create the main project folder named `MediTrustAl_Project` on your local machine.
+            * Di root repositori Anda, buat `src` (untuk kode sumber) dan salin folder `memory-bank` yang ada (dengan isinya) ke root repositori Anda.
+            * Open a terminal inside the root of your cloned repository.
+            * Run `git init` (jika belum merupakan repositori Git) to initialize a new Git repository.
+            * Create a `.gitignore` file in the repository root and add common entries for the language/frameworks to be used (e.g., `__pycache__/`, `*.pyc`, `node_modules/`, `build/`, `dist/`, `.env`, etc.).
+            * Create a new repository on GitHub (or your chosen platform) named `MediTrustAl` (jika belum ada).
+            * Follow GitHub's instructions to connect your local repository to the remote (usually involves `git remote add origin <YOUR_REMOTE_URL>`). This might already be set up if you cloned the repository.
+            * Make an initial commit (or subsequent commits): `git add .` (from repository root), then `git commit -m "Initial project setup with Vibe Coding documents"`.
+            * Push the initial commit to the remote: `git push -u origin main` (or `master` depending on your default configuration, from repository root).
         * **Validation:**
-            * Project folder correctly structured locally.
-            * Git repository successfully initialized.
-            * `.gitignore` file exists and contains relevant entries.
+            * Project folder correctly structured locally within the repository root.
+            * Git repository successfully initialized (or already was).
+            * `.gitignore` file exists in the repository root and contains relevant entries.
             * Remote repository successfully created and connected.
             * Initial commit visible on the remote repository.
 

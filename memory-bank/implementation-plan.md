@@ -24,7 +24,7 @@ This document outlines the step-by-step plan for developing the Minimum Viable P
 * **Instruction:**
   1. Initialize a new project directory structure as follows:
      ```
-     MediTrustAl_Project/
+     / (Root Repositori Anda)
      ├── src/
      │   └── app/
      │       ├── api/      # For API endpoint definitions (e.g., status_routes.py)
@@ -38,14 +38,14 @@ This document outlines the step-by-step plan for developing the Minimum Viable P
      └── requirements.txt  # For Python dependencies
      ```
   2. Set up the backend framework using **Python with FastAPI**.
-     * Create `requirements.txt` with the following initial dependencies:
+     * Create `requirements.txt` in the repository root with the following initial dependencies:
        ```
        fastapi
        uvicorn[standard]  # Includes python-dotenv and performance extras
        black
        flake8
        ```
-     * Install dependencies (e.g., `pip install -r requirements.txt`).
+     * Install dependencies from the repository root (e.g., `pip install -r requirements.txt`).
      * Create a basic `main.py` in `src/app/` to initialize the FastAPI app.
   3. Create a basic API endpoint `/api/v1/status` that returns a success message, current ISO 8601 timestamp, and service version.
      * The JSON response should be structured as follows:
@@ -74,8 +74,8 @@ This document outlines the step-by-step plan for developing the Minimum Viable P
      * Add entries for common Python and IDE files/folders to `.gitignore` (e.g., `__pycache__/`, `*.pyc`, `.env`, `venv/`, `.venv/`, `env/`, `.vscode/`, `.idea/`, `*.egg-info/`, `build/`, `dist/`).
   5. Initialize a Git repository.
 * **Test:**
-  * The project directory is created with the specified structure.
-  * The backend server (Uvicorn with FastAPI app) can be started without errors (e.g., `uvicorn app.main:app --reload --port 8000` from within `src/`).
+  * The project directory is created with the specified structure at the repository root.
+  * The backend server (Uvicorn with FastAPI app) can be started without errors (e.g., from the `src/` directory, run `uvicorn app.main:app --reload --port 8000`).
   * Accessing the `http://localhost:8000/api/v1/status` endpoint via a tool like `curl` or a browser returns a JSON response matching the specified structure with a valid current timestamp.
   * Linting (Flake8) and formatting (Black) tools run without errors on the initial files.
   * Git repository is initialized.

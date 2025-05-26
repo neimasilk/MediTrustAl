@@ -12,112 +12,28 @@
     * **Description:** Setting up the project's foundation on the local file system, initializing Git for version tracking, and linking it to an online repository for collaboration and backup.
     * **Sub-Tasks:**
         1.  **Create Main Project Folder Structure:**
-            * **Instruction:** In your desired location on your local file system, create a main folder named `MediTrustAl_Project`.
-            * **Validation:** Verify that the `MediTrustAl_Project` folder has been successfully created.
+            * **Instruction:** *(Tidak relevan jika Anda sudah berada di root repositori GitHub Anda.)*
+            * **Validation:** *(Tidak relevan jika Anda sudah berada di root repositori GitHub Anda.)*
         2.  **Prepare `src` and `memory-bank` Folders:**
-            * **Instruction:** Inside `MediTrustAl_Project`, create a subfolder named `src`. Copy the `memory-bank` folder, which already contains the planning documents (`product-design-document.md`, etc.), into `MediTrustAl_Project`.
-            * **Validation:** Ensure `MediTrustAl_Project` now contains an empty `src` folder and the `memory-bank` folder (with all .md files inside).
+            * **Instruction:** Di dalam root repositori Anda, buat subfolder `src`. Salin folder `memory-bank` yang ada ke dalam root repositori Anda.
+            * **Validation:** Pastikan root repositori Anda sekarang berisi folder `src` (awalnya kosong) dan folder `memory-bank` (dengan semua file .md di dalamnya).
         3.  **Initialize Git Repository:**
-            * **Instruction:** Open your terminal or command prompt application. Navigate to the `MediTrustAl_Project` directory (e.g., `cd path/to/MediTrustAl_Project`). Run the command `git init`.
-            * **Validation:** Check if a hidden `.git` folder is created inside `MediTrustAl_Project`. A confirmation message from `git init` usually also appears.
+            * **Instruction:** *(Langkah ini kemungkinan sudah selesai jika Anda mengkloning repositori yang ada. Jika tidak, buka terminal atau command prompt Anda, navigasikan ke root repositori Anda, lalu jalankan perintah `git init`.)*
+            * **Validation:** Periksa apakah folder `.git` yang tersembunyi ada di dalam root repositori Anda. Pesan konfirmasi dari `git init` biasanya juga muncul.
         4.  **Create and Configure `.gitignore` File:**
-            * **Instruction:** Inside the `MediTrustAl_Project` folder, create a new file named `.gitignore`. Populate this file with common file and folder patterns to ignore for development projects (e.g., Python, Node.js, environment files). Example initial content:
-                ```
-                # Byte-compiled / optimized / DLL files
-                __pycache__/
-                *.py[cod]
-                *$py.class
-
-                # C extensions
-                *.so
-
-                # Distribution / packaging
-                .Python
-                build/
-                develop-eggs/
-                dist/
-                downloads/
-                eggs/
-                .eggs/
-                lib/
-                lib64/
-                parts/
-                sdist/
-                var/
-                wheels/
-                *.egg-info/
-                .installed.cfg
-                *.egg
-                MANIFEST
-
-                # PyInstaller
-                #  Usually these files are written by a python script from a template
-                #  before PyInstaller builds the exe, so as to inject date/other infos into it.
-                *.manifest
-                *.spec
-
-                # Installer logs
-                pip-log.txt
-                pip-delete-this-directory.txt
-
-                # Unit test / coverage reports
-                htmlcov/
-                .tox/
-                .nox/
-                .coverage
-                .coverage.*
-                .cache
-                nosetests.xml
-                coverage.xml
-                *.cover
-                .hypothesis/
-                .pytest_cache/
-
-                # Environments
-                .env
-                .venv
-                env/
-                venv/
-                ENV/
-                env.bak/
-                venv.bak/
-
-                # Spyder project settings
-                .spyderproject
-                .spyproject
-
-                # Rope project settings
-                .ropeproject
-
-                # mkdocs documentation
-                /site
-
-                # Node.js
-                node_modules/
-                npm-debug.log*
-                yarn-debug.log*
-                yarn-error.log*
-                package-lock.json
-                yarn.lock
-
-                # IDE / Editor specific
-                .vscode/
-                .idea/
-                *.swp
-                *.swo
-                ```
-            * **Validation:** The `.gitignore` file exists in the root of `MediTrustAl_Project` and contains relevant patterns.
+            * **Instruction:** Di dalam root repositori Anda, buat file `.gitignore`. Anda dapat mengisi file ini nanti dengan pola file dan folder umum yang akan diabaikan untuk proyek pengembangan (misalnya, Python, Node.js, file lingkungan).
+            * **Validation:** File `.gitignore` ada di root repositori Anda.
         5.  **Create Remote Repository (e.g., on GitHub):**
-            * **Instruction:** Open your browser and go to GitHub (or your preferred Git hosting platform). Create a new repository. Name it, for example, `MediTrustAl`. Choose whether it will be public or private. Do not initialize it with a README, .gitignore, or license from GitHub as we already have these.
+            * **Instruction:** *(Langkah ini kemungkinan sudah selesai jika Anda mengkloning repositori yang ada.)* Open your browser and go to GitHub (or your preferred Git hosting platform). Create a new repository if you haven't already. Name it. Choose whether it will be public or private. Do not initialize it with a README, .gitignore, or license from GitHub if you are creating it now and already have these locally.
             * **Validation:** The new repository is created on GitHub, and you have its remote URL (e.g., `https://github.com/USERNAME/MediTrustAl.git`).
         6.  **Connect Local Repository to Remote:**
-            * **Instruction:** Return to your terminal (still inside the `MediTrustAl_Project` directory). Run the command: `git remote add origin YOUR_REMOTE_URL` (replace `YOUR_REMOTE_URL` with the URL you got from the previous step).
+            * **Instruction:** *(Lakukan ini jika Anda menginisialisasi repositori secara lokal dan belum menghubungkannya ke remote).* Return to your terminal (pastikan Anda berada di root repositori Anda). Run the command: `git remote add origin YOUR_REMOTE_URL` (replace `YOUR_REMOTE_URL` with the URL you got from the previous step).
             * **Validation:** Run `git remote -v` to ensure the `origin` remote has been added correctly and points to the appropriate fetch & push URLs.
         7.  **Make Initial Commit:**
-            * **Instruction:** In the terminal, run `git add .` to add all files in `MediTrustAl_Project` (that are not ignored by `.gitignore`) to the staging area. Then run `git commit -m "Initial project setup with Vibe Coding documents"`.
-            * **Validation:** The `git status` command should show "nothing to commit, working tree clean". `git log` will display the first commit.
+            * **Instruction:** In the terminal (at your repository root), run `git add .` to add all files in your repository (that are not ignored by `.gitignore`) to the staging area. Then run `git commit -m "Initial project setup with Vibe Coding documents"`.
+            * **Validation:** The `git status` command should show "nothing to commit, working tree clean" (or show untracked files if you haven't added everything). `git log` will display the first commit.
         8.  **Push Initial Commit to Remote:**
-            * **Instruction:** In the terminal, run `git push -u origin main` (or `master` if that's your default branch name. If you are using `main` and your local default branch is `master`, you might need to run `git branch -M main` first before pushing).
+            * **Instruction:** In the terminal (at your repository root), run `git push -u origin main` (or `master` if that's your default branch name. If you are using `main` and your local default branch is `master`, you might need to run `git branch -M main` first before pushing).
             * **Validation:** Open your repository page on GitHub (or other platform). You should see all committed files and folders (including `memory-bank` and its contents) appearing there.
 
 *(This file will be deleted or archived after all tasks within it are completed and validated, then the Planning AI will create the next baby-step).*
