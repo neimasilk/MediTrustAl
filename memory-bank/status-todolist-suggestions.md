@@ -9,7 +9,8 @@
 ## Progress Update (Snapshot 2024-05-26):
 1. **Database Setup** ✅ COMPLETED (dengan catatan)
    - [x] PostgreSQL 15.x installation and configuration (via Docker in `docker-compose.yml` and manual setup instructions in `README.md`).
-   - [x] Database model creation (`User` model in `src/app/models/user.py`). *Catatan: Tipe ID User (Integer) berbeda dengan rencana (UUID) di `database-schema.md` dan `implementation-plan.md`.*
+   - [x] Database model creation (`User` model in `src/app/models/user.py`).
+*Catatan: Telah diputuskan untuk menggunakan UUID untuk User.id sesuai dengan `database-schema.md` dan `implementation-plan.md`, dan ini akan diimplementasikan dalam kode.*
    - [x] Alembic migration setup (`alembic.ini`, `alembic/env.py`).
    - [x] Database connection configuration (`src/app/core/database.py`, `src/app/core/config.py`).
 
@@ -73,7 +74,6 @@
     * **[DARI SEBELUMNYA]** Manajemen sesi perlu diimplementasikan.
     * **[DARI SEBELUMNYA]** Pertimbangan 2FA untuk masa depan.
 2.  **Database:**
-    * **[BARU]** Tipe data `User.id` (Integer vs UUID) tidak konsisten dengan rencana.
     * **[DARI SEBELUMNYA]** Perlu optimasi indeks (setelah ada query pattern).
     * **[DARI SEBELUMNYA]** Tambahkan database pooling (FastAPI biasanya menangani ini dengan baik, tapi bisa di-fine-tune).
     * **[DARI SEBELUMNYA]** Siapkan strategi backup.
@@ -95,7 +95,7 @@
 
 1.  Review progres penyelesaian Step 1.3, khususnya endpoint registrasi & login aplikasi.
 2.  Diskusikan solusi untuk manajemen private key pada `blockchain.py`.
-3.  Finalisasi keputusan tipe data `User.id` (Integer vs UUID).
+3.  Konfirmasi implementasi `User.id` sebagai UUID telah dilakukan (keputusan final: UUID).
 4.  Rencanakan implementasi pengujian unit dan integrasi untuk fitur autentikasi.
 5.  Tentukan prioritas untuk item-item dalam "Technical Debt & Issues".
 

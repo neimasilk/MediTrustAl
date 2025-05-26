@@ -28,9 +28,7 @@ CREATE INDEX idx_users_username ON users(username);
 CREATE INDEX idx_users_blockchain_address ON users(blockchain_address);
 ```
 
-### 2. sessions (Future Implementation)
-Akan menyimpan informasi sesi pengguna untuk manajemen refresh token.
-
+### 2. sessions
 ```sql
 CREATE TABLE sessions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -46,9 +44,7 @@ CREATE INDEX idx_sessions_user_id ON sessions(user_id);
 CREATE INDEX idx_sessions_refresh_token ON sessions(refresh_token);
 ```
 
-### 3. medical_records (Future Implementation)
-Menyimpan metadata rekam medis dan referensi ke data aktual terenkripsi yang disimpan off-chain (dalam field khusus). Hash dari data aktual disimpan di blockchain.
-
+### 3. medical_records
 ```sql
 CREATE TABLE medical_records (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -65,7 +61,7 @@ CREATE TABLE medical_records (
         'VACCINATION'
     )),
     metadata JSONB,  -- Additional metadata specific to record type
-    encrypted_data TEXT NOT NULL,  -- FHIR data encrypted at rest
+    encrypted_data BYTEA NOT NULL, -- Encrypted FHIR R4 data (AES-256-GCM suggested)
     data_hash VARCHAR(64) NOT NULL,  -- SHA-256 hash of unencrypted data
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP

@@ -97,7 +97,7 @@ Project Directory (~20GB):
    npm install -g ganache@7.9.2
    
    # Start local blockchain
-   ganache --deterministic
+   ganache --deterministic --chain.chainId 1337 --database.dbPath ./.ganache-db
    ```
 
 5. **Frontend Setup**
@@ -154,7 +154,7 @@ SSL_ENABLED=false
    uvicorn app.main:app --reload --port 8000
    
    # Terminal 2: Blockchain
-   ganache --deterministic
+   ganache --deterministic --chain.chainId 1337 --database.dbPath ./.ganache-db
    
    # Terminal 3: Frontend
    cd frontend
