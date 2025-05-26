@@ -9,7 +9,7 @@ from unittest.mock import patch
 from src.app.main import app
 from src.app.core.database import Base, get_db
 from src.app.models.user import User
-from src.app.core.blockchain import blockchain_service
+from src.app.core.blockchain import get_blockchain_service
 
 # Mock environment variables
 os.environ["GANACHE_RPC_URL"] = "http://127.0.0.1:7545"
@@ -64,8 +64,13 @@ def client(db_session):
     
     # Apply mocks
     app.dependency_overrides[get_db] = override_get_db
-    blockchain_service.register_user = mock_register_user
-    blockchain_service.get_user_role = mock_get_user_role
+    
+    # Get the service instance and mock its methods
+    # This ensures we are mocking the actual instance that will be used by the app
+    # and respects the lazy initialization (service is fetched only when client fixture is used)
+    service_instance = get_blockchain_service()
+    service_instance.register_user = mock_register_user
+    service_instance.get_user_role = mock_get_user_role
     
     yield TestClient(app)
     del app.dependency_overrides[get_db] 
