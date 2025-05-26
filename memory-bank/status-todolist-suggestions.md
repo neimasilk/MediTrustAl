@@ -1,134 +1,122 @@
 # Project Status, To-Do List, and Suggestions: MediTrustAl
 
-## Current Project Status (per 2025-05-26):
-* **Project Phase:** Phase 1 - Core Backend Setup & Blockchain Foundation (MVP Focus)
-* **Description:** Step 1.3 (User Identity and Basic Authentication) telah selesai diimplementasikan. Sistem identitas pengguna lengkap dengan registrasi ke database PostgreSQL, pembuatan DID, pendaftaran ke smart contract UserRegistry, login dengan JWT, dan proteksi rute telah diimplementasikan. Keamanan penandatanganan transaksi blockchain telah diperbaiki dengan menggunakan private key dari environment variable. Semua tes untuk fungsionalitas yang ada telah lolos.
-* **Last Completed Step:**
-    * Step 1.1: Project Setup and Basic Backend Structure - Selesai.
-    * Step 1.2: Basic Blockchain Network Setup (Local Development) - Selesai.
-    * Step 1.3: User Identity and Basic Authentication (Application Layer) - Selesai.
-* **Next Step:** Step 1.4: Medical Record Data Model and Storage (Application Layer) - PENDING.
+## Current Project Status (per 2025-05-27):
+* **Project Phase:** Fase 2 - Patient Data Management - MVP Core (Blockchain Interaction)
+* **Description:**
+    * Step 1.1 (Project Setup), Step 1.2 (Basic Blockchain Network Setup - UserRegistry), dan Step 1.3 (User Identity and Basic Authentication) telah selesai diimplementasikan.
+    * Step 2.1 (Basic Patient Health Record Structure on Blockchain - MedicalRecordRegistry) dan Step 2.2 (Basic Off-Chain Data Storage Setup - PostgreSQL dengan enkripsi) juga telah selesai diimplementasikan melalui API `medical_records`. Ini mencakup pembuatan model `MedicalRecord`, CRUD, API untuk membuat dan mengambil rekam medis (dengan enkripsi/dekripsi), perhitungan `data_hash`, dan integrasi dengan _smart contract_ `MedicalRecordRegistry` untuk mencatat `data_hash`.
+    * Semua tes untuk fungsionalitas yang ada telah lolos.
+* **Last Completed Steps (merangkum `implementation-plan.md`):**
+    * Step 1.1: Project Setup and Basic Backend Structure - ✅ SELESAI.
+    * Step 1.2: Basic Blockchain Network Setup (Local Development - UserRegistry) - ✅ SELESAI.
+    * Step 1.3: User Identity and Basic Authentication (Application Layer) - ✅ SELESAI.
+    * Step 2.1: Basic Patient Health Record (PHR) Structure on Blockchain (MedicalRecordRegistry) - ✅ SELESAI.
+    * Step 2.2: Basic Off-Chain Data Storage Setup (PostgreSQL with Encryption for Medical Records) - ✅ SELESAI.
+* **Next Step (sesuai `implementation-plan.md`):** Step 2.3: Basic Patient Data Retrieval - ⏳ PENDING.
 
-## Progress Update (Snapshot 2025-05-26):
-1. **Database Setup** ✅ COMPLETED
-   - [x] PostgreSQL 15.x installation and configuration.
-   - [x] Database model creation (`User` model).
-   - [x] Alembic migration setup and initial migration for `users` table.
-   - [x] Database connection configuration.
+## Progress Update (Snapshot 2025-05-27):
+1.  **Database Setup** ✅ SELESAI
+    * [x] Instalasi dan konfigurasi PostgreSQL 15.x.
+    * [x] Pembuatan model database (`User`, `MedicalRecord`).
+    * [x] Pengaturan migrasi Alembic dan migrasi awal untuk tabel `users` dan `medical_records`.
+    * [x] Konfigurasi koneksi database.
 
-2. **Authentication System** ✅ COMPLETED
-   - [x] JWT token implementation (create, decode).
-   - [x] Password hashing with bcrypt.
-   - [x] Skema Pydantic untuk User (request, response, login).
-   - [x] Implementasi Endpoint Registrasi Aplikasi Lengkap (termasuk validasi duplikasi).
-   - [x] Implementasi Endpoint Login Aplikasi (username/email).
-   - [x] Implementasi Middleware Proteksi Rute menggunakan JWT (`get_current_active_user`).
-   - [x] Implementasi Generasi DID sesuai format `did:meditrustal:{base58(sha256(user_id))}`.
+2.  **Authentication System** ✅ SELESAI
+    * [x] Implementasi token JWT (pembuatan, dekode).
+    * [x] Hashing password dengan bcrypt.
+    * [x] Skema Pydantic untuk User (request, response, login).
+    * [x] Implementasi Endpoint Registrasi Aplikasi Lengkap (termasuk validasi duplikasi).
+    * [x] Implementasi Endpoint Login Aplikasi (username/email).
+    * [x] Implementasi Middleware Proteksi Rute menggunakan JWT (`get_current_active_user`).
+    * [x] Implementasi Generasi DID sesuai format `did:meditrustal:{base58(sha256(user_id))}`.
 
-3. **Blockchain Integration (User Registry)** ✅ COMPLETED
-   - [x] Ganache setup (sesuai `README.md` dan `hardhat.config.js`).
-   - [x] Basic smart contract `UserRegistry` deployment (via `deployUserRegistry.js`).
-   - [x] Service (`BlockchainService` di `blockchain.py`) untuk interaksi dengan `UserRegistry` contract (register user, get role).
-   - [x] Perbaikan Penandatanganan Transaksi Blockchain untuk menangani private key dengan aman dari environment variables.
-   - [x] Integrasi pemanggilan `blockchain_service.register_user` ke dalam alur registrasi aplikasi.
+3.  **Blockchain Integration (User Registry & Medical Record Registry)** ✅ SELESAI
+    * [x] Setup Ganache (sesuai `README.md` dan `hardhat.config.js`).
+    * [x] _Smart contract_ dasar `UserRegistry` dan `MedicalRecordRegistry` sudah di-deploy (via skrip `deployUserRegistry.js` & `deployMedicalRecordRegistry.js`).
+    * [x] Service (`BlockchainService` di `blockchain.py`) untuk interaksi dengan kontrak `UserRegistry` (register user, get role) dan `MedicalRecordRegistry` (add medical record hash).
+    * [x] Penandatanganan Transaksi Blockchain menggunakan _private key_ dari _environment variable_.
+    * [x] Integrasi pemanggilan `blockchain_service.register_user` ke dalam alur registrasi aplikasi.
+    * [x] Integrasi pemanggilan `blockchain_service.add_medical_record_hash` ke dalam alur pembuatan rekam medis.
 
-4. **Testing** ✅ COMPLETED
-   - [x] Unit tests untuk fungsi utilitas (DID generation di `test_utils.py`).
-   - [x] Integration tests untuk endpoint auth (register, login di `test_auth.py`).
-   - [x] Integration tests untuk endpoint yang diproteksi (`/users/me` di `test_auth.py`).
-   - [x] Test fixtures dan setup (SQLite in-memory database, mock blockchain service di `conftest.py`).
+4.  **Medical Record Management (MVP Core)** ✅ SELESAI
+    * [x] Model SQLAlchemy `MedicalRecord` dan skema Pydantic terkait.
+    * [x] Fungsi CRUD untuk `MedicalRecord`.
+    * [x] API Endpoint `POST /medical-records` untuk membuat rekam medis baru (termasuk enkripsi data, _hashing_, penyimpanan ke DB, dan pencatatan _hash_ ke _blockchain_).
+    * [x] API Endpoint `GET /medical-records/patient/me` untuk mengambil daftar rekam medis milik pasien saat ini (dari DB, _metadata only_).
+    * [x] API Endpoint `GET /medical-records/{record_id}` untuk mengambil detail satu rekam medis, termasuk data mentah yang sudah didekripsi (dari DB).
+    * [x] Implementasi enkripsi AES-GCM untuk `raw_data` dan SHA-256 untuk `data_hash`.
 
-## Immediate Next Steps (Implementasi Step 1.4 - Medical Record):
+5.  **Testing** ✅ SELESAI (untuk fitur yang ada)
+    * [x] Unit tes untuk utilitas (enkripsi, generasi DID).
+    * [x] Unit tes untuk CRUD (`medical_record`).
+    * [x] Unit tes untuk `BlockchainService` (interaksi dengan `MedicalRecordRegistry`).
+    * [x] Tes integrasi untuk _endpoint auth_ (register, login).
+    * [x] Tes integrasi untuk _endpoint_ yang diproteksi (`/users/me`).
+    * [x] Tes integrasi untuk _endpoint_ API rekam medis (create, get list, get detail).
+    * [x] Pengaturan _test fixtures_ dan _mocking_ (SQLite _in-memory database_, _mock blockchain service_).
+    * [x] Tes _smart contract_ `MedicalRecordRegistry.test.js`.
 
-Fokus utama adalah membuat model data, smart contract, dan API untuk manajemen rekam medis dasar, sesuai dengan `database-schema.md` dan `implementation-plan.md` (Step 2.1 & 2.2).
+## Immediate Next Steps (Implementasi Step 2.3 - Basic Patient Data Retrieval):
 
-1.  **Database (PostgreSQL):**
-    * Implementasikan model SQLAlchemy `MedicalRecord` berdasarkan `memory-bank/database-schema.md`.
-        * Fields: `id` (UUID), `patient_id` (FK ke `users.id`), `blockchain_record_id` (VARCHAR, hash transaksi Ethereum), `record_type` (ENUM), `metadata` (JSONB), `encrypted_data` (BYTEA), `data_hash` (VARCHAR, SHA-256), `created_at`, `updated_at`.
-    * Definisikan ENUM untuk `record_type` di Python.
-    * Buat skema Pydantic untuk `MedicalRecord` (Create, Response).
-    * Buat dan jalankan migrasi Alembic untuk tabel `medical_records`.
-    * Implementasikan fungsi CRUD di `src/app/crud/crud_medical_record.py`.
+Fokus utama adalah memungkinkan pasien mengambil _metadata_ rekam medis mereka yang berasal dari _blockchain_, dan kemudian menggunakan informasi tersebut (jika diperlukan) untuk mengambil data lengkap dari _off-chain storage_.
 
-2.  **Smart Contract (Solidity & Hardhat):**
-    * Buat smart contract baru `MedicalRecordRegistry.sol`.
-        * Fungsi untuk mencatat hash rekam medis: `addRecord(bytes32 recordHash, string patientDid, string recordType, uint256 timestamp)`. `recordHash` adalah `data_hash` dari data mentah yang tidak dienkripsi.
-        * Mapping untuk menyimpan `recordHash` dan metadata terkait (misalnya `patientDid`, `recordType`, `timestamp`).
-        * Event untuk pencatatan rekam medis baru.
-        * (Untuk MVP, fungsionalitas grant access bisa ditunda sesuai `implementation-plan.md` Step 4.1, atau diimplementasikan secara sederhana jika waktu memungkinkan).
-    * Update skrip deployment Hardhat (`scripts/deployMedicalRecordRegistry.js`) dan jalankan untuk deploy ke Ganache.
-    * Simpan ABI dan alamat kontrak `MedicalRecordRegistry` di `blockchain/build/deployments/`.
-    * Update `src/app/core/config.py` untuk memuat ABI dan alamat kontrak baru.
-    * Perluas `BlockchainService` (`src/app/core/blockchain.py`) dengan metode untuk berinteraksi dengan `MedicalRecordRegistry` (misalnya `add_medical_record_hash`).
+1.  **Smart Contract (`MedicalRecordRegistry.sol`):**
+    * Implementasikan fungsi baru `getRecordHashesByPatient(string memory patientDid) external view returns (bytes32[] memory, string[] memory, uint256[] memory)` yang mengembalikan _array_ dari `recordHash`, `recordType`, dan `timestamp` untuk `patientDid` tertentu.
+        * Ini memerlukan penyimpanan daftar `recordHash` per `patientDid` di dalam kontrak, atau iterasi melalui semua _record_ (kurang efisien untuk banyak _record_). Pertimbangkan struktur data yang efisien di kontrak (misalnya, `mapping(string => bytes32[]) private patientRecords;`).
+    * Pastikan event `RecordAdded` sudah mencakup semua informasi yang relevan (`recordHash`, `patientDid`, `recordType`, `timestamp`, `submitter`). (Event sudah ada dan cukup baik).
+    * Update skrip deployment Hardhat jika ada perubahan signifikan pada penyimpanan atau konstruktor.
+    * Update `blockchain/test/MedicalRecordRegistry.test.js` untuk menguji fungsi baru `getRecordHashesByPatient`.
 
-3.  **Backend API (FastAPI):**
-    * Buat file endpoint baru `src/app/api/endpoints/medical_records.py`.
-    * Implementasikan endpoint `POST /medical-records` untuk membuat rekam medis baru:
-        * Endpoint harus menerima data rekam medis (misalnya, dalam format yang mendekati FHIR R4 atau subsetnya untuk metadata, dan data utama yang akan dienkripsi).
-        * Data sensitif harus dienkripsi (AES-256-GCM disarankan) sebelum disimpan di field `encrypted_data` (BYTEA) di PostgreSQL. Kunci enkripsi perlu dikelola dengan aman (detail pengelolaan kunci perlu dipikirkan, untuk MVP mungkin bisa disederhanakan atau menggunakan kunci per pengguna yang diturunkan dari password atau disimpan terenkripsi).
-        * Hitung `data_hash` (SHA-256) dari data *sebelum* enkripsi.
-        * Simpan metadata, `encrypted_data`, dan `data_hash` di tabel `medical_records` PostgreSQL.
-        * Panggil `BlockchainService` untuk mencatat `data_hash`, `patient_did`, `record_type`, dan `timestamp` ke smart contract `MedicalRecordRegistry`.
-        * Simpan `transaction_hash` dari blockchain ke field `blockchain_record_id` di tabel `medical_records`.
-        * Endpoint harus diproteksi dan hanya bisa diakses oleh pengguna yang terautentikasi (misalnya, pasien membuat rekam medis untuk dirinya sendiri, atau dokter untuk pasien dengan consent).
-    * Implementasikan endpoint `GET /medical-records/patient/{patient_id}` untuk mengambil daftar metadata rekam medis milik pasien (tanpa `encrypted_data`).
-    * Implementasikan endpoint `GET /medical-records/{record_id}` untuk mengambil detail satu rekam medis, termasuk `encrypted_data` (yang perlu didekripsi di sisi klien atau backend setelah otorisasi).
-    * Pastikan ada mekanisme otorisasi yang tepat (misalnya, pasien hanya bisa akses datanya sendiri, dokter perlu consent).
+2.  **Backend (`BlockchainService` dan API):**
+    * Perluas `BlockchainService` (`src/app/core/blockchain.py`) dengan metode baru, misal `async def get_medical_record_metadata_from_blockchain(self, patient_did: str) -> dict:`. Metode ini akan memanggil fungsi `getRecordHashesByPatient` dari _smart contract_.
+    * Modifikasi _endpoint_ `GET /api/v1/medical-records/patient/me` (`src/app/api/endpoints/medical_records.py`):
+        * Panggil metode baru di `BlockchainService` untuk mendapatkan daftar _metadata_ (`recordHash`, `recordType`, `timestamp`) dari _blockchain_ untuk `current_user.did`.
+        * Untuk setiap `recordHash` yang diterima, cari _record_ yang sesuai di tabel `medical_records` PostgreSQL berdasarkan kolom `data_hash`.
+        * Gabungkan informasi dari _blockchain_ dan PostgreSQL (misalnya, `id` dari DB, `blockchain_record_id`, `created_at` dari DB, dan `recordType`, `timestamp` dari _blockchain_ sebagai sumber kebenaran) untuk membentuk respons.
+        * Respons harus tetap berupa `List[MedicalRecordResponse]`, pastikan data yang dikembalikan konsisten dan tidak membingungkan antara sumber DB dan _blockchain_. Pertimbangkan untuk memperbarui `MedicalRecordResponse` jika perlu field tambahan dari _blockchain_.
+    * Endpoint `GET /api/v1/medical-records/{record_id}` (`src/app/api/endpoints/medical_records.py`):
+        * Tetap berfungsi seperti sekarang (mengambil dari DB berdasarkan `record_id` UUID dan mendekripsi). Alur "menggunakan _off-chain reference_ yang diperoleh dari _blockchain record_" diimplementasikan dengan _frontend_ pertama kali mendapatkan daftar (yang mungkin berisi UUID DB dari langkah di atas) dan kemudian menggunakan UUID tersebut untuk _endpoint_ ini.
 
-4.  **Utilitas Enkripsi/Dekripsi:**
-    * Buat modul utilitas (misalnya di `src/app/core/encryption.py`) untuk fungsi enkripsi (AES-256-GCM) dan dekripsi data.
-    * Buat fungsi untuk menghitung hash SHA-256.
+3.  **Skema Pydantic (`src/app/models/medical_record.py`):**
+    * Tinjau `MedicalRecordResponse`. Apakah perlu dimodifikasi untuk mengakomodasi data _timestamp_ yang mungkin berasal dari _blockchain_ (jika berbeda dari `created_at` di DB)? Untuk MVP, mungkin bisa disamakan atau `created_at` DB dianggap cukup. `implementation-plan.md` menyebut `timestamp` sebagai bagian dari _metadata_ dari _blockchain_.
 
-5.  **Pengujian:**
-    * Unit tests untuk model `MedicalRecord` dan skema Pydantic.
-    * Unit tests untuk fungsi CRUD `medical_record`.
-    * Unit tests untuk fungsi enkripsi/dekripsi dan hashing.
-    * Unit tests untuk interaksi dengan smart contract `MedicalRecordRegistry` (mocking Web3).
-    * Integration tests untuk endpoint API rekam medis (create, get).
-        * Pastikan data dienkripsi dengan benar.
-        * Pastikan hash dicatat di blockchain (via mock service).
-        * Pastikan otorisasi berfungsi.
+4.  **Pengujian:**
+    * Unit tes untuk metode baru di `BlockchainService` (mocking Web3).
+    * _Integration test_ untuk _endpoint_ `GET /medical-records/patient/me` yang dimodifikasi. Pastikan data yang dikembalikan adalah gabungan yang benar dan otorisasi berfungsi.
 
-## Technical Debt & Issues:
+## Technical Debt & Issues (Beberapa Diambil dari Status Sebelumnya):
 
 1.  **Authentication & User Management:**
-    * **[PENDING]** Perlu mekanisme refresh token.
-    * **[PENDING]** Alur reset password belum dirancang.
-    * **[PENDING]** Manajemen sesi yang lebih robas (jika refresh token diimplementasikan, ini terkait).
-    * **[PENDING]** Pertimbangan 2FA untuk masa depan.
-    * **[POTENTIAL]** `UserLogin` Pydantic model didefinisikan di `src/app/models/user.py` tapi digunakan di `src/app/api/endpoints/auth.py` tanpa diimpor secara eksplisit di sana, kemungkinan terimpor via `from ...models.user import *`. Sebaiknya impor eksplisit.
-
+    * **[PENDING]** Mekanisme _refresh token_.
+    * **[PENDING]** Alur reset password.
+    * **[PENDING]** Manajemen sesi yang lebih robas.
 2.  **Database:**
-    * **[PENDING]** Perlu optimasi indeks setelah query patterns lebih jelas.
-    * **[PENDING]** Fine-tune database pooling untuk production.
-    * **[PENDING]** Siapkan strategi backup & restore yang matang.
-    * **[PENDING]** Tambahkan query monitoring untuk performa.
-
+    * **[PENDING]** Optimasi indeks lebih lanjut setelah _query patterns_ lebih jelas.
+    * **[PENDING]** Fine-tune _database pooling_ untuk produksi.
+    * **[PENDING]** Strategi _backup & restore_ yang matang.
 3.  **Blockchain:**
-    * **[PENDING]** Optimasi gas untuk fungsi smart contract.
-    * **[PENDING]** Setup backup node Ganache atau strategi untuk persistensi data dev blockchain yang lebih baik jika `.ganache-db` tidak cukup.
-    * **[PENDING]** Strategi upgrade smart contract (untuk `UserRegistry` dan kontrak mendatang).
-    * **[PENDING]** Sistem monitoring event dari smart contract.
-
+    * **[PENDING]** Optimasi gas untuk fungsi _smart contract_, terutama jika ada iterasi.
+    * **[PENDING]** Strategi _upgrade smart contract_.
+    * **[PENDING]** Sistem _monitoring event_ dari _smart contract_ (berguna untuk sinkronisasi data atau notifikasi).
+    * **[BARU]** Struktur data di `MedicalRecordRegistry.sol` untuk menyimpan dan mengambil _record_ per pasien secara efisien.
 4.  **Testing:**
-    * **[PENDING]** Tes E2E (End-to-End) setelah frontend dasar ada.
+    * **[PENDING]** Tes E2E (End-to-End) setelah _frontend_ dasar ada.
     * **[PENDING]** Tes performa (load testing) untuk API.
-    * **[PENDING]** Kerangka kerja tes keamanan (misalnya, scanning dependensi, static analysis).
-
 5.  **Lain-lain:**
-    * **[PENDING]** Pengelolaan Kunci Enkripsi: Perlu strategi yang jelas dan aman untuk mengelola kunci enkripsi data rekam medis.
-    * **[PENDING]** Logging yang lebih terstruktur dan komprehensif di seluruh aplikasi.
-    * **[PENDING]** Error handling yang lebih detail dan standar di API.
+    * **[MITIGATED FOR MVP]** Pengelolaan Kunci Enkripsi: Penggunaan JWT _secret_ untuk kunci enkripsi sudah dicatat sebagai solusi MVP.
+    * **[PENDING]** _Logging_ yang lebih terstruktur dan komprehensif di seluruh aplikasi.
+    * **[PENDING]** _Error handling_ yang lebih detail dan standar di API.
+    * **[POTENTIAL]** Peran `/api/v1/users/register` perlu diklarifikasi atau di-deprecate.
 
 ## Next Meeting Agenda:
 
-1.  Review implementasi Step 1.3 yang telah selesai (singkat, karena sudah direview).
-2.  Diskusi mendalam mengenai desain dan implementasi Step 1.4 (Medical Record Data Model and Storage):
-    * Finalisasi struktur tabel `medical_records` dan skema Pydantic.
-    * Desain fungsi dan event untuk smart contract `MedicalRecordRegistry.sol`.
-    * Detail alur API untuk pembuatan dan pengambilan rekam medis (termasuk enkripsi/dekripsi dan interaksi blockchain).
-    * Strategi awal pengelolaan kunci enkripsi untuk MVP.
-3.  Prioritisasi technical debt yang mungkin perlu ditangani dalam waktu dekat.
-4.  Planning untuk sprint berikutnya (fokus pada implementasi Step 1.4).
+1.  Review singkat penyelesaian implementasi API `medical_records` (Step 2.1 & 2.2).
+2.  Diskusi mendalam mengenai desain dan implementasi **Step 2.3 (Basic Patient Data Retrieval)**:
+    * Finalisasi desain fungsi _query_ di `MedicalRecordRegistry.sol` (misalnya `getRecordHashesByPatient`).
+    * Struktur data di _smart contract_ untuk mendukung _query_ tersebut.
+    * Detail alur API `GET /medical-records/patient/me` (bagaimana data _blockchain_ dan DB digabungkan).
+    * Skema respons Pydantic yang final untuk _metadata_ rekam medis.
+3.  Prioritisasi _technical debt_ yang mungkin perlu ditangani dalam waktu dekat.
+4.  Perencanaan untuk _sprint_ berikutnya (fokus pada implementasi Step 2.3).
 
-*(Note: This file was last updated on 2025-05-26 based on completion of Step 1.3.)*
+*(Note: This file was last updated on 2025-05-27 based on completion of medical records API and related functionalities.)*
