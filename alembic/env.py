@@ -13,7 +13,9 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 # Import models
-from src.app.models.user import Base
+from src.app.core.database import Base  # Use the central Base
+from src.app.models.user import User  # Ensure User model is imported
+from src.app.models.medical_record import MedicalRecord # Import MedicalRecord model
 from src.app.core.config import DATABASE_CONFIG
 
 # this is the Alembic Config object, which provides
@@ -30,6 +32,7 @@ if config.config_file_name is not None:
 
 # add your model's MetaData object here
 # for 'autogenerate' support
+# Ensure all models are imported above so Base.metadata contains all tables
 target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
