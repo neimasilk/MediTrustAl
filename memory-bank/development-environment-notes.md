@@ -45,7 +45,7 @@ Project Directory (~20GB):
 3. **Blockchain Development**
    - Ganache 7.x (for local blockchain)
    - Node.js 20.x LTS (for web3 tools)
-   - Truffle Suite (for smart contract development)
+   - Hardhat (for smart contract development)
 
 4. **Frontend Development**
    - Node.js 20.x LTS
@@ -90,9 +90,9 @@ Project Directory (~20GB):
 
 4. **Local Blockchain Setup**
    ```bash
-   # Install Truffle globally
-   npm install -g truffle@5.11.5
-   
+   # Install Hardhat globally
+   npm install -g hardhat
+
    # Install Ganache
    npm install -g ganache@7.9.2
    

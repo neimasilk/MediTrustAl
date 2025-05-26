@@ -47,7 +47,7 @@ CREATE INDEX idx_sessions_refresh_token ON sessions(refresh_token);
 ```
 
 ### 3. medical_records (Future Implementation)
-Akan menyimpan metadata rekam medis (data aktual disimpan di blockchain).
+Menyimpan metadata rekam medis dan referensi ke data aktual terenkripsi yang disimpan off-chain (dalam field khusus). Hash dari data aktual disimpan di blockchain.
 
 ```sql
 CREATE TABLE medical_records (
@@ -65,6 +65,8 @@ CREATE TABLE medical_records (
         'VACCINATION'
     )),
     metadata JSONB,  -- Additional metadata specific to record type
+    encrypted_data TEXT NOT NULL,  -- FHIR data encrypted at rest
+    data_hash VARCHAR(64) NOT NULL,  -- SHA-256 hash of unencrypted data
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -130,8 +132,9 @@ CREATE INDEX idx_medical_records_metadata ON medical_records USING gin (metadata
 ## Indexing Strategy
 
 1. **Primary Keys**
-   - Menggunakan SERIAL (auto-incrementing integer) untuk primary keys
-   - Memberikan performa query yang baik dan mudah dalam referensi
+   - Menggunakan UUID untuk primary keys (dengan gen_random_uuid())
+   - Memberikan skalabilitas yang lebih baik untuk sistem terdistribusi
+   - Menghindari potensi konflik saat penggabungan data dari berbagai sumber
 
 2. **Foreign Keys**
    - Selalu menggunakan foreign key constraints untuk menjaga referential integrity
