@@ -14,11 +14,11 @@ These rules must be set to "Always" trigger in Cursor to ensure the AI always co
    * **Instruction:** "Always read memory-bank/architecture.md before writing or modifying any code. Pay close attention to the documented file structures, component responsibilities, and overall system design. If architecture.md is empty or does not cover the current task, state this and ask for clarification or instruct to proceed with creating a new architectural component description."  
    * **Context Files:** memory-bank/architecture.md  
 2. **Rule: Read Product Requirements Document (PRD)**  
-   * **Instruction:** "Always read memory-bank/prd\_meditrustal\_v1\_en.md (equivalent to game-design-document.md) before writing or modifying any code. Ensure the code aligns with the project objectives, target users, and specified features. If the current task seems to deviate or is not covered, state this and ask for clarification."  
-   * **Context Files:** memory-bank/prd\_meditrustal\_v1\_en.md  
+   * **Instruction:** "Always read memory-bank/product-design-document.md (equivalent to game-design-document.md) before writing or modifying any code. Ensure the code aligns with the project objectives, target users, and specified features. If the current task seems to deviate or is not covered, state this and ask for clarification."  
+   * **Context Files:** memory-bank/product-design-document.md  
 3. **Rule: Read Tech Stack Document**  
-   * **Instruction:** "Always read memory-bank/meditrustal\_tech\_stack\_v1.md before writing or modifying any code. Ensure all code strictly adheres to the recommended technologies, libraries, frameworks, and patterns outlined in this document. Do not introduce new technologies without explicit instruction."  
-   * **Context Files:** memory-bank/meditrustal\_tech\_stack\_v1.md
+   * **Instruction:** "Always read memory-bank/tech-stack.md before writing or modifying any code. Ensure all code strictly adheres to the recommended technologies, libraries, frameworks, and patterns outlined in this document. Do not introduce new technologies without explicit instruction."  
+   * **Context Files:** memory-bank/tech-stack.md
 
 ## **Modularity and Code Structure Rules**
 
@@ -42,29 +42,29 @@ These rules provide more specific guidance based on the chosen tech stack.
 
 7. **Rule: Chaincode Structure**  
    * **Instruction:** "When developing Hyperledger Fabric chaincode (smart contracts), ensure a clear separation of concerns. For example, differentiate logic for different asset types or transactions. Follow recommended Fabric patterns for chaincode development (e.g., using the contract API)."  
-   * **Context Files:** memory-bank/meditrustal\_tech\_stack\_v1.md  
+   * **Context Files:** memory-bank/tech-stack.md  
    * **Trigger:** When generating or modifying chaincode.
 
 ### **NLP & AI Layer (Python)**
 
 8. **Rule: Python Module Structure**  
    * **Instruction:** "For Python-based AI/NLP modules, organize code into logical packages and sub-modules. For instance, separate data preprocessing, model definition, training scripts, and inference/serving logic. Use \_\_init\_\_.py files appropriately."  
-   * **Context Files:** memory-bank/meditrustal\_tech\_stack\_v1.md  
+   * **Context Files:** memory-bank/tech-stack.md  
    * **Trigger:** When generating or modifying Python code for the AI/NLP layer.  
 9. **Rule: API Design for AI Models**  
    * **Instruction:** "When exposing AI/NLP models via APIs (e.g., using FastAPI/Flask as per tech-stack.md), design clear, versioned, and well-documented API endpoints. Ensure request and response schemas are well-defined."  
-   * **Context Files:** memory-bank/meditrustal\_tech\_stack\_v1.md  
+   * **Context Files:** memory-bank/tech-stack.md  
    * **Trigger:** When creating or modifying API endpoints for AI/NLP models.
 
 ### **Application Layer (Node.js/Python Backend, React/Vue Frontend \- if chosen)**
 
 10. **Rule: Backend Service Structure (e.g., Node.js with Express or Python with FastAPI/Django)**  
     * **Instruction:** "Structure backend services with clear separation for routes, controllers/handlers, business logic/services, and data access layers/models. Use middleware appropriately for concerns like authentication, logging, and error handling."  
-    * **Context Files:** memory-bank/meditrustal\_tech\_stack\_v1.md  
+    * **Context Files:** memory-bank/tech-stack.md  
     * **Trigger:** When generating or modifying backend code.  
 11. **Rule: Frontend Component Structure (e.g., React/Vue)**  
     * **Instruction:** "Develop frontend UIs using a component-based architecture. Create small, reusable components. Separate presentational components from container/logic components where appropriate. Follow conventions for state management (e.g., Redux/Zustand for React, Vuex/Pinia for Vue) as outlined in tech-stack.md."  
-    * **Context Files:** memory-bank/meditrustal\_tech\_stack\_v1.md  
+    * **Context Files:** memory-bank/tech-stack.md  
     * **Trigger:** When generating or modifying frontend code.
 
 ## **General Coding Best Practices**
@@ -77,11 +77,11 @@ These rules provide more specific guidance based on the chosen tech stack.
     * **Trigger:** When generating code that involves I/O, API calls, or complex logic.  
 14. **Rule: Security Best Practices**  
     * **Instruction:** "Adhere to security best practices relevant to the language and framework. For example, prevent SQL injection, XSS, CSRF. Sanitize inputs. Follow guidelines in tech-stack.md regarding security measures like encryption and authentication."  
-    * **Context Files:** memory-bank/meditrustal\_tech\_stack\_v1.md  
+    * **Context Files:** memory-bank/tech-stack.md  
     * **Trigger:** When generating code that handles user input, data storage, or authentication/authorization.  
 15. **Rule: Adherence to Interoperability Standards (HL7 FHIR)**  
     * **Instruction:** "When developing functionalities related to data exchange with external healthcare systems, strictly adhere to the HL7 FHIR standard as specified in tech-stack.md. Ensure FHIR resources are correctly structured and validated."  
-    * **Context Files:** memory-bank/meditrustal\_tech\_stack\_v1.md  
+    * **Context Files:** memory-bank/tech-stack.md  
     * **Trigger:** When generating code for data interoperability features.
 
 ## **Updating Architecture Document**

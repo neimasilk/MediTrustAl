@@ -7,9 +7,9 @@ This document outlines the step-by-step plan for developing the Minimum Viable P
 **Key Principles for AI Developer:**
 
 * **Adherence to Documents:** Strictly follow the guidelines, requirements, and technology choices outlined in:  
-  * memory-bank/prd\_meditrustal\_v1\_en.md (Product Requirements Document)  
-  * memory-bank/meditrustal\_tech\_stack\_v1.md (Tech Stack Recommendation)  
-  * memory-bank/meditrustal\_cursor\_rules\_v1.md (Cursor Rules) \- especially the "Always" rules and modularity principles.  
+  * memory-bank/product-design-document.md (Product Requirements Document)  
+  * memory-bank/tech-stack.md (Tech Stack Recommendation)  
+  * memory-bank/coding-rules.md (Cursor Rules) \- especially the "Always" rules and modularity principles.  
 * **Modularity:** Implement features in a modular way, creating separate files and components as per the Cursor Rules.  
 * **Incremental Development:** Each step should result in a testable increment of functionality.  
 * **No Code in This Plan:** This document contains instructions and tests, not code.  
