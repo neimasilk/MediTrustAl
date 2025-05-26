@@ -203,6 +203,74 @@ class BlockchainService:
                 'error': f"An unexpected error occurred: {str(e)}"
             }
 
+    async def get_record_hashes_for_patient(self, patient_did: str) -> dict:
+        """
+        Retrieves a list of record hashes for a given patient DID from the MedicalRecordRegistry smart contract.
+
+        Args:
+            patient_did (str): The patient's Decentralized Identifier.
+
+        Returns:
+            dict: A dictionary with:
+                  - "success" (bool): True if successful, False otherwise.
+                  - "data" (dict, optional): If successful, a dictionary containing "hashes" (list of hex strings).
+                  - "error" (str, optional): An error message if unsuccessful.
+        """
+        try:
+            # Handle test_mode where self.w3 is None
+            if not self.w3:
+                # In test mode, return a mock successful response with predefined example hashes
+                return {
+                    'success': True,
+                    'data': {
+                        'hashes': [
+                            "0x123abc0000000000000000000000000000000000000000000000000000000000",
+                            "0x456def0000000000000000000000000000000000000000000000000000000000"
+                        ]
+                    }
+                }
+
+            # Check for Ethereum node connection
+            if not self.w3.is_connected():
+                return {'success': False, 'error': "Could not connect to Ethereum node."}
+
+            # Check if the MedicalRecordRegistry contract instance is initialized
+            if not self.medical_record_registry_contract:
+                return {'success': False, 'error': "MedicalRecordRegistry contract not initialized."}
+
+            # Call the 'getRecordHashesByPatient' function of the smart contract.
+            # This is a read-only operation (.call()), so it doesn't create a transaction.
+            # Note: With a standard Web3.HTTPProvider, this .call() is synchronous (blocking),
+            # even within an async method. For true async behavior here, an AsyncHTTPProvider
+            # and `await contract.functions.method(...).call()` would be needed.
+            raw_hashes = self.medical_record_registry_contract.functions.getRecordHashesByPatient(patient_did).call()
+
+            # The smart contract returns a list of bytes32 values.
+            # Convert each bytes32 hash (represented as `bytes` in Python) to a hex string.
+            hex_hashes = [f"0x{h.hex()}" for h in raw_hashes]
+
+            return {
+                'success': True,
+                'data': {'hashes': hex_hashes} # Successfully retrieved hashes
+            }
+
+        except Exception as e:
+            # Catch any other exceptions during the process.
+            # In a production system, more specific exceptions (e.g., web3.exceptions.ContractLogicError
+            # for reverts, or network-related errors) would ideally be caught and handled.
+            # For now, a general exception is caught for robustness.
+            # Consider logging the error `e` here for debugging purposes.
+            error_message = str(e)
+            # Example of how one might check for common revert messages if the exception string contains them.
+            # This is basic and might need refinement based on actual error patterns.
+            # if 'revert' in error_message.lower() or 'execution reverted' in error_message.lower():
+            #     error_message = "Smart contract execution reverted. (Details: " + str(e) + ")"
+            
+            return {
+                'success': False,
+                'error': f"Failed to retrieve record hashes: {error_message}"
+            }
+
 _blockchain_service_instance = None
 
 def get_blockchain_service():

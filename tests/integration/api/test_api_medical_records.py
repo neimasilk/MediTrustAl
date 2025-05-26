@@ -226,44 +226,187 @@ def test_create_medical_record_invalid_input(client: TestClient, authenticated_p
 
 # --- GET /api/v1/medical-records/patient/me ---
 
-def test_get_my_medical_records(client: TestClient, authenticated_patient_token, db_session: Session):
+# Scenario 1: Patient has records on blockchain and matching records in DB. (Updates existing test)
+def test_get_my_medical_records_scenario1_blockchain_match(client: TestClient, authenticated_patient_token, db_session: Session):
     token = authenticated_patient_token["token"]
     user_id = authenticated_patient_token["user_id"]
+    user_did = authenticated_patient_token["user_did"]
     headers = {"Authorization": f"Bearer {token}"}
 
     # Create some records for this user
-    raw1 = "My record 1"
-    crud_medical_record.create_medical_record(
+    raw1 = "My record 1 for blockchain match"
+    record1 = crud_medical_record.create_medical_record(
         db_session, 
-        medical_record_in=MedicalRecordCreate(record_type=RecordType.PRESCRIPTION, raw_data=raw1, record_metadata={}),
+        medical_record_in=MedicalRecordCreate(record_type=RecordType.PRESCRIPTION, raw_data=raw1, record_metadata={"note":"r1"}),
         patient_id=user_id, 
         encrypted_data=encrypt_data(raw1, TEST_ENCRYPTION_KEY), 
         data_hash=hash_data(raw1)
     )
-    raw2 = "My record 2"
-    crud_medical_record.create_medical_record(
+    raw2 = "My record 2 for blockchain match"
+    record2 = crud_medical_record.create_medical_record(
         db_session, 
-        medical_record_in=MedicalRecordCreate(record_type=RecordType.VACCINATION, raw_data=raw2, record_metadata={}),
+        medical_record_in=MedicalRecordCreate(record_type=RecordType.VACCINATION, raw_data=raw2, record_metadata={"note":"r2"}),
         patient_id=user_id, 
         encrypted_data=encrypt_data(raw2, TEST_ENCRYPTION_KEY), 
         data_hash=hash_data(raw2)
     )
+    db_session.commit() # Ensure records are committed
+
+    # Configure blockchain service mock
+    blockchain_service_mock = get_blockchain_service()
+    blockchain_service_mock.get_record_hashes_for_patient.return_value = {
+        "success": True,
+        "data": {"hashes": [record1.data_hash, record2.data_hash]}
+    }
 
     response = client.get("/api/v1/medical-records/patient/me", headers=headers)
     assert response.status_code == status.HTTP_200_OK
-    records = response.json()
-    assert len(records) == 2
-    assert all(r["patient_id"] == str(user_id) for r in records)
-    assert "raw_data" not in records[0] # MedicalRecordResponse should not have raw_data
+    records_response = response.json()
+    assert len(records_response) == 2
+    
+    # Verify the content of returned records (order might not be guaranteed, so check presence)
+    response_hashes = {r["data_hash"] for r in records_response}
+    assert record1.data_hash in response_hashes
+    assert record2.data_hash in response_hashes
+    for r_data in records_response:
+        assert r_data["patient_id"] == str(user_id)
+        assert "raw_data" not in r_data # MedicalRecordResponse should not have raw_data
+        if r_data["data_hash"] == record1.data_hash:
+            assert r_data["record_metadata"] == {"note":"r1"}
+        elif r_data["data_hash"] == record2.data_hash:
+            assert r_data["record_metadata"] == {"note":"r2"}
 
-def test_get_my_medical_records_no_records(client: TestClient, authenticated_patient_token):
+
+# Scenario 2: Patient has records on blockchain, but some/none have matching, authorized records in DB.
+def test_get_my_medical_records_scenario2_partial_or_no_db_match(client: TestClient, authenticated_patient_token, db_session: Session):
     token = authenticated_patient_token["token"]
+    user_id = authenticated_patient_token["user_id"]
+    user_did = authenticated_patient_token["user_did"]
     headers = {"Authorization": f"Bearer {token}"}
+
+    # Record that exists in DB and belongs to the user
+    raw_existing = "Existing record for partial match"
+    existing_record = crud_medical_record.create_medical_record(
+        db_session, 
+        medical_record_in=MedicalRecordCreate(record_type=RecordType.LAB_RESULT, raw_data=raw_existing, record_metadata={"status":"final"}),
+        patient_id=user_id, 
+        encrypted_data=encrypt_data(raw_existing, TEST_ENCRYPTION_KEY), 
+        data_hash=hash_data(raw_existing)
+    )
+    
+    # Record for another user (to simulate unauthorized hash if it were on blockchain for current user)
+    # This part is more about ensuring our DB query correctly filters by patient_id
+    other_user_raw = "Other user's record"
+    # We need another user for this. The fixture `authenticated_patient_token` could be called again for a new user, or create one manually.
+    # For simplicity, we'll just use a hash that's "on blockchain" but doesn't match our current user's records.
+    
+    hash_for_current_user_not_in_db = hash_data("A record not in DB for current user")
+    hash_of_existing_record = existing_record.data_hash
+    
+    db_session.commit()
+
+    blockchain_service_mock = get_blockchain_service()
+    blockchain_service_mock.get_record_hashes_for_patient.return_value = {
+        "success": True,
+        "data": {"hashes": [hash_of_existing_record, hash_for_current_user_not_in_db]}
+    }
+
+    response = client.get("/api/v1/medical-records/patient/me", headers=headers)
+    assert response.status_code == status.HTTP_200_OK
+    records_response = response.json()
+    assert len(records_response) == 1 # Only the existing_record should be returned
+    assert records_response[0]["data_hash"] == hash_of_existing_record
+    assert records_response[0]["patient_id"] == str(user_id)
+
+
+# Scenario 3: Patient has no records on blockchain. (Updates existing test_get_my_medical_records_no_records)
+def test_get_my_medical_records_scenario3_no_blockchain_records(client: TestClient, authenticated_patient_token, db_session: Session):
+    token = authenticated_patient_token["token"]
+    user_did = authenticated_patient_token["user_did"] # Though not strictly needed if no records are created
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # Ensure DB might have records, but blockchain says none
+    user_id = authenticated_patient_token["user_id"]
+    raw_db_only = "DB record not on blockchain list"
+    crud_medical_record.create_medical_record(
+        db_session, 
+        medical_record_in=MedicalRecordCreate(record_type=RecordType.DIAGNOSIS, raw_data=raw_db_only, record_metadata={}),
+        patient_id=user_id, 
+        encrypted_data=encrypt_data(raw_db_only, TEST_ENCRYPTION_KEY), 
+        data_hash=hash_data(raw_db_only)
+    )
+    db_session.commit()
+    
+    blockchain_service_mock = get_blockchain_service()
+    blockchain_service_mock.get_record_hashes_for_patient.return_value = {
+        "success": True,
+        "data": {"hashes": []} # Empty list from blockchain
+    }
     
     response = client.get("/api/v1/medical-records/patient/me", headers=headers)
     assert response.status_code == status.HTTP_200_OK
-    records = response.json()
-    assert len(records) == 0
+    records_response = response.json()
+    assert len(records_response) == 0
+
+
+# Scenario 4: Blockchain service returns an error.
+def test_get_my_medical_records_scenario4_blockchain_service_error(client: TestClient, authenticated_patient_token, db_session: Session):
+    token = authenticated_patient_token["token"]
+    user_did = authenticated_patient_token["user_did"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    blockchain_service_mock = get_blockchain_service()
+    blockchain_service_mock.get_record_hashes_for_patient.return_value = {
+        "success": False,
+        "error": "Blockchain communication error"
+    }
+
+    response = client.get("/api/v1/medical-records/patient/me", headers=headers)
+    assert response.status_code == status.HTTP_200_OK # Current endpoint returns [] on error
+    records_response = response.json()
+    assert len(records_response) == 0
+
+
+# Scenario 5: Pagination.
+def test_get_my_medical_records_scenario5_pagination(client: TestClient, authenticated_patient_token, db_session: Session):
+    token = authenticated_patient_token["token"]
+    user_id = authenticated_patient_token["user_id"]
+    user_did = authenticated_patient_token["user_did"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # Create multiple records
+    record_hashes_in_order = []
+    for i in range(3):
+        raw_data = f"Paginated record {i+1}"
+        record = crud_medical_record.create_medical_record(
+            db_session,
+            medical_record_in=MedicalRecordCreate(record_type=RecordType.MEDICAL_HISTORY, raw_data=raw_data, record_metadata={"index": i}),
+            patient_id=user_id,
+            encrypted_data=encrypt_data(raw_data, TEST_ENCRYPTION_KEY),
+            data_hash=hash_data(raw_data)
+        )
+        record_hashes_in_order.append(record.data_hash)
+    db_session.commit()
+
+    blockchain_service_mock = get_blockchain_service()
+    # The order of hashes from blockchain might not be guaranteed, but the DB records have timestamps.
+    # The endpoint logic currently sorts by nothing specific if hashes are out of order from DB.
+    # For stable pagination test, ensure the hashes returned from blockchain are in a specific order
+    # if the DB retrieval order by those hashes is what we want to test.
+    # However, the code iterates hashes and appends to a list. The final list order depends on blockchain hash order.
+    # Let's assume the order of hashes from blockchain is record_hashes_in_order for this test.
+    blockchain_service_mock.get_record_hashes_for_patient.return_value = {
+        "success": True,
+        "data": {"hashes": record_hashes_in_order} 
+    }
+
+    # Test skip=1, limit=1 (get the second record)
+    response = client.get("/api/v1/medical-records/patient/me?skip=1&limit=1", headers=headers)
+    assert response.status_code == status.HTTP_200_OK
+    records_response = response.json()
+    assert len(records_response) == 1
+    assert records_response[0]["data_hash"] == record_hashes_in_order[1] # Check it's the second record
+    assert records_response[0]["record_metadata"] == {"index": 1}
 
 
 # --- GET /api/v1/medical-records/{record_id} ---

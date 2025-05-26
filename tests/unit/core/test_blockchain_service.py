@@ -211,3 +211,146 @@ async def test_add_medical_record_hash_web3_not_connected(mock_web3_and_contract
 #     result = await service.add_medical_record_hash(...)
 #     assert result['success'] is False
 #     assert "Signing failed" in result['error']
+
+
+@pytest.mark.asyncio
+async def test_get_record_hashes_for_patient_success(mock_web3_and_contracts):
+    """
+    Test successful retrieval of record hashes for a patient.
+    """
+    service, _, _, mock_medical_record_contract, _ = mock_web3_and_contracts
+    patient_did = "did:example:patient1"
+    mock_hashes_bytes = [
+        b'\x12\x34\x56\x78\x90\xab\xcd\xef\x12\x34\x56\x78\x90\xab\xcd\xef\x12\x34\x56\x78\x90\xab\xcd\xef\x12\x34\x56\x78\x90\xab\xcd\xef',
+        b'\xfe\xdc\xba\x09\x87\x65\x43\x21\xfe\xdc\xba\x09\x87\x65\x43\x21\xfe\xdc\xba\x09\x87\x65\x43\x21\xfe\xdc\xba\x09\x87\x65\x43\x21'
+    ]
+    expected_hex_hashes = [
+        "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+        "0xfedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321"
+    ]
+
+    # Revised mock setup:
+    # Mock the specific function 'getRecordHashesByPatient'
+    mock_get_hashes_func = mock_medical_record_contract.functions.getRecordHashesByPatient
+    # Set the return_value for the 'call()' method on the object returned by 'getRecordHashesByPatient(patient_did)'
+    mock_get_hashes_func.return_value.call.return_value = mock_hashes_bytes
+
+    result = await service.get_record_hashes_for_patient(patient_did)
+
+    assert result['success'] is True
+    assert result['data']['hashes'] == expected_hex_hashes
+    # Assert that 'getRecordHashesByPatient' itself was called once with the correct patient_did
+    mock_get_hashes_func.assert_called_once_with(patient_did)
+
+
+@pytest.mark.asyncio
+async def test_get_record_hashes_for_patient_empty_list(mock_web3_and_contracts):
+    """
+    Test retrieval of an empty list of record hashes.
+    """
+    service, _, _, mock_medical_record_contract, _ = mock_web3_and_contracts
+    patient_did = "did:example:patient2"
+    
+    # Revised mock setup
+    mock_get_hashes_func = mock_medical_record_contract.functions.getRecordHashesByPatient
+    mock_get_hashes_func.return_value.call.return_value = []
+
+    result = await service.get_record_hashes_for_patient(patient_did)
+
+    assert result['success'] is True
+    assert result['data']['hashes'] == []
+    mock_get_hashes_func.assert_called_once_with(patient_did)
+
+
+@pytest.mark.asyncio
+async def test_get_record_hashes_for_patient_contract_not_initialized(mock_web3_and_contracts):
+    """
+    Test behavior when MedicalRecordRegistry contract is not initialized.
+    """
+    service, mock_w3, _, _, _ = mock_web3_and_contracts
+    # Ensure w3 is connected to bypass that check
+    service.w3.is_connected.return_value = True 
+    
+    original_contract = service.medical_record_registry_contract
+    service.medical_record_registry_contract = None # Simulate uninitialized contract
+    patient_did = "did:example:patient3"
+
+    result = await service.get_record_hashes_for_patient(patient_did)
+
+    assert result['success'] is False
+    assert result['error'] == "MedicalRecordRegistry contract not initialized."
+    
+    service.medical_record_registry_contract = original_contract # Restore
+
+
+@pytest.mark.asyncio
+async def test_get_record_hashes_for_patient_web3_not_connected(mock_web3_and_contracts):
+    """
+    Test behavior when Web3 provider is not connected.
+    """
+    service, mock_w3, _, mock_medical_record_contract, _ = mock_web3_and_contracts
+     # Ensure contract is "initialized" to pass that check
+    assert service.medical_record_registry_contract is not None
+
+    service.w3.is_connected.return_value = False # Simulate not connected
+    patient_did = "did:example:patient4"
+
+    result = await service.get_record_hashes_for_patient(patient_did)
+
+    assert result['success'] is False
+    assert result['error'] == "Could not connect to Ethereum node."
+    
+    service.w3.is_connected.return_value = True # Restore for other tests
+
+
+@pytest.mark.asyncio
+async def test_get_record_hashes_for_patient_contract_call_exception(mock_web3_and_contracts):
+    """
+    Test handling of an exception during the contract call.
+    """
+    service, _, _, mock_medical_record_contract, _ = mock_web3_and_contracts
+    patient_did = "did:example:patient5"
+    
+    # Revised mock setup
+    mock_get_hashes_func = mock_medical_record_contract.functions.getRecordHashesByPatient
+    mock_get_hashes_func.return_value.call.side_effect = Exception("Blockchain RPC error")
+
+    result = await service.get_record_hashes_for_patient(patient_did)
+
+    assert result['success'] is False
+    assert result['error'] == "Failed to retrieve record hashes: Blockchain RPC error"
+    mock_get_hashes_func.assert_called_once_with(patient_did)
+
+
+@pytest.mark.asyncio
+async def test_get_record_hashes_for_patient_test_mode(mock_web3_and_contracts):
+    """
+    Test behavior in test_mode (service.w3 is None).
+    """
+    # Need to re-initialize service in test_mode, fixture might not cover this specific state for service.w3
+    # The fixture sets up a mocked w3, so we override it for this test.
+    
+    with patch('src.app.core.blockchain.Web3') as MockWeb3: # Mock Web3 to prevent actual instantiation
+        # Reset the global service instance
+        from src.app.core import blockchain as blockchain_module
+        blockchain_module._blockchain_service_instance = None
+        
+        # Instantiate service in test_mode (which should make self.w3 = None)
+        # To ensure test_mode=True, we can patch os.environ or directly init BlockchainService(test_mode=True)
+        # For simplicity and isolation, directly initialize.
+        service_test_mode = BlockchainService(test_mode=True) 
+        assert service_test_mode.w3 is None # Confirm test_mode setup
+
+        patient_did = "did:example:patient_test_mode"
+        result = await service_test_mode.get_record_hashes_for_patient(patient_did)
+
+        assert result['success'] is True
+        assert 'hashes' in result['data']
+        # Check for the specific mock values defined in BlockchainService test_mode
+        assert result['data']['hashes'] == [
+            "0x123abc0000000000000000000000000000000000000000000000000000000000",
+            "0x456def0000000000000000000000000000000000000000000000000000000000"
+        ]
+
+        # Reset global instance again so other tests use the fixtured one
+        blockchain_module._blockchain_service_instance = None
