@@ -1,48 +1,363 @@
-# Architecture Document: MediTrustAl
+# MediTrustAl Architecture Document
 
-This document describes the system architecture of MediTrustAl. It will be updated as the project evolves.
+## System Architecture Overview
 
-## 1. High-Level Architecture Overview
+### Components
+```
+MediTrustAl
+├── Frontend (React.js)
+│   ├── Patient Portal
+│   ├── Doctor Portal
+│   └── Admin Portal
+├── Backend (FastAPI)
+│   ├── API Gateway
+│   ├── Auth Service
+│   ├── Medical Records Service
+│   └── Blockchain Service
+├── Database (PostgreSQL 15)
+│   ├── User Data
+│   ├── Medical Records
+│   └── Audit Logs
+└── Blockchain (Ganache → Hyperledger)
+    ├── Smart Contracts
+    └── DID Registry
+```
 
-MediTrustAl is designed modularly to ensure security, scalability, and interoperability[cite: 59]. The architecture comprises three main layers:
+### Data Flow
+1. **Authentication Flow**
+   ```
+   Client → API Gateway → Auth Service → Database
+                                    └→ Blockchain (DID)
+   ```
 
-* **Data Layer (Blockchain & Off-Chain Storage):**
-    * The core of this layer is blockchain technology (most likely a consortium or private permissioned blockchain)[cite: 59, 114].
-    * The blockchain is used to store hashes (digital fingerprints) of medical records, not the raw data itself[cite: 59]. This ensures the integrity and immutability of records without compromising the privacy of raw data[cite: 59].
-    * Decentralized Identity Management (DID) for patients, doctors, and institutions[cite: 59].
-    * Smart contracts to manage patient access permissions, data sharing governance, research protocols, and potential incentive mechanisms[cite: 59]. This architecture is explicitly designed to support PIPL compliance[cite: 59, 12].
-    * The raw medical data itself will be stored off-chain in secure and encrypted data repositories (e.g., on hospital servers or cloud storage that meets Chinese security standards), with encrypted links to the hashes stored on the blockchain[cite: 60].
+2. **Medical Record Flow**
+   ```
+   Client → API Gateway → Medical Records Service → Database (Encrypted Data)
+                                                └→ Blockchain (Hash + Access Control)
+   ```
 
-* **Processing and Analytics Layer (NLP & AI):**
-    * **NLP Module:** Tasked with processing narrative medical data (doctor's notes, pathology reports, etc.)[cite: 62]. Its main functions include information extraction (medical concepts, relationships between concepts), terminology standardization (mapping to medical ontologies such as SNOMED CT, ICD-10/11, or Chinese medical ontologies like CDMO), data de-identification for privacy, and clinical summary generation[cite: 63, 1].
-    * **AI Module:** Implements various machine learning and deep learning models for predictive analysis (e.g., disease risk prediction, prognosis), development of individual risk models, provision of clinical decision support systems (CDSS) for doctors, and personalization of treatment plans and lifestyle recommendations[cite: 64, 1].
+3. **Consent Flow**
+   ```
+   Patient → API Gateway → Medical Records Service → Smart Contract
+   Doctor  → API Gateway → Medical Records Service → Smart Contract → Database
+   ```
 
-* **Application/Interface Layer:**
-    * Provides user-friendly portals or applications for various stakeholders[cite: 65]:
-        * **Patient Portal:** To manage health data, view medical history, set access permissions, and interact with service providers[cite: 66].
-        * **Doctor/Clinician Portal:** To access patient data (with permission), use CDSS and AI analytics tools, and collaborate with other specialists[cite: 66].
-        * **Researcher Portal:** To submit requests for anonymous data access, manage research projects, and access data analysis tools (with strict governance)[cite: 67].
-        * **System Administrator Portal:** To manage platform operations, security, and compliance[cite: 68].
+### Security Architecture
+```
+External Request
+       ↓
+[Rate Limiter]
+       ↓
+[WAF/DDOS Protection]
+       ↓
+[API Gateway]
+       ↓
+[JWT Validation]
+       ↓
+[RBAC Check]
+       ↓
+[Service Layer]
+       ↓
+[Data Layer]
+```
 
-## 2. Main Data Flows (Conceptual)
+### Database Architecture
+```
+Connection Pool (20 max)
+       ↓
+[Primary DB] ←→ [Read Replica 1]
+     ↓
+[Backup System]
+```
 
-1.  **Patient Data Input:** Patient data (narrative, structured, images if any) enters the system via various sources (hospital EHRs, manual input, IoT devices).
-2.  **NLP Processing:** Narrative data is processed by the NLP Module for extraction, structurization, and de-identification.
-3.  **Data Storage:**
-    * Raw medical data (encrypted) is stored off-chain.
-    * Hashes of medical data and transaction metadata are recorded on the Blockchain.
-    * Structured data from NLP is stored (can be off-chain or optimized for AI).
-4.  **Permission Management:** Patients manage their data access permissions via the Patient Portal, which interacts with smart contracts on the Blockchain.
-5.  **Data Access by Doctors:** Doctors (with permission) access patient data via the Doctor Portal. Requests are verified via the Blockchain, and relevant data (from off-chain storage and NLP/AI outputs) is displayed.
-6.  **AI Analytics:** The AI Module uses permitted data (structured and NLP-derived) to provide predictions and insights via CDSS in the Doctor Portal or for population analysis (aggregated anonymous data).
-7.  **Data Access by Researchers:** Researchers (with consent and governance) access anonymized datasets processed by NLP for research.
+### Blockchain Architecture
+```
+Development:
+[Ganache Local Node]
+       ↓
+[Truffle Framework]
+       ↓
+[Smart Contracts]
 
-## 3. Interoperability Standards
+Production (Future):
+[Hyperledger Fabric]
+       ↓
+[Chaincode]
+       ↓
+[Channels]
+```
 
-* The platform will support interoperability standards such as HL7 FHIR to facilitate seamless integration with external systems such as Hospital Information Systems (HIS/SIRS), existing EHR systems, or ICHC platforms in Hangzhou[cite: 70].
+### Monitoring Architecture
+```
+Application Logs → CloudWatch
+Metrics → Prometheus → Grafana
+Traces → Jaeger
+Alerts → PagerDuty
+```
 
-## 4. Detailed Architecture Diagram
+### AI/NLP Architecture
+```
+[Medical Records]
+       ↓
+[Data Preprocessing]
+       ↓
+[NLP Pipeline]
+├── Text Extraction
+├── Entity Recognition
+├── Relation Extraction
+└── Text Classification
+       ↓
+[AI Models]
+├── Risk Prediction
+├── Treatment Recommendation
+└── Outcome Analysis
+       ↓
+[Model Registry]
+       ↓
+[Inference Service]
+```
 
-*(Note: A visual diagram would be included here in an actual proposal. For this Markdown version, imagine a diagram illustrating the interaction between the data layer (blockchain & off-chain storage), processing layer (NLP & AI Engine), and application layer (patient, doctor, researcher portals), as well as data and permission flows)[cite: 72].*
+### PIPL Compliance Architecture
+```
+[Data Collection]
+       ↓
+[Consent Management]
+       ↓
+[Data Classification]
+├── Personal Information
+├── Sensitive Personal Information
+└── Medical Data
+       ↓
+[Access Control]
+├── Role-Based Access
+├── Purpose-Based Access
+└── Time-Based Access
+       ↓
+[Data Processing]
+├── Encryption
+├── Anonymization
+└── Pseudonymization
+       ↓
+[Audit Trail]
+       ↓
+[Data Deletion]
+```
 
-*(This will be updated with more details on specific components, APIs, and inter-module interactions as the project progresses.)*
+### Data Retention Policies
+```yaml
+Personal Information:
+  standard_retention: 5 years
+  extended_retention: 10 years
+  retention_triggers:
+    - last_access_date
+    - last_update_date
+    - consent_withdrawal_date
+
+Medical Records:
+  diagnostic_reports: 15 years
+  treatment_records: 20 years
+  imaging_data: 10 years
+  lab_results: 10 years
+  retention_triggers:
+    - last_treatment_date
+    - patient_request_date
+    - legal_requirement_date
+
+Audit Logs:
+  access_logs: 3 years
+  change_logs: 5 years
+  security_logs: 7 years
+  retention_triggers:
+    - regulatory_requirement
+    - security_incident
+    - legal_hold
+
+Backup Data:
+  daily_backups: 30 days
+  weekly_backups: 90 days
+  monthly_backups: 1 year
+  yearly_backups: 7 years
+
+Data Deletion Process:
+  soft_delete_period: 30 days
+  hard_delete_schedule: quarterly
+  deletion_verification: required
+  deletion_documentation: 7 years
+```
+
+## Integration Points
+
+### External Systems
+1. **Hospital Systems**
+   - Protocol: HL7 FHIR R4
+   - Authentication: OAuth 2.0
+   - Data Format: JSON
+
+2. **Payment Gateway**
+   - Protocol: REST
+   - Authentication: API Key
+   - Encryption: TLS 1.3
+
+### Internal Services
+1. **Service Discovery**
+   - Method: Kubernetes Service
+   - Health Check: /health
+   - Readiness: /ready
+
+2. **Message Queue**
+   - System: RabbitMQ
+   - Exchanges: 
+     * medical.events
+     * blockchain.events
+   - Queues:
+     * medical.records.created
+     * blockchain.transactions
+
+## Scaling Strategy
+
+### Horizontal Scaling
+```yaml
+Frontend:
+  min_replicas: 2
+  max_replicas: 10
+  cpu_threshold: 70%
+
+Backend:
+  min_replicas: 3
+  max_replicas: 15
+  cpu_threshold: 70%
+
+Database:
+  primary: 1
+  replicas: 2
+```
+
+### Vertical Scaling
+```yaml
+Frontend:
+  cpu: 1
+  memory: 2Gi
+
+Backend:
+  cpu: 2
+  memory: 4Gi
+
+Database:
+  cpu: 4
+  memory: 8Gi
+```
+
+## Disaster Recovery
+
+### Backup Strategy
+1. **Database**
+   - Full backup: Daily
+   - WAL shipping: Continuous
+   - Retention: 30 days
+
+2. **Blockchain**
+   - Node snapshots: Daily
+   - State backup: Weekly
+   - Contract state: Every deployment
+
+### Recovery Strategy
+1. **RTO (Recovery Time Objective)**
+   - Critical systems: 1 hour
+   - Non-critical: 4 hours
+
+2. **RPO (Recovery Point Objective)**
+   - Database: 5 minutes
+   - Blockchain: 1 block
+
+## Performance Requirements
+
+### Response Times
+```yaml
+API Endpoints:
+  p95: 300ms
+  p99: 500ms
+
+Database Queries:
+  p95: 100ms
+  p99: 200ms
+
+Blockchain Transactions:
+  p95: 2s
+  p99: 5s
+```
+
+### Throughput
+```yaml
+API Requests:
+  sustained: 1000 rps
+  peak: 2000 rps
+
+Database:
+  reads: 5000 qps
+  writes: 1000 qps
+
+Blockchain:
+  transactions: 100 tps
+```
+
+### Resource Limits
+```yaml
+Memory:
+  frontend: 2GB per instance
+  backend: 4GB per instance
+  database: 8GB per instance
+
+Storage:
+  database: 500GB
+  blockchain: 1TB
+  backups: 2TB
+```
+
+## CI/CD Architecture
+
+### Environments
+```
+Development → Staging → Production
+     ↓           ↓          ↓
+  dev.ai     staging.ai   prod.ai
+```
+
+### Pipeline Stages
+```
+[Code Push] → [Build] → [Test] → [Security Scan] → [Deploy]
+     ↓          ↓        ↓           ↓               ↓
+   Git CI    Docker    Jest      SAST/DAST     Kubernetes
+            Build     PyTest     Snyk/SonarQube  Helm
+```
+
+### Environment Configuration
+```yaml
+Development:
+  domain: dev.meditrustal.ai
+  ssl: self-signed
+  blockchain: ganache
+  monitoring: basic
+
+Staging:
+  domain: staging.meditrustal.ai
+  ssl: lets-encrypt
+  blockchain: ganache
+  monitoring: full
+
+Production:
+  domain: meditrustal.ai
+  ssl: commercial
+  blockchain: hyperledger
+  monitoring: full + alerts
+```
+
+### Backup Synchronization
+```
+[Database Backup]     [Blockchain Backup]
+       ↓                     ↓
+[Transaction Log]   [Block Snapshot]
+       ↓                     ↓
+[Point-in-Time Recovery]  [State Recovery]
+       ↓                     ↓
+[Consistency Check]
+```

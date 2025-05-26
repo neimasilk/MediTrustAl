@@ -40,10 +40,15 @@ This document outlines the step-by-step plan for developing the Minimum Viable P
   2. Set up the backend framework using **Python with FastAPI**.
      * Create `requirements.txt` in the repository root with the following initial dependencies:
        ```
-       fastapi
-       uvicorn[standard]  # Includes python-dotenv and performance extras
-       black
-       flake8
+       fastapi==0.110.0
+       uvicorn[standard]==0.27.1  # Includes python-dotenv and performance extras
+       black==24.2.0
+       flake8==7.0.0
+       pydantic==2.6.3
+       python-jose[cryptography]==3.3.0  # For JWT
+       passlib[bcrypt]==1.7.4  # For password hashing
+       psycopg2-binary==2.9.9  # For PostgreSQL
+       alembic==1.13.1  # For database migrations
        ```
      * Install dependencies from the repository root (e.g., `pip install -r requirements.txt`).
      * Create a basic `main.py` in `src/app/` to initialize the FastAPI app.
@@ -96,8 +101,19 @@ This document outlines the step-by-step plan for developing the Minimum Viable P
 ### **Step 1.3: User Identity and Basic Authentication (Application Layer)**
 
 * **Instruction:**  
-  1. Implement a basic user registration endpoint in the application backend (e.g., /api/v1/auth/register). This endpoint should accept user details (e.g., username, password, role).  
-  2. Upon successful registration, store user credentials securely (e.g., hashed password) in the application database (e.g., PostgreSQL, as per tech-stack.md).  
+  1. Implement a basic user registration endpoint in the application backend (e.g., /api/v1/auth/register). This endpoint should accept user details:
+     ```json
+     {
+       "username": "string",  // min length: 3, max length: 50
+       "email": "string",     // valid email format
+       "password": "string",  // min length: 8, must contain number & special char
+       "role": "string"       // enum: "PATIENT", "DOCTOR", "ADMIN"
+     }
+     ```
+  2. Upon successful registration:
+     * Hash password using bcrypt (work factor: 12)
+     * Generate DID using format: `did:meditrustal:{base58(sha256(user_id))}`
+     * Store in PostgreSQL with UUID primary key
   3. Simultaneously, invoke the blockchain service (from Step 1.2) to register the user's DID (Decentralized Identifier \- for now, a unique ID derived from their application user ID) and role on the blockchain.  
   4. Implement a basic user login endpoint (e.g., /api/v1/auth/login) that validates credentials and returns a simple token (e.g., JWT \- JSON Web Token).  
   5. Implement basic middleware to protect certain future API endpoints, requiring a valid token.  
@@ -125,16 +141,18 @@ This document outlines the step-by-step plan for developing the Minimum Viable P
 ### **Step 2.2: Basic Off-Chain Data Storage Setup**
 
 * **Instruction:**  
-  1. Set up the chosen off-chain storage solution locally (e.g., MinIO server running in Docker, or a local PostgreSQL table if simpler for MVP's placeholder data).  
+  1. Set up the chosen off-chain storage solution locally:
+     * Use PostgreSQL with pgcrypto extension for encrypted storage
+     * Use AES-256-GCM for data encryption
   2. Modify the POST /api/v1/phr endpoint:  
-     * Instead of a dummy hash, accept a small piece of sample text data (e.g., "Blood Pressure: 120/80 mmHg").  
-     * Store this text data in the off-chain storage, generating a unique identifier for it.  
-     * Calculate a hash of this text data (e.g., SHA256).  
-     * Invoke the chaincode to store the health record with this actual dataHash and the off-chain storage identifier/reference.  
+     * Accept structured medical data in FHIR R4 format
+     * Calculate SHA-256 hash of the normalized JSON data
+     * Store encrypted data in PostgreSQL
+     * Store hash on blockchain with format: `sha256(timestamp + did + normalized_json)`
 * **Test:**  
-  * When a patient calls POST /api/v1/phr with sample text data:  
-    * The text data is stored in the configured off-chain storage.  
-    * A hash of the text data is calculated.  
+  * When a patient calls POST /api/v1/phr with structured medical data:  
+    * The data is stored in the configured off-chain storage.  
+    * A SHA-256 hash of the normalized JSON data is calculated.  
     * The health record on the blockchain contains the correct dataHash and a reference to the off-chain data.
 
 ### **Step 2.3: Basic Patient Data Retrieval**
@@ -145,7 +163,7 @@ This document outlines the step-by-step plan for developing the Minimum Viable P
   3. Implement another backend API endpoint (e.g., GET /api/v1/phr/{recordId}/data) for an authenticated patient to retrieve the actual data from off-chain storage, using the off-chain reference obtained from the blockchain record.  
 * **Test:**  
   * An authenticated patient can call GET /api/v1/phr and receive a list of their health record metadata stored on the blockchain.  
-  * An authenticated patient can call GET /api/v1/phr/{recordId}/data and retrieve the correct sample text data from off-chain storage that corresponds to the blockchain record.  
+  * An authenticated patient can call GET /api/v1/phr/{recordId}/data and retrieve the correct structured medical data from off-chain storage that corresponds to the blockchain record.  
   * Attempting to access another patient's data should fail (basic authorization check).
 
 ## **3\. Phase 3: Basic NLP & AI Placeholder and Frontend Shell**
@@ -198,3 +216,141 @@ This document outlines the step-by-step plan for developing the Minimum Viable P
   * The patient can still access their own record metadata.
 
 This MVP implementation plan focuses on establishing the foundational layers and core interactions. Real NLP/AI, comprehensive PIPL compliance, advanced consent models, and other portal functionalities will be part of subsequent development phases.
+
+## **API Standards & Error Handling**
+
+### Error Response Format
+All API errors will follow this structure:
+```json
+{
+  "error": {
+    "code": "ERROR_CODE",
+    "message": "Human readable message",
+    "details": {
+      "field1": ["error detail 1", "error detail 2"],
+      "field2": ["error detail"]
+    },
+    "timestamp": "2024-03-15T12:34:56.789Z",
+    "request_id": "req_123abc"
+  }
+}
+```
+
+### Standard Error Codes
+1. **Authentication Errors (40x)**
+   - `UNAUTHORIZED`: Missing or invalid authentication
+   - `INVALID_CREDENTIALS`: Wrong username/password
+   - `TOKEN_EXPIRED`: JWT token has expired
+   - `INSUFFICIENT_PERMISSIONS`: Not authorized for this action
+
+2. **Validation Errors (422)**
+   - `VALIDATION_ERROR`: Request body validation failed
+   - `INVALID_FORMAT`: Data format is incorrect
+   - `MISSING_REQUIRED`: Required field is missing
+
+3. **Business Logic Errors (409)**
+   - `DUPLICATE_ENTRY`: Resource already exists
+   - `RESOURCE_CONFLICT`: Cannot perform action due to state
+   - `BLOCKCHAIN_ERROR`: Blockchain transaction failed
+
+4. **Server Errors (500)**
+   - `INTERNAL_ERROR`: Unexpected server error
+   - `DATABASE_ERROR`: Database operation failed
+   - `EXTERNAL_SERVICE_ERROR`: Third-party service failed
+
+### Rate Limiting
+```python
+RATE_LIMIT_CONFIG = {
+    "default": {
+        "calls": 100,
+        "period": 60  # seconds
+    },
+    "auth": {
+        "calls": 5,
+        "period": 60
+    },
+    "blockchain": {
+        "calls": 20,
+        "period": 60
+    }
+}
+
+# Rate limit error response
+{
+    "error": {
+        "code": "RATE_LIMIT_EXCEEDED",
+        "message": "Too many requests. Please try again in X seconds.",
+        "details": {
+            "retry_after": 30,
+            "limit": 100,
+            "remaining": 0,
+            "reset": "2024-03-15T12:35:00Z"
+        }
+    }
+}
+```
+
+### Logging Format
+```python
+LOG_CONFIG = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "json": {
+            "format": "%(asctime)s %(levelname)s %(name)s %(message)s",
+            "datefmt": "%Y-%m-%dT%H:%M:%S%z"
+        }
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "json",
+            "stream": "ext://sys.stdout"
+        },
+        "file": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "formatter": "json",
+            "filename": "logs/app.log",
+            "maxBytes": 10485760,  # 10MB
+            "backupCount": 5
+        }
+    },
+    "loggers": {
+        "app": {
+            "level": "INFO",
+            "handlers": ["console", "file"],
+            "propagate": False
+        },
+        "app.auth": {
+            "level": "INFO",
+            "handlers": ["console", "file"],
+            "propagate": False
+        },
+        "app.blockchain": {
+            "level": "DEBUG",
+            "handlers": ["console", "file"],
+            "propagate": False
+        }
+    }
+}
+```
+
+### Log Entry Format
+```json
+{
+    "timestamp": "2024-03-15T12:34:56.789Z",
+    "level": "INFO",
+    "logger": "app.auth",
+    "request_id": "req_123abc",
+    "user_id": "usr_456def",
+    "message": "User login successful",
+    "details": {
+        "ip": "192.168.1.1",
+        "user_agent": "Mozilla/5.0...",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "status_code": 200,
+        "duration_ms": 45
+    }
+}
+```

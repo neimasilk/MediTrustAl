@@ -19,15 +19,25 @@ Based on the project proposal (meditrustal\_proposal\_en\_detailed\_v2), the fol
 ### **2.1. Blockchain Layer**
 
 * **Blockchain Platform:**  
-  * **Recommendation:** **Hyperledger Fabric** or a similar enterprise-grade permissioned blockchain framework (e.g., Quorum, Corda, or potentially a China-specific compliant BaaS like BSN).  
-  * **Rationale:**  
-    * **Permissioned Network:** Crucial for healthcare data, allowing control over participants (hospitals, clinics, research institutions). Public blockchains are unsuitable.  
-    * **Smart Contracts (Chaincode in Fabric):** Supports complex logic for patient consent (PIPL), data access rules, and governance protocols.  
-    * **Identity Management (DID):** Fabric has robust identity management features, which can be extended or integrated with DID solutions.  
-    * **Scalability & Performance:** Designed for enterprise use cases.  
-    * **Data Privacy:** Features like channels and private data collections in Fabric can further enhance data segregation and privacy.  
-    * **Maturity & Enterprise Adoption:** Widely used in enterprise settings.  
-  * **Language for Smart Contracts:** Go, Java, or Node.js (for Hyperledger Fabric).  
+  * **MVP Implementation:** **Ganache** (Ethereum-based local blockchain)
+    * **Rationale for MVP:**
+      * Simplified development environment
+      * Easy setup and configuration
+      * Compatible with Ethereum tools and libraries
+      * Perfect for rapid prototyping and testing
+  * **Production Recommendation:** **Hyperledger Fabric** or similar enterprise-grade permissioned blockchain
+    * **Future Migration Plan:**
+      * Develop abstraction layer for blockchain interactions
+      * Test migration process in staging environment
+      * Gradual transition to production platform
+    * **Rationale for Production:**
+      * Enhanced privacy and permissioning
+      * Better scalability for enterprise use
+      * Advanced identity management
+      * Compliance with healthcare regulations
+  * **Smart Contracts:**
+    * **MVP:** Solidity with Hardhat development environment
+    * **Production:** Chaincode in Go/Java (Hyperledger Fabric)
 * **Off-Chain Storage:**  
   * **Recommendation:** Secure, encrypted object storage (e.g., **MinIO** self-hosted, or a compliant cloud provider storage like Alibaba Cloud OSS, Tencent Cloud COS if operating within China and meeting PIPL data residency requirements) or a dedicated secure database.  
   * **Rationale:** Storing raw medical data off-chain is critical for PIPL compliance, scalability, and performance. Only hashes and metadata are stored on the blockchain. Encryption at rest and in transit is mandatory.
@@ -37,12 +47,36 @@ Based on the project proposal (meditrustal\_proposal\_en\_detailed\_v2), the fol
 * **Programming Language (Core AI/NLP Development):**  
   * **Recommendation:** **Python**  
   * **Rationale:** Dominant language for AI/ML/NLP due to its extensive libraries (TensorFlow, PyTorch, spaCy, NLTK, scikit-learn), large community, and ease of use for developing complex models.  
-* **NLP Libraries & Frameworks:**  
-  * **Recommendation:**  
-    * **For Mandarin Text Processing:** Specialized Chinese NLP libraries (e.g., **Jieba** for word segmentation, or pre-trained models from **Hugging Face Transformers** fine-tuned for Chinese medical text like ChineseBERT, MacBERT, or ERNIE).  
-    * **General NLP Tasks:** **spaCy** (for NER, relation extraction, text classification, efficient processing), **NLTK** (for foundational tasks).  
-    * **Transformer Models:** **Hugging Face Transformers** library is indispensable for leveraging state-of-the-art pre-trained language models (LLMs) and fine-tuning them on Chinese medical corpora.  
-  * **Rationale:** Need robust tools for processing Mandarin, including specific medical terminology and de-identification.  
+* **NLP Libraries & Tools:**  
+  * **Primary Framework:** spaCy v3.7.2
+  * **Additional Libraries:**
+    * jieba v0.42.1 (Chinese text segmentation)
+    * transformers v4.37.2 (Hugging Face)
+    * torch v2.2.0 (PyTorch)
+    * tensorflow v2.15.0
+  * **Medical NLP Models:**
+    * BERT-Chinese-Medical
+    * ClinicalBERT
+    * BioBERT
+* **AI Development Tools:**
+  * **Model Development:**
+    * scikit-learn v1.4.0
+    * pandas v2.2.0
+    * numpy v1.26.3
+  * **Model Serving:**
+    * TorchServe v0.9.0
+    * MLflow v2.10.0
+  * **Model Monitoring:**
+    * Prometheus
+    * Grafana
+* **Data Processing:**
+  * **ETL Pipeline:**
+    * Apache Airflow v2.8.1
+    * dbt v1.7.8
+  * **Feature Store:**
+    * Redis v7.2
+  * **Vector Store:**
+    * Milvus v2.3.3
 * **AI/Machine Learning Frameworks:**  
   * **Recommendation:** **TensorFlow** and/or **PyTorch**.  
   * **Rationale:** Leading deep learning frameworks with comprehensive tools for building, training, and deploying models for predictive analytics, CDSS, and personalization.  
@@ -68,12 +102,27 @@ Based on the project proposal (meditrustal\_proposal\_en\_detailed\_v2), the fol
     * **Python (Django/FastAPI):** Leverages the same language as the AI/NLP stack, potentially simplifying team structure. FastAPI is modern, fast, and good for building APIs. Django is robust and full-featured.
   * **API Design:** RESTful APIs or GraphQL, depending on frontend needs.
 * **Frontend Development (Patient, Doctor, Researcher, Admin Portals):**  
-  * **Recommendation:** **React.js** or **Vue.js**.  
+  * **Framework:** **React.js**
   * **Rationale:**  
-    * **React.js:** Large community, rich ecosystem, component-based architecture, good for complex UIs.  
-    * **Vue.js:** Often considered easier to learn, excellent performance, good for progressive adoption.  
-    * **State Management:** Redux/Zustand (for React), Vuex/Pinia (for Vue).  
-    * **UI Component Libraries:** Material-UI, Ant Design, or similar for rapid development and consistent look and feel. Consider libraries with good accessibility support.  
+    * Large ecosystem with healthcare-specific components
+    * Strong TypeScript support for better maintainability
+    * Extensive documentation and community support
+    * Better integration with blockchain web3 libraries
+  * **UI Framework:** Material-UI (MUI)
+    * Comprehensive component library
+    * Healthcare-specific templates available
+    * Strong accessibility support
+    * Consistent look and feel
+  * **State Management:** Redux Toolkit
+    * Simplified Redux setup
+    * Built-in TypeScript support
+    * Efficient state updates
+    * DevTools for debugging
+  * **Additional Libraries:**
+    * React Query for API data fetching
+    * React Hook Form for form handling
+    * React Router for navigation
+    * Web3.js for blockchain interaction
 * **Database (Application Backend):**  
   * **Recommendation:** **PostgreSQL** or **MySQL**.  
   * **Rationale:** Robust, open-source relational databases with good performance, scalability, and features for handling structured application data (user accounts, application settings, non-blockchain metadata).  
@@ -96,6 +145,16 @@ Based on the project proposal (meditrustal\_proposal\_en\_detailed\_v2), the fol
 * **CI/CD (Continuous Integration/Continuous Deployment):**  
   * **Recommendation:** **Jenkins**, **GitLab CI/CD**, or **GitHub Actions**.  
   * **Rationale:** Automate testing and deployment pipelines for faster and more reliable releases.
+* **Monitoring & Observability:**
+  * **Metrics:** Prometheus v2.49.1
+  * **Visualization:** Grafana v10.3.3
+  * **Tracing:** Jaeger v1.54.0
+  * **Alerting:** PagerDuty Enterprise
+  * **Log Management:** CloudWatch
+  * **APM:** 
+    * Node Exporter v1.7.0
+    * cAdvisor v0.49.1
+    * Prometheus Node Exporter v1.7.0
 
 ### **2.6. Security**
 

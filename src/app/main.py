@@ -1,9 +1,14 @@
 from fastapi import FastAPI
-from app.api import status_routes # Tambahkan ini
+from .api.endpoints import users
 
-app = FastAPI(title="MediTrustAl API", version="0.1.0")
+app = FastAPI(
+    title="MediTrustAI API",
+    description="API for MediTrustAI blockchain-based user registry",
+    version="1.0.0"
+)
 
-app.include_router(status_routes.router, prefix="/api/v1") # Tambahkan ini
+# Include routers
+app.include_router(users.router, prefix="/api/users", tags=["users"])
 
 @app.get("/")
 async def root():

@@ -1,0 +1,28 @@
+{
+  "name": "meditrustal",
+  "version": "1.0.0",
+  "description": "MediTrustAl is a comprehensive platform designed to address various challenges in global and local healthcare services, including in Hangzhou and China. These challenges include data fragmentation, difficulty in leveraging large volumes of clinical narrative data, a lack of sophisticated predictive analytics to support proactive decision-making, and crucial issues related to patient data privacy and security. MediTrustAl synergistically integrates Natural Language Processing (NLP), Artificial Intelligence (AI), and Blockchain technology.",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/neimasilk/MediTrustAl.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/neimasilk/MediTrustAl/issues"
+  },
+  "homepage": "https://github.com/neimasilk/MediTrustAl#readme",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "hardhat": "^2.24.0"
+  }
+}
