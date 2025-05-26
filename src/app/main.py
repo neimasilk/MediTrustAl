@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from .api.endpoints import users
+from .api.endpoints import users, auth
 
 app = FastAPI(
     title="MediTrustAI API",
@@ -7,8 +7,9 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Include routers
-app.include_router(users.router, prefix="/api/users", tags=["users"])
+# Include routers with consistent API versioning
+app.include_router(users.router, prefix="/api/v1/users", tags=["users"])
+app.include_router(auth.router, prefix="/api/v1/auth", tags=["authentication"])
 
 @app.get("/")
 async def root():

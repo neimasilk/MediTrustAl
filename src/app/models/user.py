@@ -54,4 +54,18 @@ class UserResponse(UserBase):
         from_attributes = True
 
 class UserInDB(UserResponse):
-    hashed_password: str 
+    hashed_password: str
+
+# Authentication models
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class TokenData(BaseModel):
+    username: str | None = None
+    user_id: str | None = None
+    role: str | None = None
+
+class UserLogin(BaseModel):
+    username_or_email: str
+    password: constr(min_length=8) 

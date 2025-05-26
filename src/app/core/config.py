@@ -13,6 +13,7 @@ BLOCKCHAIN_CONFIG = {
     "ganache_url": os.getenv("GANACHE_RPC_URL", "http://127.0.0.1:7545"),
     "user_registry_address": None,  # Will be loaded dynamically
     "user_registry_abi": None,      # Will be loaded dynamically
+    "sender_private_key": os.getenv("BLOCKCHAIN_SENDER_PRIVATE_KEY"),  # Private key for signing transactions
 }
 
 # Database configuration
