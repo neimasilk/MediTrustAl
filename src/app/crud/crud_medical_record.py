@@ -23,6 +23,7 @@ def create_medical_record(
         record_metadata=medical_record_in.record_metadata,
         encrypted_data=encrypted_data,
         data_hash=data_hash,
+        blockchain_record_id=None,
     )
     db.add(db_obj)
     db.commit()

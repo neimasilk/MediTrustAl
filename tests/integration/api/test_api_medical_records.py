@@ -10,8 +10,9 @@ from src.app.core.config import JWT_CONFIG # For deriving encryption key
 from src.app.core.encryption import encrypt_data, decrypt_data, hash_data
 from src.app.crud import crud_user, crud_medical_record
 from src.app.models.user import UserCreate, UserRole
-from src.app.models.medical_record import MedicalRecordCreate, RecordType, MedicalRecordDetailResponse, MedicalRecordResponse
+from src.app.models.medical_record import MedicalRecord, MedicalRecordCreate, RecordType, MedicalRecordDetailResponse, MedicalRecordResponse
 from src.app.main import app # To ensure app context for client
+from src.app.core.blockchain import get_blockchain_service # Import for overriding
 
 # Helper to get a consistent encryption key for testing
 def get_test_encryption_key() -> bytes:
@@ -48,7 +49,7 @@ def authenticated_patient_token(client: TestClient, db_session: Session):
     
     # Log in to get token
     login_data = {"username": username, "password": password}
-    login_response = client.post("/api/v1/auth/token", data=login_data)
+    login_response = client.post("/api/v1/auth/login", data=login_data)
     assert login_response.status_code == status.HTTP_200_OK, \
         f"Fixture user login failed: {login_response.json()}"
     
@@ -98,7 +99,7 @@ def authenticated_patient_token(client: TestClient, db_session: Session):
     
     # To get the DID, we'd typically query the DB using user_id_from_reg or rely on /users/me if it provided it.
     # The current /users/me returns user_id as the DID.
-    user_did_from_me = user_details_from_me["user_id"] # This is the DID string
+    user_did_from_me = user_details_from_me["did"] # This is the DID string
 
     return {
         "token": token_data["access_token"], 
@@ -109,24 +110,27 @@ def authenticated_patient_token(client: TestClient, db_session: Session):
 
 # --- POST /api/v1/medical-records/ ---
 
-@patch('src.app.api.endpoints.medical_records.get_blockchain_service')
 def test_create_medical_record_success(
-    mock_get_blockchain_service, client: TestClient, authenticated_patient_token, db_session: Session
+    client: TestClient, authenticated_patient_token, db_session: Session
 ):
     mock_blockchain_service_instance = AsyncMock()
     mock_blockchain_service_instance.add_medical_record_hash.return_value = {
         "success": True,
         "transaction_hash": "0xmock_tx_hash_success"
     }
-    mock_get_blockchain_service.return_value = mock_blockchain_service_instance
     
+    def override_get_blockchain_service():
+        return mock_blockchain_service_instance
+
+    app.dependency_overrides[get_blockchain_service] = override_get_blockchain_service
+
     token = authenticated_patient_token["token"]
     headers = {"Authorization": f"Bearer {token}"}
     
     raw_data_content = "Initial consultation notes: Patient reports mild headache."
     record_data = {
         "record_type": RecordType.MEDICAL_HISTORY.value,
-        "metadata": {"source": "patient_report"},
+        "record_metadata": {"source": "patient_report"},
         "raw_data": raw_data_content
     }
     
@@ -136,19 +140,22 @@ def test_create_medical_record_success(
     created_record_data = response.json()
     assert created_record_data["patient_id"] == str(authenticated_patient_token["user_id"])
     assert created_record_data["record_type"] == RecordType.MEDICAL_HISTORY.value
-    assert created_record_data["metadata"] == {"source": "patient_report"} # Pydantic model uses 'metadata'
+    assert created_record_data["record_metadata"] == {"source": "patient_report"}
     assert "raw_data" not in created_record_data # MedicalRecordResponse excludes raw_data
+
+    # Debug: Directly check the database
+    db_record_direct_check = db_session.query(MedicalRecord).filter(MedicalRecord.id == uuid.UUID(created_record_data["id"])).first()
+
     assert created_record_data["blockchain_record_id"] == "0xmock_tx_hash_success"
 
     # Verify in DB
     db_record = crud_medical_record.get_medical_record_by_id(db_session, record_id=uuid.UUID(created_record_data["id"]))
     assert db_record is not None
     assert db_record.patient_id == authenticated_patient_token["user_id"]
-    assert db_record.record_metadata == {"source": "patient_report"} # DB model uses 'record_metadata'
+    assert db_record.record_metadata == {"source": "patient_report"} 
     assert db_record.data_hash == hash_data(raw_data_content)
     assert db_record.blockchain_record_id == "0xmock_tx_hash_success"
     
-    # Verify encryption
     decrypted_db_data = decrypt_data(db_record.encrypted_data, TEST_ENCRYPTION_KEY)
     assert decrypted_db_data == raw_data_content
 
@@ -157,38 +164,50 @@ def test_create_medical_record_success(
         patient_did=authenticated_patient_token["user_did"],
         record_type=RecordType.MEDICAL_HISTORY.value
     )
+    # Clean up the override after the test
+    del app.dependency_overrides[get_blockchain_service]
 
-@patch('src.app.api.endpoints.medical_records.get_blockchain_service')
 def test_create_medical_record_blockchain_failure(
-    mock_get_blockchain_service, client: TestClient, authenticated_patient_token, db_session: Session
+    client: TestClient, authenticated_patient_token, db_session: Session
 ):
     mock_blockchain_service_instance = AsyncMock()
     mock_blockchain_service_instance.add_medical_record_hash.return_value = {
         "success": False,
         "error": "Blockchain network timeout"
     }
-    mock_get_blockchain_service.return_value = mock_blockchain_service_instance
-    
+
+    def override_get_blockchain_service():
+        return mock_blockchain_service_instance
+
+    app.dependency_overrides[get_blockchain_service] = override_get_blockchain_service
+
     token = authenticated_patient_token["token"]
     headers = {"Authorization": f"Bearer {token}"}
     
     raw_data_content = "Follow-up: Headache persists."
     record_data = {
         "record_type": RecordType.DIAGNOSIS.value,
-        "metadata": {"physician": "Dr. Cura"},
+        "record_metadata": {"physician": "Dr. Cura"},
         "raw_data": raw_data_content
     }
     
     response = client.post("/api/v1/medical-records/", headers=headers, json=record_data)
     
-    assert response.status_code == status.HTTP_201_CREATED # Still created in DB
+    assert response.status_code == status.HTTP_201_CREATED 
     created_record_data = response.json()
-    assert created_record_data["blockchain_record_id"] is None # Should be None
+
+    # Debug: Directly check the database
+    db_record_direct_check_fail = db_session.query(MedicalRecord).filter(MedicalRecord.id == uuid.UUID(created_record_data["id"])).first()
+
+    assert created_record_data["blockchain_record_id"] is None 
 
     # Verify in DB
     db_record = crud_medical_record.get_medical_record_by_id(db_session, record_id=uuid.UUID(created_record_data["id"]))
     assert db_record is not None
     assert db_record.blockchain_record_id is None
+    
+    # Clean up the override after the test
+    del app.dependency_overrides[get_blockchain_service]
 
 def test_create_medical_record_invalid_input(client: TestClient, authenticated_patient_token):
     token = authenticated_patient_token["token"]
@@ -216,7 +235,7 @@ def test_get_my_medical_records(client: TestClient, authenticated_patient_token,
     raw1 = "My record 1"
     crud_medical_record.create_medical_record(
         db_session, 
-        medical_record_in=MedicalRecordCreate(record_type=RecordType.PRESCRIPTION, raw_data=raw1, metadata={}),
+        medical_record_in=MedicalRecordCreate(record_type=RecordType.PRESCRIPTION, raw_data=raw1, record_metadata={}),
         patient_id=user_id, 
         encrypted_data=encrypt_data(raw1, TEST_ENCRYPTION_KEY), 
         data_hash=hash_data(raw1)
@@ -224,7 +243,7 @@ def test_get_my_medical_records(client: TestClient, authenticated_patient_token,
     raw2 = "My record 2"
     crud_medical_record.create_medical_record(
         db_session, 
-        medical_record_in=MedicalRecordCreate(record_type=RecordType.VACCINATION, raw_data=raw2, metadata={}),
+        medical_record_in=MedicalRecordCreate(record_type=RecordType.VACCINATION, raw_data=raw2, record_metadata={}),
         patient_id=user_id, 
         encrypted_data=encrypt_data(raw2, TEST_ENCRYPTION_KEY), 
         data_hash=hash_data(raw2)
@@ -257,7 +276,7 @@ def test_get_medical_record_detail_success(client: TestClient, authenticated_pat
     raw_data_content = "Detailed vital signs: BP 120/80, HR 70."
     created_db_record = crud_medical_record.create_medical_record(
         db_session, 
-        medical_record_in=MedicalRecordCreate(record_type=RecordType.VITAL_SIGNS, raw_data=raw_data_content, metadata={"device":"Oximeter"}),
+        medical_record_in=MedicalRecordCreate(record_type=RecordType.VITAL_SIGNS, raw_data=raw_data_content, record_metadata={"device":"Oximeter"}),
         patient_id=user_id, 
         encrypted_data=encrypt_data(raw_data_content, TEST_ENCRYPTION_KEY), 
         data_hash=hash_data(raw_data_content)
@@ -274,8 +293,20 @@ def test_get_medical_record_detail_success(client: TestClient, authenticated_pat
     assert validated_detail.id == record_id
     assert validated_detail.patient_id == user_id
     assert validated_detail.record_type == RecordType.VITAL_SIGNS
-    assert validated_detail.metadata == {"device":"Oximeter"}
+    assert validated_detail.record_metadata == {"device":"Oximeter"}
     assert validated_detail.raw_data == raw_data_content # Decrypted data should be present
+
+    # Verify in DB (ensure the original ORM model still uses record_metadata)
+    db_record = crud_medical_record.get_medical_record_by_id(db_session, record_id=created_db_record.id)
+    assert db_record is not None
+    assert db_record.patient_id == user_id
+    assert db_record.record_metadata == {"device":"Oximeter"}
+    assert db_record.data_hash == hash_data(raw_data_content)
+    assert db_record.blockchain_record_id == created_db_record.blockchain_record_id
+    
+    # Verify encryption
+    decrypted_db_data = decrypt_data(db_record.encrypted_data, TEST_ENCRYPTION_KEY)
+    assert decrypted_db_data == raw_data_content
 
 def test_get_medical_record_detail_not_found(client: TestClient, authenticated_patient_token):
     token = authenticated_patient_token["token"]
@@ -306,14 +337,14 @@ def test_get_medical_record_detail_forbidden(client: TestClient, authenticated_p
         f"Other user registration failed: {other_reg_response.json()}"
     other_db_user_id = uuid.UUID(other_reg_response.json()["id"]) # Get ID of the other user
     
-    raw_data_other = "Other user's private record."
+    other_user_raw_data = "Confidential data for other user"
     # Create record directly via CRUD for this other user
     other_record = crud_medical_record.create_medical_record(
         db_session,
-        medical_record_in=MedicalRecordCreate(record_type=RecordType.DIAGNOSIS, raw_data=raw_data_other, record_metadata={}),
-        patient_id=other_db_user_id, # Use the ID obtained from registration
-        encrypted_data=encrypt_data(raw_data_other, TEST_ENCRYPTION_KEY),
-        data_hash=hash_data(raw_data_other)
+        medical_record_in=MedicalRecordCreate(record_type=RecordType.DIAGNOSIS, raw_data=other_user_raw_data, record_metadata={"access_level": "restricted"}),
+        patient_id=other_db_user_id,
+        encrypted_data=encrypt_data(other_user_raw_data, TEST_ENCRYPTION_KEY),
+        data_hash=hash_data(other_user_raw_data)
     )
     
     # Try to access it with authenticated_patient_token
@@ -340,12 +371,12 @@ def test_get_medical_record_detail_decryption_failure(
     user_id = authenticated_patient_token["user_id"]
     headers = {"Authorization": f"Bearer {token}"}
 
-    raw_data_content = "Data that will fail decryption."
+    raw_data_content = "Data that will fail decryption"
     created_db_record = crud_medical_record.create_medical_record(
-        db_session, 
-        medical_record_in=MedicalRecordCreate(record_type=RecordType.LAB_RESULT, raw_data=raw_data_content),
-        patient_id=user_id, 
-        encrypted_data=encrypt_data(raw_data_content, TEST_ENCRYPTION_KEY), # Encrypt normally
+        db_session,
+        medical_record_in=MedicalRecordCreate(record_type=RecordType.LAB_RESULT, raw_data=raw_data_content, record_metadata={"sample_id": "S123"}),
+        patient_id=user_id,
+        encrypted_data=encrypt_data(raw_data_content, TEST_ENCRYPTION_KEY),
         data_hash=hash_data(raw_data_content)
     )
     record_id = created_db_record.id

@@ -90,21 +90,22 @@ async def create_medical_record_endpoint(
 
         if blockchain_result.get("success"):
             tx_hash = blockchain_result.get("transaction_hash")
-            crud_medical_record.update_medical_record_blockchain_id(
-                db=db, record_id=new_db_record.id, blockchain_tx_hash=tx_hash
-            )
-            new_db_record.blockchain_record_id = tx_hash # Update in-memory object for response
-        else:
-            # Log the error, decide if this should be a hard fail or soft fail
-            # For now, let's assume if blockchain fails, we still created the record but without a blockchain ID.
-            # Consider a compensation mechanism or raising an HTTP error if blockchain anchoring is critical.
-            print(f"Warning: Failed to add record hash to blockchain. Error: {blockchain_result.get('error')}")
-            # Optionally, raise HTTPException here if blockchain anchoring is mandatory
-            # raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=f"Failed to anchor record on blockchain: {blockchain_result.get('error')}")
+            if tx_hash: # Ensure tx_hash is not None before updating
+                updated_record = crud_medical_record.update_medical_record_blockchain_id(
+                    db=db, record_id=new_db_record.id, blockchain_tx_hash=tx_hash
+                )
+                # If update was successful and returned a record, use it.
+                # Otherwise, new_db_record (which was refreshed after create) is the fallback.
+                if updated_record:
+                    return updated_record # Return the record with the blockchain_id from update
+            # If tx_hash was None or update failed to return record, new_db_record (refreshed after creation) is used.
+            # new_db_record at this point does not have blockchain_id if success was True but tx_hash was missing.
+            # Fall through to return new_db_record, which should have None for blockchain_id in this specific sub-path.
 
-
-        # Ensure the response model correctly serializes the object
-        # The MedicalRecordResponse model should handle this via from_orm = True
+        # If blockchain call was not successful, or if it was successful but tx_hash was missing,
+        # we return the record as it was created (blockchain_id should be None or its initial state).
+        # Ensure new_db_record is the latest state from DB before returning if no update happened or if update path didn't return.
+        db.refresh(new_db_record) # Refresh to be sure, especially if update_medical_record_blockchain_id doesn't refresh the original instance.
         return new_db_record
 
     except ValueError as ve:

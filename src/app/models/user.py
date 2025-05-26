@@ -52,6 +52,7 @@ class UserUpdate(BaseModel):
 
 class UserResponse(UserBase):
     id: uuid.UUID # Changed from str to uuid.UUID
+    did: str # Add the DID field
     blockchain_address: Optional[str] = None
     is_active: bool
     created_at: datetime
