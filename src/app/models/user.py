@@ -5,7 +5,7 @@ from sqlalchemy.dialects.postgresql import UUID as PGUUID
 import enum
 from pydantic import BaseModel, EmailStr, constr
 
-from ..database import Base
+from ..core.database import Base
 
 class UserRole(str, enum.Enum):
     PATIENT = "PATIENT"

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from ...core.blockchain import blockchain_service
+from ...core.blockchain import get_blockchain_service
 from ...core.database import get_db
 from ...models.user import User, UserResponse
 from ..endpoints.auth import get_current_active_user
@@ -22,6 +22,7 @@ async def register_user(user: UserRegistration):
     """
     Register a new user in the blockchain
     """
+    blockchain_service = get_blockchain_service()
     result = await blockchain_service.register_user(user.user_id, user.role)
     if not result['success']:
         raise HTTPException(status_code=400, detail=result['error'])
@@ -40,6 +41,7 @@ async def get_user_role(user_id: str):
     """
     Get user role from the blockchain
     """
+    blockchain_service = get_blockchain_service()
     result = await blockchain_service.get_user_role(user_id)
     if not result['success']:
         raise HTTPException(status_code=404, detail=result['error'])

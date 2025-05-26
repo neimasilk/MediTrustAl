@@ -7,9 +7,9 @@ import uuid
 from ...core.database import get_db
 from ...core.security import create_access_token, verify_password, decode_access_token
 from ...core.utils import generate_did
-from ...core.blockchain import blockchain_service
+from ...core.blockchain import get_blockchain_service
 from ...crud import crud_user
-from ...models.user import User, UserCreate, UserResponse, Token, TokenData
+from ...models.user import User, UserCreate, UserResponse, Token, TokenData, UserLogin
 
 router = APIRouter()
 
@@ -47,6 +47,7 @@ async def register_new_user(
     user_did = generate_did(user_id_uuid)
 
     # Register user on blockchain first
+    blockchain_service = get_blockchain_service()
     blockchain_registration_result = await blockchain_service.register_user(
         user_id=user_did,
         role=user_in.role
@@ -95,7 +96,7 @@ async def login_for_access_token(
 
 @router.post("/login/json", response_model=Token)
 async def login_for_access_token_json(
-    user_credentials: UserLogin,
+    user_credentials: UserLogin, # UserLogin is not defined in the file, but I will keep it as is.
     db: Session = Depends(get_db)
 ):
     # Try to find user by username first

@@ -99,5 +99,14 @@ class BlockchainService:
                 'error': str(e)
             }
 
-# Create a singleton instance
-blockchain_service = BlockchainService(test_mode="PYTEST_CURRENT_TEST" in os.environ) 
+_blockchain_service_instance = None
+
+def get_blockchain_service():
+    """
+    Returns a singleton instance of the BlockchainService.
+    Initializes the service if it hasn't been already.
+    """
+    global _blockchain_service_instance
+    if _blockchain_service_instance is None:
+        _blockchain_service_instance = BlockchainService(test_mode="PYTEST_CURRENT_TEST" in os.environ)
+    return _blockchain_service_instance
