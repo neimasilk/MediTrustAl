@@ -9,6 +9,7 @@ def test_register_user(client: TestClient):
         json={
             "email": "test@example.com",
             "username": "testuser",
+            "full_name": "Test User FullName", # Added full_name
             "password": "testpassword123",
             "role": "PATIENT"
         }
@@ -29,6 +30,7 @@ def test_register_duplicate_email(client: TestClient):
         json={
             "email": "test@example.com",
             "username": "testuser1",
+            "full_name": "Test User1 FullName", # Added full_name
             "password": "testpassword123",
             "role": "PATIENT"
         }
@@ -40,6 +42,7 @@ def test_register_duplicate_email(client: TestClient):
         json={
             "email": "test@example.com",
             "username": "testuser2",
+            "full_name": "Test User2 FullName", # Added full_name
             "password": "testpassword123",
             "role": "PATIENT"
         }
@@ -54,6 +57,7 @@ def test_register_duplicate_username(client: TestClient):
         json={
             "email": "test1@example.com",
             "username": "testuser",
+            "full_name": "Test User1 FullName", # Added full_name
             "password": "testpassword123",
             "role": "PATIENT"
         }
@@ -65,6 +69,7 @@ def test_register_duplicate_username(client: TestClient):
         json={
             "email": "test2@example.com",
             "username": "testuser",
+            "full_name": "Test User2 FullName", # Added full_name
             "password": "testpassword123",
             "role": "PATIENT"
         }
@@ -79,6 +84,7 @@ def test_login_success(client: TestClient):
         json={
             "email": "test@example.com",
             "username": "testuser",
+            "full_name": "Test User FullName", # Added full_name
             "password": "testpassword123",
             "role": "PATIENT"
         }
@@ -115,6 +121,7 @@ def test_protected_endpoint(client: TestClient):
         json={
             "email": "test@example.com",
             "username": "testuser",
+            "full_name": "Test User FullName", # Added full_name
             "password": "testpassword123",
             "role": "PATIENT"
         }

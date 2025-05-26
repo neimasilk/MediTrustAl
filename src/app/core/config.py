@@ -13,6 +13,8 @@ BLOCKCHAIN_CONFIG = {
     "ganache_url": os.getenv("GANACHE_RPC_URL", "http://127.0.0.1:7545"),
     "user_registry_address": None,  # Will be loaded dynamically
     "user_registry_abi": None,      # Will be loaded dynamically
+    "medical_record_registry_address": None, # Will be loaded dynamically
+    "medical_record_registry_abi": None,     # Will be loaded dynamically
     "sender_private_key": os.getenv("BLOCKCHAIN_SENDER_PRIVATE_KEY"),  # Private key for signing transactions
 }
 
@@ -38,18 +40,54 @@ SECURITY_CONFIG = {
 
 # Load contract address and ABI
 def load_contract_info():
-    try:
-        address_file = BASE_DIR / "blockchain" / "build" / "deployments" / "UserRegistry-address.json"
-        abi_file = BASE_DIR / "blockchain" / "build" / "deployments" / "UserRegistry-abi.json"
+    import json
+    import logging
+    logger = logging.getLogger(__name__)
+
+    contracts_to_load = {
+        "user_registry": ("UserRegistry-address.json", "UserRegistry-abi.json", "user_registry_address", "user_registry_abi"),
+        "medical_record_registry": ("MedicalRecordRegistry-address.json", "MedicalRecordRegistry-abi.json", "medical_record_registry_address", "medical_record_registry_abi"),
+    }
+
+    for name, files_and_keys in contracts_to_load.items():
+        address_filename, abi_filename, address_key, abi_key = files_and_keys
         
-        if address_file.exists() and abi_file.exists():
-            import json
-            with open(address_file) as f:
-                BLOCKCHAIN_CONFIG["user_registry_address"] = json.load(f)["address"]
-            with open(abi_file) as f:
-                BLOCKCHAIN_CONFIG["user_registry_abi"] = json.load(f)
-    except Exception as e:
-        print(f"Error loading contract info: {e}")
+        address_file_path = BASE_DIR / "blockchain" / "build" / "deployments" / address_filename
+        abi_file_path = BASE_DIR / "blockchain" / "build" / "deployments" / abi_filename
+        
+        try:
+            if address_file_path.exists():
+                with open(address_file_path, 'r') as f:
+                    address_data = json.load(f)
+                    BLOCKCHAIN_CONFIG[address_key] = address_data["address"]
+            else:
+                logger.warning(f"{name.replace('_', ' ').title()} address file not found at {address_file_path}. Contract may not be deployed.")
+                BLOCKCHAIN_CONFIG[address_key] = None # Ensure it's None if file not found
+
+            if abi_file_path.exists():
+                with open(abi_file_path, 'r') as f:
+                    BLOCKCHAIN_CONFIG[abi_key] = json.load(f)
+            else:
+                logger.warning(f"{name.replace('_', ' ').title()} ABI file not found at {abi_file_path}. Contract may not be deployed.")
+                BLOCKCHAIN_CONFIG[abi_key] = None # Ensure it's None if file not found
+            
+            if BLOCKCHAIN_CONFIG[address_key] and BLOCKCHAIN_CONFIG[abi_key]:
+                 logger.info(f"{name.replace('_', ' ').title()} contract ABI and address loaded successfully.")
+            elif not BLOCKCHAIN_CONFIG[address_key] and not BLOCKCHAIN_CONFIG[abi_key] and not address_file_path.exists() and not abi_file_path.exists():
+                # This is the normal case if files don't exist, warning already issued.
+                pass
+            else:
+                # This case means one file exists but not the other, or some other partial load.
+                logger.warning(f"Partial load for {name.replace('_', ' ').title()} contract. Address: {BLOCKCHAIN_CONFIG[address_key]}, ABI loaded: {BLOCKCHAIN_CONFIG[abi_key] is not None}")
+
+        except json.JSONDecodeError as e:
+            logger.error(f"Error decoding JSON from {name} contract file ({address_file_path} or {abi_file_path}): {e}")
+            BLOCKCHAIN_CONFIG[address_key] = None
+            BLOCKCHAIN_CONFIG[abi_key] = None
+        except Exception as e:
+            logger.error(f"An unexpected error occurred while loading {name} contract info: {e}")
+            BLOCKCHAIN_CONFIG[address_key] = None
+            BLOCKCHAIN_CONFIG[abi_key] = None
 
 # Load contract info at module import
 load_contract_info() 

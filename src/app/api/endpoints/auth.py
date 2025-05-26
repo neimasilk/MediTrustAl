@@ -67,7 +67,7 @@ async def register_new_user(
         user_id_override=user_id_uuid
     )
     
-    return created_user
+    return UserResponse.model_validate(created_user)
 
 @router.post("/login", response_model=Token)
 async def login_for_access_token(

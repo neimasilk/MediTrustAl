@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 import uuid
-from ..models.user import User, UserCreate
+from ..models.user import User, UserCreate, UserRole # Added UserRole import
 from ..core.security import get_password_hash
 
 def get_user_by_email(db: Session, email: str) -> User | None:
@@ -27,12 +27,14 @@ def create_user(db: Session, user_in: UserCreate, did: str, user_id_override: uu
     """
     hashed_password = get_password_hash(user_in.password)
     db_user = User(
-        id=user_id_override,  # Will be None if not provided, letting PostgreSQL generate it
+        id=user_id_override if user_id_override else uuid.uuid4(), # Client-side UUID generation if not overridden
         username=user_in.username,
         email=user_in.email,
+        full_name=user_in.full_name,  # Assign full_name
         hashed_password=hashed_password,
-        role=user_in.role,
-        did=did
+        role=UserRole(user_in.role),  # Convert string role to enum
+        did=did,
+        is_active=True  # Explicitly set is_active
     )
     db.add(db_user)
     db.commit()
