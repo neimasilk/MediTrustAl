@@ -25,7 +25,7 @@ Based on the project proposal (meditrustal\_proposal\_en\_detailed\_v2), the fol
       * Easy setup and configuration
       * Compatible with Ethereum tools and libraries
       * Perfect for rapid prototyping and testing
-  * **Production Recommendation:** **Hyperledger Fabric** or similar enterprise-grade permissioned blockchain
+  * **Production Recommendation:** **Hyperledger Fabric**
     * **Future Migration Plan:**
       * Develop abstraction layer for blockchain interactions
       * Test migration process in staging environment
@@ -39,8 +39,13 @@ Based on the project proposal (meditrustal\_proposal\_en\_detailed\_v2), the fol
     * **MVP:** Solidity with Hardhat development environment
     * **Production:** Chaincode in Go/Java (Hyperledger Fabric)
 * **Off-Chain Storage:**  
-  * **Recommendation:** Secure, encrypted object storage (e.g., **MinIO** self-hosted, or a compliant cloud provider storage like Alibaba Cloud OSS, Tencent Cloud COS if operating within China and meeting PIPL data residency requirements) or a dedicated secure database.  
-  * **Rationale:** Storing raw medical data off-chain is critical for PIPL compliance, scalability, and performance. Only hashes and metadata are stored on the blockchain. Encryption at rest and in transit is mandatory.
+  * **Recommendation:** MinIO self-hosted
+  * **Rationale:** 
+    * Secure, encrypted object storage
+    * Full control over data residency for PIPL compliance
+    * High performance and scalability
+    * Strong encryption capabilities
+    * Compatibility with S3 API for future flexibility
 
 ### **2.2. NLP & AI Layer**
 
@@ -124,9 +129,14 @@ Based on the project proposal (meditrustal\_proposal\_en\_detailed\_v2), the fol
     * React Router for navigation
     * Web3.js for blockchain interaction
 * **Database (Application Backend):**  
-  * **Recommendation:** **PostgreSQL** or **MySQL**.  
-  * **Rationale:** Robust, open-source relational databases with good performance, scalability, and features for handling structured application data (user accounts, application settings, non-blockchain metadata).  
-  * **For specific needs (e.g., search):** Consider **Elasticsearch**.
+  * **Recommendation:** **PostgreSQL**
+  * **Rationale:** 
+    * Robust, open-source relational database
+    * Strong performance and scalability
+    * Advanced features for handling structured application data
+    * Excellent support for JSON/JSONB for flexible data storage
+    * Built-in UUID and cryptographic functions
+  * **For specific needs (e.g., search):** Consider **Elasticsearch**
 
 ### **2.4. Interoperability**
 

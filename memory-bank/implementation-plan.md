@@ -88,15 +88,25 @@ This document outlines the step-by-step plan for developing the Minimum Viable P
 ### **Step 1.2: Basic Blockchain Network Setup (Local Development)**
 
 * **Instruction:**  
-  1. Set up a local development instance of the chosen permissioned blockchain platform (e.g., Hyperledger Fabric using a minimal test network configuration, or a local Ganache instance if an Ethereum-based permissioned chain like Quorum is chosen initially for simplicity in local dev, to be migrated later).  
-  2. Define a very basic chaincode/smart contract for registering a "User" entity with a unique ID and a role (e.g., "PATIENT", "DOCTOR"). This is a placeholder and will be expanded.  
-  3. Write a script or use blockchain tools to deploy this basic chaincode/smart contract to the local network.  
-  4. Write a simple backend service (within the application backend) to connect to the local blockchain network. This service should have a function to invoke the "registerUser" transaction on the chaincode.  
+  1. Set up a local development instance of Ganache for the MVP phase:
+     ```bash
+     # Install Ganache globally
+     npm install -g ganache
+     
+     # Start Ganache with specific configuration
+     ganache --deterministic --chain.chainId 1337 --database.dbPath ./.ganache-db
+     ```
+  2. Define a basic Solidity smart contract (UserRegistry.sol) for registering a "User" entity with:
+     * Unique DID
+     * Role (enum: PATIENT, DOCTOR, ADMIN)
+     * Timestamp of registration
+  3. Use Hardhat to compile and deploy the smart contract to the local Ganache network.
+  4. Write a backend service (blockchain_service.py) to connect to Ganache and interact with the deployed contract using Web3.py.
 * **Test:**  
-  * The local blockchain network can be started and is accessible.  
-  * The basic "User" chaincode/smart contract is successfully deployed.  
-  * The backend service can connect to the blockchain network.  
-  * Calling the backend service function to register a new user (e.g., via an internal test or a temporary test API endpoint) results in a successful transaction on the blockchain, and the user can be queried (if query function is also basic implemented).
+  * Ganache network can be started and is accessible at http://127.0.0.1:8545
+  * The UserRegistry smart contract is successfully compiled and deployed
+  * The backend service can connect to Ganache and interact with the deployed contract
+  * Test transactions for user registration succeed and can be verified through contract queries
 
 ### **Step 1.3: User Identity and Basic Authentication (Application Layer)**
 
@@ -112,9 +122,10 @@ This document outlines the step-by-step plan for developing the Minimum Viable P
      ```
   2. Upon successful registration:
      * Hash password using bcrypt (work factor: 12)
-     * Generate DID using format: `did:meditrustal:{base58(sha256(user_id))}`
-     * Store in PostgreSQL with UUID primary key
-  3. Simultaneously, invoke the blockchain service (from Step 1.2) to register the user's DID (Decentralized Identifier \- for now, a unique ID derived from their application user ID) and role on the blockchain.  
+     * Generate UUID for user_id using PostgreSQL's gen_random_uuid()
+     * Generate DID using format: `did:meditrustal:{base58(sha256(user_id))}` where user_id is the UUID
+     * Store in PostgreSQL with the UUID as primary key
+  3. Invoke the blockchain service to register the user's DID and role by calling the registerUser function of the UserRegistry smart contract.
   4. Implement a basic user login endpoint (e.g., /api/v1/auth/login) that validates credentials and returns a simple token (e.g., JWT \- JSON Web Token).  
   5. Implement basic middleware to protect certain future API endpoints, requiring a valid token.  
 * **Test:**  

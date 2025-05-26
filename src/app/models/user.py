@@ -1,24 +1,33 @@
 from datetime import datetime
 from typing import Optional
-from sqlalchemy import Column, Integer, String, DateTime, Boolean
-from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy import Column, String, Boolean, DateTime, Enum as SQLEnum
+from sqlalchemy.dialects.postgresql import UUID as PGUUID
+import enum
 from pydantic import BaseModel, EmailStr, constr
 
-class Base(DeclarativeBase):
-    pass
+from ..database import Base
+
+class UserRole(str, enum.Enum):
+    PATIENT = "PATIENT"
+    DOCTOR = "DOCTOR"
+    ADMIN = "ADMIN"
 
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(Integer, primary_key=True, index=True)
-    email = Column(String, unique=True, index=True, nullable=False)
-    username = Column(String, unique=True, index=True, nullable=False)
-    hashed_password = Column(String, nullable=False)
-    blockchain_address = Column(String, unique=True, index=True)
-    role = Column(String, nullable=False)
+    id = Column(PGUUID(as_uuid=True), primary_key=True, server_default="gen_random_uuid()")
+    email = Column(String(255), unique=True, nullable=False)
+    username = Column(String(50), unique=True, nullable=False)
+    hashed_password = Column(String(255), nullable=False)
+    blockchain_address = Column(String(42), unique=True)  # Ethereum address format
+    did = Column(String(100), unique=True, nullable=False)  # Decentralized Identifier
+    role = Column(SQLEnum(UserRole), nullable=False)
     is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def __repr__(self):
+        return f"<User {self.username}>"
 
 # Pydantic models for request/response
 class UserBase(BaseModel):
@@ -35,7 +44,7 @@ class UserUpdate(BaseModel):
     password: Optional[constr(min_length=8)] = None
 
 class UserResponse(UserBase):
-    id: int
+    id: str
     blockchain_address: Optional[str] = None
     is_active: bool
     created_at: datetime
