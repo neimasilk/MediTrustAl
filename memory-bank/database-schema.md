@@ -196,7 +196,7 @@ POOL_RECYCLE = 1800  # 30 minutes
 1. **Daily Backups**
    ```bash
    # Backup script (backup.sh)
-   pg_dump -Fc meditrustal_dev > /backups/meditrustal_$(date +%Y%m%d).dump
+   pg_dump -Fc meditrustal > /backups/meditrustal_$(date +%Y%m%d).dump
    ```
    - Retention: 7 daily backups
    - Time: 02:00 AM server time

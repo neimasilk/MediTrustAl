@@ -81,7 +81,7 @@ Project Directory (~20GB):
 3. **Database Setup**
    ```bash
    # Create database
-   createdb meditrustal_dev
+   createdb meditrustal
    
    # Run migrations
    cd src
@@ -118,7 +118,7 @@ DEBUG=True
 LOG_LEVEL=debug
 
 # Database
-DATABASE_URL=postgresql://username:password@localhost:5432/meditrustal_dev
+DATABASE_URL=postgresql://username:password@localhost:5432/meditrustal
 DB_MAX_CONNECTIONS=20
 DB_IDLE_TIMEOUT=300
 
