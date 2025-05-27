@@ -1,11 +1,12 @@
 # Project Status, To-Do List, and Suggestions: MediTrustAl
 
-## Current Project Status (per 2025-05-27):
-* **Project Phase:** Fase 2 - Patient Data Management - MVP Core (Blockchain Interaction) - SELESAI. Siap memulai Fase 3.
+## Current Project Status (per 2025-05-28):
+* **Project Phase:** Fase 3 - AI/ML Integration - MVP Placeholder Services - IN PROGRESS.
 * **Description:**
     * Step 1.1 (Project Setup), Step 1.2 (Basic Blockchain Network Setup - UserRegistry), dan Step 1.3 (User Identity and Basic Authentication) telah selesai diimplementasikan.
     * Step 2.1 (Basic Patient Health Record Structure on Blockchain - MedicalRecordRegistry) dan Step 2.2 (Basic Off-Chain Data Storage Setup - PostgreSQL dengan enkripsi) juga telah selesai diimplementasikan melalui API `medical_records`. Ini mencakup pembuatan model `MedicalRecord`, CRUD, API untuk membuat dan mengambil rekam medis (dengan enkripsi/dekripsi), perhitungan `data_hash`, dan integrasi dengan _smart contract_ `MedicalRecordRegistry` untuk mencatat `data_hash`.
     * Step 2.3 (Basic Patient Data Retrieval - Backend & Blockchain Integration) telah selesai. Backend (`GET /medical-records/patient/me`) berhasil mengambil daftar hash rekam medis dari _smart contract_ `MedicalRecordRegistry` yang sudah di-deploy di Ganache dan kemudian mengambil data yang sesuai dari database. Pengujian otomatis dan manual telah berhasil.
+    * Step 3.1 (Placeholder NLP Service) telah selesai diimplementasikan.
 * **Last Completed Steps (merangkum `implementation-plan.md`):**
     * Step 1.1: Project Setup and Basic Backend Structure - ✅ SELESAI.
     * Step 1.2: Basic Blockchain Network Setup (Local Development - UserRegistry) - ✅ SELESAI.
@@ -13,9 +14,10 @@
     * Step 2.1: Basic Patient Health Record (PHR) Structure on Blockchain (MedicalRecordRegistry - initial deployment) - ✅ SELESAI.
     * Step 2.2: Basic Off-Chain Data Storage Setup (PostgreSQL with Encryption for Medical Records) - ✅ SELESAI.
     * Step 2.3: Basic Patient Data Retrieval (Full Backend Logic & Integration with "Live" Ganache Smart Contract) - ✅ SELESAI.
-* **Next Step (sesuai `implementation-plan.md`):** Step 3.1: Placeholder NLP Service.
+    * Step 3.1: Placeholder NLP Service - ✅ SELESAI.
+* **Next Step (sesuai `implementation-plan.md`):** Step 3.2: Placeholder AI Predictive Service.
 
-## Progress Update (Snapshot 2025-05-27 - Mencerminkan status saat ini):
+## Progress Update (Snapshot 2025-05-28 - Mencerminkan status saat ini):
 1.  **Database Setup** ✅ SELESAI
     * [x] Instalasi dan konfigurasi PostgreSQL 15.x.
     * [x] Pembuatan model database (`User`, `MedicalRecord`).
@@ -60,14 +62,21 @@
     * [x] Tes _smart contract_ `MedicalRecordRegistry.test.js` (termasuk `getRecordHashesByPatient`).
     * [x] Dokumentasi kode (komentar) dan `README.md` (catatan developer) telah diperbarui untuk Step 2.3.
 
+6.  **NLP Service (Placeholder - Step 3.1)** ✅ SELESAI
+    * [x] Implementasi Placeholder NLP Service (`nlp_service.py`).
+    * [x] Implementasi API Endpoint `POST /api/v1/nlp/extract-entities` (`nlp.py`).
+    * [x] Penambahan Pydantic model untuk request/response NLP.
+    * [x] Registrasi router NLP di `main.py`.
+    * [x] Tes unit untuk `nlp_service.py`.
+    * [x] Tes integrasi untuk API endpoint NLP.
+    * [x] Verifikasi dan pembaruan dokumentasi OpenAPI (Swagger).
+
 ## Immediate Next Steps:
 
-1.  **Implementasi Step 3.1: Placeholder NLP Service**
-    * Lihat `baby-step.md` yang baru untuk detail implementasi.
-    * Fokus pada pembuatan service yang sangat sederhana (bisa sebagai modul di backend utama atau microservice terpisah menggunakan FastAPI/Flask).
-    * Endpoint: `POST /nlp/extract-entities`.
-    * Input: Teks.
-    * Output: Struktur JSON dummy yang sudah ditentukan (e.g., `{"entities": [{"text": "Blood Pressure", "type": "VitalSign"}, {"text": "120/80 mmHg", "type": "Measurement"}]}`).
+1.  **Implementasi Step 3.2: Placeholder AI Predictive Service**
+    * Akan dibuatkan `baby-step.md` baru untuk detail implementasi Step 3.2.
+    * Fokus pada pembuatan service placeholder sederhana yang mengembalikan prediksi dummy.
+    * Detail input dan output akan ditentukan dalam `baby-step.md` untuk Step 3.2.
 
 ## Technical Debt & Issues:
 
@@ -95,17 +104,15 @@
 
 ## Next Meeting Agenda:
 
-1.  **Review Implementasi Step 3.1 (Placeholder NLP Service)**:
-    * Diskusikan hasil implementasi `baby-step.md` untuk Step 3.1.
-    * Verifikasi fungsionalitas placeholder NLP service.
-    * Tinjau tes unit yang dibuat untuk service ini.
-2.  **Perencanaan Detail untuk Step 3.2 (Placeholder AI Predictive Service)**:
-    * Definisikan input dummy yang akan diterima.
-    * Tentukan struktur output JSON dummy untuk prediksi risiko.
-    * Buat `baby-step.md` baru untuk Step 3.2.
+1.  **Review Implementasi Step 3.1 (Placeholder NLP Service) - SELESAI**:
+    * Konfirmasi penyelesaian Step 3.1.
+2.  **Perencanaan Detail dan Implementasi Step 3.2 (Placeholder AI Predictive Service)**:
+    * Buat `baby-step.md` baru untuk Step 3.2 (jika belum ada).
+    * Definisikan input dummy yang akan diterima dan struktur output JSON dummy untuk prediksi risiko dalam `baby-step.md`.
+    * Mulai implementasi Step 3.2.
 3.  **Pembahasan Awal Step 3.3 (Basic Frontend Shell)**:
     * Diskusikan teknologi frontend yang akan digunakan (React/Vue, sesuai `tech-stack.md`).
     * Rencanakan halaman login dasar dan dashboard untuk menampilkan data pasien.
 4.  **Prioritisasi Technical Debt**: Tinjau kembali daftar _technical debt_ dan pilih item yang paling mendesak untuk ditangani sebelum Fase 3 terlalu jauh.
 
-*(Note: This file was last updated on 2025-05-27 based on completion of Step 2.3.)*
+*(Note: This file was last updated on 2025-05-28 based on completion of Step 3.1.)*
