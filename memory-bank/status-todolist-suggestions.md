@@ -1,11 +1,11 @@
 # Project Status, To-Do List, and Suggestions: MediTrustAl
 
-## Current Project Status (per 2025-05-29):
-* **Project Phase:** Fase 3 - AI/ML Integration - MVP Placeholder Services - IN PROGRESS.
+## Current Project Status (per 2025-05-27):
+* **Project Phase:** Fase 3 - AI/ML Integration & Frontend Shell - SEDANG BERLANGSUNG.
 * **Description:**
     * Step 1.1 (Project Setup), Step 1.2 (Basic Blockchain Network Setup - UserRegistry), dan Step 1.3 (User Identity and Basic Authentication) telah selesai diimplementasikan.
     * Step 2.1 (Basic Patient Health Record Structure on Blockchain - MedicalRecordRegistry) dan Step 2.2 (Basic Off-Chain Data Storage Setup - PostgreSQL dengan enkripsi) juga telah selesai diimplementasikan melalui API `medical_records`. Ini mencakup pembuatan model `MedicalRecord`, CRUD, API untuk membuat dan mengambil rekam medis (dengan enkripsi/dekripsi), perhitungan `data_hash`, dan integrasi dengan _smart contract_ `MedicalRecordRegistry` untuk mencatat `data_hash`.
-    * Step 2.3 (Basic Patient Data Retrieval - Backend & Blockchain Integration) telah selesai. Backend (`GET /medical-records/patient/me`) berhasil mengambil daftar hash rekam medis dari _smart contract_ `MedicalRecordRegistry` yang sudah di-deploy di Ganache dan kemudian mengambil data yang sesuai dari database. Pengujian otomatis dan manual telah berhasil.
+    * Step 2.3 (Basic Patient Data Retrieval - Backend & Blockchain Integration) telah selesai. Backend (`GET /medical-records/patient/me`) berhasil mengambil daftar hash rekam medis dari _smart contract_ `MedicalRecordRegistry` yang sudah di-deploy di Ganache dan kemudian mengambil data yang sesuai dari database.
     * Step 3.1 (Placeholder NLP Service) telah selesai diimplementasikan.
     * Step 3.2 (Placeholder AI Predictive Service) telah selesai diimplementasikan.
 * **Last Completed Steps (merangkum `implementation-plan.md`):**
@@ -17,9 +17,9 @@
     * Step 2.3: Basic Patient Data Retrieval (Full Backend Logic & Integration with "Live" Ganache Smart Contract) - ✅ SELESAI.
     * Step 3.1: Placeholder NLP Service - ✅ SELESAI.
     * Step 3.2: Placeholder AI Predictive Service - ✅ SELESAI.
-* **Next Step (sesuai `implementation-plan.md`):** Step 3.3: Basic Frontend Shell (Placeholder/Initial Setup).
+* **Next Step (sesuai `implementation-plan.md`):** Step 3.3: Basic Frontend Shell (Patient Portal).
 
-## Progress Update (Snapshot 2025-05-29 - Mencerminkan status saat ini):
+## Progress Update (Snapshot 2025-05-27 - Mencerminkan status saat ini):
 1.  **Database Setup** ✅ SELESAI
     * [x] Instalasi dan konfigurasi PostgreSQL 15.x.
     * [x] Pembuatan model database (`User`, `MedicalRecord`).
@@ -37,7 +37,7 @@
 
 3.  **Blockchain Integration (User Registry & Medical Record Registry)** ✅ SELESAI
     * [x] Setup Ganache (sesuai `README.md` dan `hardhat.config.js`).
-    * [x] _Smart contract_ dasar `UserRegistry` dan `MedicalRecordRegistry` (versi awal dan versi yang dimodifikasi) sudah di-deploy (via skrip `deployUserRegistry.js` & `deployMedicalRecordRegistry.js`).
+    * [x] _Smart contract_ dasar `UserRegistry` dan `MedicalRecordRegistry` telah di-deploy.
     * [x] Service (`BlockchainService` di `blockchain.py`) untuk interaksi dengan kontrak `UserRegistry` (register user, get role) dan `MedicalRecordRegistry` (add medical record hash, get record hashes for patient).
     * [x] Penandatanganan Transaksi Blockchain menggunakan _private key_ dari _environment variable_.
     * [x] Integrasi pemanggilan `blockchain_service.register_user` ke dalam alur registrasi aplikasi.
@@ -48,21 +48,21 @@
 4.  **Medical Record Management (MVP Core)** ✅ SELESAI
     * [x] Model SQLAlchemy `MedicalRecord` dan skema Pydantic terkait.
     * [x] Fungsi CRUD untuk `MedicalRecord`.
-    * [x] API Endpoint `POST /medical-records` untuk membuat rekam medis baru (termasuk enkripsi data, _hashing_, penyimpanan ke DB, dan pencatatan _hash_ ke _blockchain_).
-    * [x] API Endpoint `GET /medical-records/patient/me` untuk mengambil daftar rekam medis milik pasien saat ini (menggunakan hash dari `BlockchainService` yang terhubung ke Ganache "live" dan data dari DB).
-    * [x] API Endpoint `GET /medical-records/{record_id}` untuk mengambil detail satu rekam medis, termasuk data mentah yang sudah didekripsi (dari DB).
+    * [x] API Endpoint `POST /medical-records` untuk membuat rekam medis baru.
+    * [x] API Endpoint `GET /medical-records/patient/me` untuk mengambil daftar rekam medis milik pasien saat ini.
+    * [x] API Endpoint `GET /medical-records/{record_id}` untuk mengambil detail satu rekam medis.
     * [x] Implementasi enkripsi AES-GCM untuk `raw_data` dan SHA-256 untuk `data_hash`.
 
-5.  **Testing** ✅ SELESAI (untuk fitur hingga Step 2.3)
+5.  **Testing** ✅ SELESAI (untuk fitur hingga Step 3.2)
     * [x] Unit tes untuk utilitas (enkripsi, generasi DID).
     * [x] Unit tes untuk CRUD (`medical_record`).
-    * [x] Unit tes untuk `BlockchainService` (interaksi dengan `UserRegistry` dan `MedicalRecordRegistry`, termasuk `get_record_hashes_for_patient`).
+    * [x] Unit tes untuk `BlockchainService`.
     * [x] Tes integrasi untuk _endpoint auth_ (register, login).
     * [x] Tes integrasi untuk _endpoint_ yang diproteksi (`/users/me`).
-    * [x] Tes integrasi untuk _endpoint_ API rekam medis (create, get list, get detail), termasuk tes untuk `GET /medical-records/patient/me` yang dimodifikasi dengan berbagai skenario (data cocok, parsial, tidak ada data blockchain, error service blockchain, paginasi) baik dengan mock maupun terhadap Ganache "live" (berdasarkan konfirmasi pengguna).
-    * [x] Pengaturan _test fixtures_ dan _mocking_ (SQLite _in-memory database_, _mock blockchain service_).
-    * [x] Tes _smart contract_ `MedicalRecordRegistry.test.js` (termasuk `getRecordHashesByPatient`).
-    * [x] Dokumentasi kode (komentar) dan `README.md` (catatan developer) telah diperbarui untuk Step 2.3.
+    * [x] Tes integrasi untuk _endpoint_ API rekam medis.
+    * [x] Pengaturan _test fixtures_ dan _mocking_.
+    * [x] Tes _smart contract_ `MedicalRecordRegistry.test.js`.
+    * [x] Dokumentasi kode (komentar) dan `README.md` (catatan developer) telah diperbarui.
 
 6.  **NLP Service (Placeholder - Step 3.1)** ✅ SELESAI
     * [x] Implementasi Placeholder NLP Service (`nlp_service.py`).
@@ -82,17 +82,18 @@
     * [x] Tes integrasi untuk API endpoint AI.
     * [x] Verifikasi dan pembaruan dokumentasi OpenAPI (Swagger).
 
-## Immediate Next Steps:
+## Immediate Next Steps (Baby-Step To-Do List):
 
-1.  **Review Implementasi Step 3.2: Placeholder AI Predictive Service - SELESAI**
-    * Akan dibuatkan `baby-step.md` baru untuk detail implementasi Step 3.2.
-    * Fokus pada pembuatan service placeholder sederhana yang mengembalikan prediksi dummy.
-    * Detail input dan output akan ditentukan dalam `baby-step.md` untuk Step 3.2.
-2.  **Perencanaan Detail dan Implementasi Step 3.3 (Basic Frontend Shell)**
-    * Akan dibuatkan `baby-step.md` baru untuk detail implementasi Step 3.3.
-    * Fokus pada pembuatan shell frontend dasar, halaman login, dan dashboard sederhana.
+1.  **Implementasi Step 3.3: Basic Frontend Shell (Patient Portal)** - ⏳ SEDANG DIKERJAKAN
+    * Setup proyek frontend dasar (React.js sesuai `tech-stack.md`).
+    * Buat halaman login sederhana yang memanggil endpoint `/api/v1/auth/login`.
+    * Implementasikan penyimpanan token (misalnya, `localStorage` atau state management).
+    * Buat halaman dashboard dasar yang dapat diakses setelah login.
+    * Pada dashboard, tampilkan daftar metadata rekam medis pasien dengan memanggil endpoint `/api/v1/medical-records/patient/me`.
+    * (Opsional untuk MVP awal) Tambahkan tombol untuk melihat detail rekam medis (memanggil `/api/v1/medical-records/{record_id}`).
+    * Pastikan dokumentasi dan tes dasar untuk frontend shell ini.
 
-## Technical Debt & Issues:
+## Technical Debt & Future Considerations:
 
 1.  **Authentication & User Management:**
     * **[PENDING]** Mekanisme _refresh token_.
@@ -110,24 +111,24 @@
 4.  **Testing:**
     * **[PENDING]** Tes E2E (End-to-End) setelah _frontend_ dasar ada.
     * **[PENDING]** Tes performa (load testing) untuk API.
-5.  **Lain-lain:**
+5.  **Dokumentasi & Lain-lain:**
     * **[MITIGATED FOR MVP]** Pengelolaan Kunci Enkripsi: Penggunaan JWT _secret_ untuk kunci enkripsi (MVP).
     * **[IMPROVED]** _Logging_ telah ditambahkan di `medical_records.py`. Perluasan _logging_ terstruktur dan komprehensif masih PENDING.
     * **[PENDING]** _Error handling_ yang lebih detail dan standar di seluruh API (lihat `implementation-plan.md` bagian "API Standards & Error Handling").
-    * **[POTENTIAL REFACTOR/CLARIFICATION]** Endpoint `/api/v1/users/register` tampaknya duplikasi fungsionalitas dengan `/api/v1/auth/register` dan mungkin perlu diklarifikasi atau di-deprecate. Fokus pada `/api/v1/auth/register` untuk pendaftaran pengguna aplikasi yang juga mendaftarkan ke blockchain. `/api/v1/users/register` saat ini hanya berinteraksi dengan blockchain.
+    * **[POTENTIAL REFACTOR/CLARIFICATION]** Endpoint `/api/v1/users/register` (yang hanya berinteraksi dengan blockchain) dan `/api/v1/auth/register` (yang mendaftar ke DB dan blockchain) memiliki potensi tumpang tindih fungsionalitas. Perlu diklarifikasi mana yang menjadi standar atau apakah salah satunya akan di-deprecate. Fokus utama saat ini pada `/api/v1/auth/register` untuk pendaftaran pengguna aplikasi.
+    * **[INFO]** `Create Date` pada file migrasi Alembic `a1b2e4306629_create_users_table.py` masih berupa placeholder `<Tanggal Pembuatan Awal Anda>`.
+    * **[SUGGESTION]** Update file `memory-bank/progress.md` untuk mencerminkan penyelesaian Step 3.2.
+    * **[SUGGESTION]** Sinkronkan bagian "Status Implementasi" di `README.md` agar konsisten dengan `status-todolist-suggestions.md` dan `implementation-plan.md`.
 
-## Next Meeting Agenda:
+## Next Meeting Agenda (Saran):
 
-1.  **Review Implementasi Step 3.1 (Placeholder NLP Service) - SELESAI**:
-    * Konfirmasi penyelesaian Step 3.1.
-2.  **Perencanaan Detail dan Implementasi Step 3.2 (Placeholder AI Predictive Service) - SELESAI**:
-    * Buat `baby-step.md` baru untuk Step 3.2 (jika belum ada).
-    * Definisikan input dummy yang akan diterima dan struktur output JSON dummy untuk prediksi risiko dalam `baby-step.md`.
-    * Mulai implementasi Step 3.2.
-3.  **Perencanaan Detail dan Implementasi Step 3.3 (Basic Frontend Shell)**:
-    * Diskusikan teknologi frontend yang akan digunakan (React/Vue, sesuai `tech-stack.md`).
-    * Rencanakan halaman login dasar dan dashboard untuk menampilkan data pasien.
-4.  **Prioritisasi Technical Debt**: Tinjau kembali daftar _technical debt_ dan pilih item yang paling mendesak untuk ditangani sebelum Fase 3 terlalu jauh.
-5.  **Brainstorming untuk Fitur AI/ML Lanjutan (setelah MVP placeholder selesai) - Pembahasan awal Step 3.4: Placeholder Recommendation Service.**
+1.  **Review Implementasi Step 3.2 (Placeholder AI Predictive Service) - SELESAI**: Konfirmasi penyelesaian.
+2.  **Pembahasan Detail dan Implementasi Step 3.3 (Basic Frontend Shell)**:
+    * Finalisasi teknologi frontend dan struktur dasar proyek.
+    * Detailkan komponen UI untuk login dan dashboard.
+    * Bagaimana token akan dikelola di frontend.
+    * Strategi pemanggilan API backend.
+3.  **Prioritisasi Technical Debt**: Tinjau kembali daftar _technical debt_. Apakah ada yang perlu segera ditangani sebelum Fase 4?
+4.  **Perencanaan Awal Step 4.1 (Simplified Consent Logic in Chaincode)**: Meskipun masih jauh, diskusi awal mengenai bagaimana mekanisme konsen sederhana akan diimplementasikan di smart contract dapat dimulai.
 
-*(Note: This file was last updated on 2025-05-29 based on completion of Step 3.2.)*
+*(Note: This file was last updated on 2025-05-27 based on completion of Step 3.2.)*
