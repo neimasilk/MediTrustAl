@@ -7,8 +7,10 @@ import { getMyMedicalRecords } from '../services/medicalRecordService';
 import {
   Button, Container, Typography, Box, Table, TableBody,
   TableCell, TableContainer, TableHead, TableRow, Paper,
-  Alert, CircularProgress
+  Alert, CircularProgress, IconButton
 } from '@mui/material';
+import SettingsIcon from '@mui/icons-material/Settings'; // Example icon
+import RecordAccessManagementModal from '../components/RecordAccessManagementModal'; // Import the modal
 
 const DashboardPage = () => {
   const dispatch = useDispatch();
@@ -19,6 +21,9 @@ const DashboardPage = () => {
   const [isLoadingRecords, setIsLoadingRecords] = useState(true);
   const [errorRecords, setErrorRecords] = useState(null);
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedRecord, setSelectedRecord] = useState(null);
+
   const handleLogout = () => {
     dispatch(logout());
     navigate('/login');
@@ -26,6 +31,10 @@ const DashboardPage = () => {
 
   useEffect(() => {
     const fetchRecords = async () => {
+      // Reset states related to records and modal for fresh fetch
+      setRecords([]); // Clear previous records
+      setSelectedRecord(null); // Clear selected record
+      setIsModalOpen(false); // Ensure modal is closed on re-fetch/re-mount
       setIsLoadingRecords(true);
       setErrorRecords(null);
       try {
@@ -54,6 +63,16 @@ const DashboardPage = () => {
     } catch (e) {
       return 'Invalid Date';
     }
+  };
+
+  const handleOpenModal = (record) => {
+    setSelectedRecord(record);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedRecord(null);
+    setIsModalOpen(false);
   };
 
   return (
@@ -94,6 +113,7 @@ const DashboardPage = () => {
                   <TableCell>Record Type</TableCell>
                   <TableCell>Created At</TableCell>
                   <TableCell>Data Hash</TableCell>
+                  <TableCell align="center">Actions</TableCell> {/* New column for actions */}
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -108,6 +128,16 @@ const DashboardPage = () => {
                     <TableCell>{record.record_type}</TableCell>
                     <TableCell>{formatDateTime(record.created_at)}</TableCell>
                     <TableCell sx={{ wordBreak: 'break-all' }}>{record.data_hash}</TableCell>
+                    <TableCell align="center">
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={() => handleOpenModal(record)}
+                        startIcon={<SettingsIcon />} // Optional: use an icon
+                      >
+                        Manage Access
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -121,6 +151,13 @@ const DashboardPage = () => {
           </Typography>
         )}
       </Box>
+      {selectedRecord && (
+        <RecordAccessManagementModal
+          open={isModalOpen}
+          onClose={handleCloseModal}
+          record={selectedRecord}
+        />
+      )}
     </Container>
   );
 };
