@@ -1,13 +1,17 @@
 import uuid
+import logging # Added import for logging
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from src.app.api.endpoints.auth import get_current_active_user # Corrected import
-from src.app.core import security # For potential future use, not directly for key
+# Removed: from src.app import models as app_models
+from src.app.api.endpoints.auth import get_current_active_user
+from src.app.core import security
 from src.app.core.blockchain import BlockchainService, get_blockchain_service
-from src.app.core.config import JWT_CONFIG # For encryption key
+# Import the specific ORM model directly
+from src.app.models.medical_record import MedicalRecord as MedicalRecordORM
+from src.app.core.config import JWT_CONFIG
 from src.app.core.database import get_db
 from src.app.core.encryption import encrypt_data, decrypt_data, hash_data
 from src.app.crud import crud_medical_record
@@ -122,21 +126,91 @@ async def create_medical_record_endpoint(
 @router.get(
     "/patient/me",
     response_model=List[MedicalRecordResponse],
-    summary="Get medical records for the current patient",
+    summary="Get medical records for the current patient, verified against blockchain hashes.",
 )
 async def get_my_medical_records(
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user), # Corrected dependency
+    current_user: User = Depends(get_current_active_user),
+    blockchain_service: BlockchainService = Depends(get_blockchain_service),
     skip: int = 0,
     limit: int = 100,
 ):
     """
-    Retrieve all medical records for the currently authenticated user (patient).
+    Retrieve medical records for the currently authenticated user (patient).
+
+    This endpoint enhances data integrity by first fetching a list of record hashes
+    associated with the patient's Decentralized Identifier (DID) from the blockchain.
+    It then retrieves only those records from the local database that match these hashes
+    and belong to the authenticated user.
+
+    Args:
+        db (Session): SQLAlchemy database session.
+        current_user (User): The authenticated user, injected by `get_current_active_user`.
+        blockchain_service (BlockchainService): Service for interacting with the blockchain.
+        skip (int): Number of records to skip for pagination.
+        limit (int): Maximum number of records to return for pagination.
+
+    Returns:
+        List[MedicalRecordResponse]: A list of medical records. Returns an empty list if
+                                     the user has no DID, the blockchain call fails,
+                                     no hashes are found on the blockchain, or no matching
+                                     records are found in the database.
     """
-    records = crud_medical_record.get_medical_records_by_patient_id(
-        db, patient_id=current_user.id, skip=skip, limit=limit
-    )
-    return records
+    # The user's Decentralized Identifier (DID) is essential for querying blockchain records.
+    if not current_user.did:
+        logging.warning(f"User {current_user.id} (username: {current_user.username}) has no DID. "
+                        "Cannot retrieve blockchain-anchored medical records.")
+        return []
+
+    # Fetch record hashes from the blockchain service using the patient's DID.
+    # Expects blockchain_service to return a dict: {'success': bool, 'data': {'hashes': [...]}, 'error': str}
+    blockchain_response = await blockchain_service.get_record_hashes_for_patient(current_user.did)
+
+    # Handle cases where the blockchain service call was not successful.
+    if not blockchain_response.get("success"):
+        logging.error(
+            f"BlockchainService call to get record hashes failed for patient DID {current_user.did}. "
+            f"Error: {blockchain_response.get('error', 'Unknown error')}"
+        )
+        # Policy: Return empty list on blockchain error to avoid showing potentially stale/incomplete data.
+        return []
+
+    # Extract the list of hexadecimal record hashes from the blockchain response.
+    record_hashes_hex = blockchain_response.get("data", {}).get("hashes", [])
+    if not record_hashes_hex:
+        logging.info(f"No medical record hashes found on the blockchain for patient DID {current_user.did}.")
+        return []
+
+    retrieved_records = []
+    # Iterate through each hash received from the blockchain.
+    for record_hash in record_hashes_hex:
+        # Query the local database for a medical record that matches the current hash
+        # AND belongs to the currently authenticated user (patient_id match).
+        # This ensures that even if a hash is associated with the user's DID on-chain,
+        # they can only retrieve records they own in the local database.
+        db_record = db.query(MedicalRecordORM).filter(
+            MedicalRecordORM.data_hash == record_hash,
+            MedicalRecordORM.patient_id == current_user.id
+        ).first()
+        
+        if db_record:
+            # If a matching and authorized record is found in the database, add it to the list.
+            # FastAPI will automatically convert this ORM model to MedicalRecordResponse
+            # based on the endpoint's `response_model`.
+            retrieved_records.append(db_record)
+        else:
+            # Log a warning if a hash from the blockchain does not correspond to a valid
+            # record in the database for this user. This could indicate data inconsistency
+            # (e.g., DB record deleted but blockchain entry remains, or hash mismatch).
+            logging.warning(
+                f"Medical record with hash {record_hash} found on blockchain for patient {current_user.id} "
+                f"(DID: {current_user.did}) but not found in local DB or not matching this patient_id."
+            )
+    
+    # Apply pagination to the final list of verified and retrieved records.
+    # This is done after all blockchain hashes have been processed and DB records fetched.
+    paginated_records = retrieved_records[skip : skip + limit]
+    return paginated_records
 
 
 @router.get(

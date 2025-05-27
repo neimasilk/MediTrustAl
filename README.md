@@ -105,6 +105,9 @@ pytest tests/test_specific_file.py
 npx hardhat test
 ```
 
+### Catatan untuk Developer (Developer Notes)
+- **Endpoint `/api/v1/medical-records/patient/me`**: Pengambilan rekam medis melalui endpoint ini sekarang bergantung pada `BlockchainService` yang mengembalikan hash rekam medis terkait DID pasien. Dalam pengembangan lokal dan pengujian integrasi, pastikan metode `get_record_hashes_for_patient` dari `BlockchainService` (yang di-mock dalam `tests/conftest.py`) dikonfigurasi untuk mengembalikan hash yang sesuai agar rekam medis muncul.
+
 ## Troubleshooting
 
 ### Database Issues

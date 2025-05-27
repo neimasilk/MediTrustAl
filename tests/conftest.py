@@ -4,7 +4,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 import os
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock, AsyncMock # Added AsyncMock
 
 from src.app.main import app
 from src.app.core.database import Base, get_db
@@ -165,9 +165,35 @@ def client(db_session):
     # Get the service instance and mock its methods
     # This ensures we are mocking the actual instance that will be used by the app
     # and respects the lazy initialization (service is fetched only when client fixture is used)
-    service_instance = get_blockchain_service()
-    service_instance.register_user = mock_register_user
+    service_instance = get_blockchain_service() # This is the singleton instance
+    
+    # Mock existing methods as before
+    service_instance.register_user = mock_register_user 
     service_instance.get_user_role = mock_get_user_role
+
+    # Add a MagicMock for the new method get_record_hashes_for_patient
+    # Set a default return value that tests can override if needed.
+    # This makes the mock available on the service_instance that the app will use.
+    # Since get_record_hashes_for_patient is an async method, it should be mocked with AsyncMock.
+    service_instance.get_record_hashes_for_patient = AsyncMock(
+        return_value={'success': True, 'data': {'hashes': []}} # Default: success, no hashes
+    )
     
     yield TestClient(app)
-    del app.dependency_overrides[get_db] 
+    
+    # Clean up: remove dependency overrides
+    del app.dependency_overrides[get_db]
+    # It's also good practice to reset mocks on the singleton if tests might interfere,
+    # though pytest fixtures usually provide good isolation for the test client.
+    # For instance, if a test modifies service_instance.get_record_hashes_for_patient.return_value,
+    # it might affect other tests if the service_instance is truly a persistent singleton across tests
+    # not using this client fixture. However, get_blockchain_service() reuses _blockchain_service_instance.
+    # Resetting to original methods or fresh mocks for each test session using the fixture is safer.
+    # The current approach re-mocks it each time the client fixture is set up.
+    # To be absolutely safe for service_instance if it's a true singleton shared across tests:
+    # 1. Store original methods before mocking in fixture setup.
+    # 2. Restore original methods in fixture teardown.
+    # For now, this approach is common for FastAPI TestClient setup where the app's
+    # dependencies are overridden for the duration of the client's lifecycle.
+    # The key is that `get_blockchain_service()` will return the same `_blockchain_service_instance`
+    # so mocking its methods directly affects what the app sees when `Depends(get_blockchain_service)` is resolved.

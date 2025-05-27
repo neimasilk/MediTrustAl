@@ -118,4 +118,59 @@ describe("MedicalRecordRegistry", function () {
             expect(metadata.submitter).to.equal(ethers.ZeroAddress); // Default for address
         });
     });
+
+    describe("getRecordHashesByPatient", function () {
+        it("Should return correct record hashes for a patient with multiple records", async function () {
+            const patientDid1 = "did:example:patientWithMultipleRecords";
+            const recordHash1 = ethers.encodeBytes32String("patient1RecordHash1");
+            const recordHash2 = ethers.encodeBytes32String("patient1RecordHash2");
+            const recordType1 = "IMMUNIZATION";
+            const recordType2 = "ALLERGY";
+
+            await medicalRecordRegistry.connect(addr1).addRecord(recordHash1, patientDid1, recordType1);
+            await medicalRecordRegistry.connect(addr1).addRecord(recordHash2, patientDid1, recordType2);
+
+            const hashes = await medicalRecordRegistry.getRecordHashesByPatient(patientDid1);
+            expect(hashes).to.have.lengthOf(2);
+            expect(hashes).to.include(recordHash1);
+            expect(hashes).to.include(recordHash2);
+        });
+
+        it("Should return an empty array for a patient with no records", async function () {
+            const patientDidNoRecords = "did:example:patientWithNoRecords";
+            const hashes = await medicalRecordRegistry.getRecordHashesByPatient(patientDidNoRecords);
+            expect(hashes).to.be.an('array').that.is.empty;
+        });
+
+        it("Should return correct record hashes for multiple different patients", async function () {
+            const patientDidA = "did:example:patientA";
+            const recordHashA1 = ethers.encodeBytes32String("patientARecordHash1");
+            const recordTypeA1 = "CONSULTATION";
+            await medicalRecordRegistry.connect(addr1).addRecord(recordHashA1, patientDidA, recordTypeA1);
+
+            const patientDidB = "did:example:patientB";
+            const recordHashB1 = ethers.encodeBytes32String("patientBRecordHash1");
+            const recordHashB2 = ethers.encodeBytes32String("patientBRecordHash2");
+            const recordTypeB1 = "IMAGING_STUDY";
+            const recordTypeB2 = "PATHOLOGY_REPORT";
+            await medicalRecordRegistry.connect(addr2).addRecord(recordHashB1, patientDidB, recordTypeB1);
+            await medicalRecordRegistry.connect(addr2).addRecord(recordHashB2, patientDidB, recordTypeB2);
+            
+            // Verify for patient A
+            const hashesA = await medicalRecordRegistry.getRecordHashesByPatient(patientDidA);
+            expect(hashesA).to.have.lengthOf(1);
+            expect(hashesA).to.include(recordHashA1);
+
+            // Verify for patient B
+            const hashesB = await medicalRecordRegistry.getRecordHashesByPatient(patientDidB);
+            expect(hashesB).to.have.lengthOf(2);
+            expect(hashesB).to.include(recordHashB1);
+            expect(hashesB).to.include(recordHashB2);
+
+            // Verify for a patient with no records added yet in this test context
+            const patientDidC = "did:example:patientC_NoRecordsInThisTest";
+            const hashesC = await medicalRecordRegistry.getRecordHashesByPatient(patientDidC);
+            expect(hashesC).to.be.an('array').that.is.empty;
+        });
+    });
 });
