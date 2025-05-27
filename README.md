@@ -4,9 +4,9 @@ Sistem manajemen rekam medis berbasis blockchain dengan integrasi AI untuk anali
 
 ## Persyaratan Sistem
 
-- Python 3.8 atau lebih tinggi
+- Python 3.11 atau lebih tinggi
 - PostgreSQL 15.x
-- Node.js 16.x atau lebih tinggi (untuk smart contract development)
+- Node.js 20.x LTS atau lebih tinggi (untuk smart contract development)
 - Ganache (untuk blockchain development lokal)
 
 ## Setup Environment Development
@@ -84,6 +84,15 @@ Sistem manajemen rekam medis berbasis blockchain dengan integrasi AI untuk anali
 2. Akses API documentation:
    - http://localhost:8000/docs (Swagger UI)
    - http://localhost:8000/redoc (ReDoc)
+
+## Status Implementasi
+
+- [x] Implementasi manajemen rekam medis (MVP Core)
+- [x] Integrasi blockchain (UserRegistry & MedicalRecordRegistry)
+- [x] Sistem autentikasi dan registrasi pengguna
+- [x] Integrasi AI/NLP (Placeholder implemented)
+- [x] Unit & integration testing untuk fitur utama
+- [ ] AI Predictive Service (Placeholder, next step)
 
 ## Testing
 

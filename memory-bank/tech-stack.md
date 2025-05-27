@@ -1,6 +1,6 @@
 # **MediTrustAl: Tech Stack Recommendation (tech-stack.md)**
 
-## **1\. Guiding Principles**
+## **1. Guiding Principles**
 
 The proposed tech stack for MediTrustAl aims for:
 
@@ -12,9 +12,9 @@ The proposed tech stack for MediTrustAl aims for:
 * **Developer Ecosystem & Talent Availability:** Choosing technologies with strong community support and available talent.  
 * **Simplicity where possible:** Opting for the simplest effective solution to manage complexity, especially given the integration of three advanced technologies (NLP, AI, Blockchain).
 
-## **2\. Core Technology Pillars & Recommendations**
+## **2. Core Technology Pillars & Recommendations**
 
-Based on the project proposal (meditrustal\_proposal\_en\_detailed\_v2), the following tech stack is recommended:
+Based on the project proposal (meditrustal_proposal_en_detailed_v2), the following tech stack is recommended:
 
 ### **2.1. Blockchain Layer**
 
@@ -107,11 +107,21 @@ Based on the project proposal (meditrustal\_proposal\_en\_detailed\_v2), the fol
     * Key dependencies and their versions for the MVP are:
         - fastapi==0.110.0
         - uvicorn[standard]==0.27.1  (ASGI server)
-        - pydantic==2.6.3 (Data validation)
+        - pydantic[email]==2.6.3 (Data validation; [email] extra is required)
         - python-jose[cryptography]==3.3.0 (JWT handling)
         - passlib[bcrypt]==1.7.4 (Password hashing)
         - psycopg2-binary==2.9.9 (PostgreSQL driver)
         - alembic==1.13.1 (Database migrations)
+        - sqlalchemy>=2.0.0
+        - web3>=6.0.0
+        - python-dotenv>=0.19.0
+        - base58>=2.1.0
+        - black
+        - flake8
+        - pytest>=7.0.0
+        - pytest-asyncio>=0.21.0
+        - httpx>=0.24.0
+        - python-multipart>=0.0.6
   * **Linting & Formatting (Python):** Black will be used for code formatting, and Flake8 for linting, with configurations in `pyproject.toml` and `.flake8` respectively.
   * **Rationale (Original General):**
     * **Node.js:** Excellent for I/O-bound applications, real-time features (potentially needed for notifications/alerts), and has a large ecosystem. TypeScript adds static typing for better maintainability.
