@@ -103,7 +103,7 @@ Alerts → PagerDuty
        ↓
 [NLP Pipeline]
 ├── Text Extraction
-├── Entity Recognition
+├── Entity Recognition  # Currently a placeholder; planned for MVP via DeepSeek API
 ├── Relation Extraction
 └── Text Classification
        ↓
