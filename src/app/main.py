@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from .api.endpoints import users, auth, medical_records
+from .api.endpoints import users, auth, medical_records, nlp as nlp_router
 
 app = FastAPI(
     title="MediTrustAI API",
@@ -11,6 +11,7 @@ app = FastAPI(
 app.include_router(users.router, prefix="/api/v1/users", tags=["users"])
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["authentication"])
 app.include_router(medical_records.router, prefix="/api/v1/medical-records", tags=["medical-records"])
+app.include_router(nlp_router.router, prefix="/api/v1/nlp", tags=["NLP"])
 
 @app.get("/")
 async def root():
