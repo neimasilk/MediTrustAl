@@ -30,3 +30,100 @@ export const getMyMedicalRecords = async () => {
     });
   }
 };
+
+/**
+ * Grants access to a specific medical record for a given doctor.
+ * @param {string} recordId - The ID of the medical record.
+ * @param {string} doctorAddress - The blockchain address of the doctor to grant access to.
+ * @returns {Promise<object>} The response from the server.
+ */
+export const grantAccessToRecord = async (recordId, doctorAddress) => {
+  const token = getToken();
+  if (!token) {
+    return Promise.reject('No token found');
+  }
+
+  try {
+    const response = await axios.post(
+      `http://localhost:8000/api/v1/medical-records/${recordId}/grant-access`,
+      { doctor_address: doctorAddress },
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    return response.data; // Return data directly on success
+  } catch (error) {
+    console.error('Failed to grant access to medical record:', error.response || error.message);
+    return Promise.reject(error.response || { 
+      status: 500, 
+      data: { detail: 'An unexpected error occurred while granting access.' } 
+    });
+  }
+};
+
+/**
+ * Revokes access from a specific medical record for a given doctor.
+ * @param {string} recordId - The ID of the medical record.
+ * @param {string} doctorAddress - The blockchain address of the doctor to revoke access from.
+ * @returns {Promise<object>} The response from the server.
+ */
+export const revokeAccessFromRecord = async (recordId, doctorAddress) => {
+  const token = getToken();
+  if (!token) {
+    return Promise.reject('No token found');
+  }
+
+  try {
+    const response = await axios.post(
+      `http://localhost:8000/api/v1/medical-records/${recordId}/revoke-access`,
+      { doctor_address: doctorAddress },
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    return response.data; // Return data directly on success
+  } catch (error) {
+    console.error('Failed to revoke access from medical record:', error.response || error.message);
+    return Promise.reject(error.response || { 
+      status: 500, 
+      data: { detail: 'An unexpected error occurred while revoking access.' } 
+    });
+  }
+};
+
+/**
+ * Checks if a doctor has access to a specific medical record.
+ * @param {string} recordId - The ID of the medical record.
+ * @param {string} doctorAddress - The blockchain address of the doctor.
+ * @returns {Promise<object>} The response from the server, typically indicating access status.
+ */
+export const checkRecordAccessForDoctor = async (recordId, doctorAddress) => {
+  const token = getToken();
+  if (!token) {
+    return Promise.reject('No token found');
+  }
+
+  try {
+    const response = await axios.get(
+      `http://localhost:8000/api/v1/medical-records/${recordId}/check-access/${doctorAddress}`,
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data; // Return data directly on success
+  } catch (error) {
+    console.error('Failed to check access for medical record:', error.response || error.message);
+    return Promise.reject(error.response || { 
+      status: 500, 
+      data: { detail: 'An unexpected error occurred while checking access.' } 
+    });
+  }
+};

@@ -3,6 +3,36 @@
 This document tracks the completed baby-steps during the development of the MediTrustAl project.
 
 ---
+**Date:** 2025-05-28
+**Major Step Completed:** Step 4.2 - Peningkatan Pencatatan Audit Akses Data untuk Kepatuhan PIPL
+**Summary:**
+*   Created `audit_data_access_logs` table and SQLAlchemy model (`src/app/models/audit_log.py`).
+*   Implemented CRUD operations for audit logs (`src/app/crud/crud_audit_log.py`).
+*   Integrated audit logging into `get_medical_record_detail`, `grant_medical_record_access`, and `revoke_medical_record_access` endpoints in `src/app/api/endpoints/medical_records.py`.
+*   Added API endpoint for patients to view their access history (`GET /api/v1/audit/my-record-access-history`) in `src/app/api/api_v1/endpoints/audit_logs.py`.
+*   Added relevant Pydantic schemas for audit log responses (`src/app/schemas/audit_log.py`).
+*   Added unit and integration tests for the audit log functionality.
+**Additional Notes:** Some backend tests related to medical records API (DetachedInstanceError, IntegrityError) are still failing and require manual verification for those specific edge cases. Backend test coverage is now 79%.
+---
+**Date:** 2025-05-28
+**Major Step Completed:** Step 5.1 - Antarmuka Pengguna (UI) Frontend untuk Manajemen Persetujuan Pasien
+**Summary:**
+*   Added frontend services (`grantAccessToRecord`, `revokeAccessFromRecord`, `checkRecordAccessForDoctor`) in `frontend/src/services/medicalRecordService.js`.
+*   Created `RecordAccessManagementModal.jsx` component in `frontend/src/components/` for managing consent.
+*   Integrated the modal into `DashboardPage.jsx` with a "Manage Access" button per medical record.
+*   Implemented UI and logic for granting and revoking access within the modal, including user feedback for loading, success, and error states.
+**Additional Notes:** -
+---
+**Date:** 2025-05-28
+**Major Step Completed:** Step 5.2 - Integrasi Nyata dengan API NLP DeepSeek
+**Summary:**
+*   Stored DeepSeek API key in `.env` and updated `src/app/core/config.py` to load it using `pydantic-settings`.
+*   Implemented calls to the DeepSeek API in `src/app/services/nlp_service.py`, replacing the placeholder function. This includes constructing the payload with a system prompt for medical entity extraction.
+*   Implemented DeepSeek API response processing (parsing JSON from model's content) and data transformation to `NLPEntity` format defined in `src/app/schemas/nlp.py`.
+*   Updated unit tests for `nlp_service.py` using `respx` to mock DeepSeek API calls.
+*   Updated integration tests for the NLP API endpoint (`/api/v1/nlp/extract-entities`) using `pytest-mock` to mock the `nlp_service` and test endpoint logic, including error handling.
+**Additional Notes:** Frontend display of NLP results (Baby-Step 5.2.5) was deferred. Some backend integration tests for the NLP API endpoint related to specific error message details are still failing, though the primary functionality and mocking strategy were improved.
+---
 
 **Date:** (Assumed Recently Completed)
 **Baby Step Completed:** Phase 3, Step 3.1 - NLP Service (Placeholder)

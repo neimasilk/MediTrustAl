@@ -1,12 +1,34 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # Load environment variables from .env file
 load_dotenv()
 
-# Project base directory
+# Define settings using Pydantic BaseSettings
+class Settings(BaseSettings):
+    DEEPSEEK_API_KEY: str = "your_default_deepseek_api_key_if_any"
+    
+    # If other existing configs were to be moved here, they'd be defined as:
+    # DATABASE_URL: str
+    # JWT_SECRET_KEY: str
+    # ... etc.
+
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+
+settings = Settings()
+
+# API Version - can remain as a global constant or move into Settings
+API_V1_STR = "/api/v1"
+
+# Project base directory - remains a global constant
 BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent
+
+# Existing dictionary-based configurations can remain for now,
+# or be gradually refactored into the Settings class.
+# For this task, we ensure DEEPSEEK_API_KEY is loaded via pydantic-settings.
+# The existing os.getenv calls will still work for .env loaded by load_dotenv().
 
 # Blockchain configuration
 BLOCKCHAIN_CONFIG = {
