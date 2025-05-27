@@ -1,10 +1,28 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware # Added import
 from src.app.api.endpoints import users, auth, medical_records, nlp as nlp_router, ai
+
+# Define allowed origins for CORS
+origins = [
+    "http://localhost:5173",  # Vite default frontend URL
+    "http://localhost:3000",  # Common React development URL
+    # Add other origins if necessary, e.g., production frontend URL
+]
 
 app = FastAPI(
     title="MediTrustAI API",
     description="API for MediTrustAI blockchain-based user registry",
     version="1.0.0"
+)
+
+# Add CORS middleware
+# This should be added before any routers
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all standard methods
+    allow_headers=["*"],  # Allows all headers
 )
 
 # Include routers with consistent API versioning

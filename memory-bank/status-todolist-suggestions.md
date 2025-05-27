@@ -17,7 +17,8 @@
     * Step 2.3: Basic Patient Data Retrieval (Full Backend Logic & Integration with "Live" Ganache Smart Contract) - ✅ SELESAI.
     * Step 3.1: Placeholder NLP Service - ✅ SELESAI.
     * Step 3.2: Placeholder AI Predictive Service - ✅ SELESAI.
-* **Next Step (sesuai `implementation-plan.md`):** Step 3.3: Basic Frontend Shell (Patient Portal).
+    * Step 3.3: Basic Frontend Shell (Patient Portal) - ✅ SELESAI.
+* **Next Step (sesuai `implementation-plan.md`):** Rancang Baby Step Berikutnya.
 
 ## Progress Update (Snapshot 2025-05-27 - Mencerminkan status saat ini):
 1.  **Database Setup** ✅ SELESAI
@@ -82,16 +83,18 @@
     * [x] Tes integrasi untuk API endpoint AI.
     * [x] Verifikasi dan pembaruan dokumentasi OpenAPI (Swagger).
 
+8.  **Basic Frontend Shell (Patient Portal - Step 3.3)** ✅ SELESAI
+    * [x] Setup proyek frontend dasar (React.js dengan Vite).
+    * [x] Implementasi halaman login (UI, service, panggil API, simpan token).
+    * [x] Pengaturan state management (Redux Toolkit untuk auth).
+    * [x] Implementasi protected routes.
+    * [x] Implementasi halaman dashboard dasar (logout, panggil API untuk rekam medis, tampilkan data).
+    * [x] Konfigurasi CORS di backend.
+    * [x] Pembuatan panduan tes manual (`petunjuk-manual-test.md`).
+
 ## Immediate Next Steps (Baby-Step To-Do List):
 
-1.  **Implementasi Step 3.3: Basic Frontend Shell (Patient Portal)** - ⏳ SEDANG DIKERJAKAN
-    * Setup proyek frontend dasar (React.js sesuai `tech-stack.md`).
-    * Buat halaman login sederhana yang memanggil endpoint `/api/v1/auth/login`.
-    * Implementasikan penyimpanan token (misalnya, `localStorage` atau state management).
-    * Buat halaman dashboard dasar yang dapat diakses setelah login.
-    * Pada dashboard, tampilkan daftar metadata rekam medis pasien dengan memanggil endpoint `/api/v1/medical-records/patient/me`.
-    * (Opsional untuk MVP awal) Tambahkan tombol untuk melihat detail rekam medis (memanggil `/api/v1/medical-records/{record_id}`).
-    * Pastikan dokumentasi dan tes dasar untuk frontend shell ini.
+1.  **Rancang Baby Step Berikutnya:** Tentukan detail untuk langkah implementasi selanjutnya (misalnya, Step 3.4 atau fitur frontend berikutnya).
 
 ## Technical Debt & Future Considerations:
 
@@ -122,13 +125,12 @@
 
 ## Next Meeting Agenda (Saran):
 
-1.  **Review Implementasi Step 3.2 (Placeholder AI Predictive Service) - SELESAI**: Konfirmasi penyelesaian.
-2.  **Pembahasan Detail dan Implementasi Step 3.3 (Basic Frontend Shell)**:
-    * Finalisasi teknologi frontend dan struktur dasar proyek.
-    * Detailkan komponen UI untuk login dan dashboard.
-    * Bagaimana token akan dikelola di frontend.
-    * Strategi pemanggilan API backend.
+    * **Review Implementasi Step 3.3 (Basic Frontend Shell) - SELESAI**: Konfirmasi penyelesaian.
+    * **Pembahasan Detail dan Implementasi Langkah Berikutnya**:
+        * Finalisasi detail untuk langkah implementasi berikutnya (misalnya, Step 3.4 atau fitur frontend berikutnya).
+        * Rencanakan komponen UI dan logika yang dibutuhkan.
+        * Identifikasi API backend yang mungkin diperlukan atau dimodifikasi.
 3.  **Prioritisasi Technical Debt**: Tinjau kembali daftar _technical debt_. Apakah ada yang perlu segera ditangani sebelum Fase 4?
 4.  **Perencanaan Awal Step 4.1 (Simplified Consent Logic in Chaincode)**: Meskipun masih jauh, diskusi awal mengenai bagaimana mekanisme konsen sederhana akan diimplementasikan di smart contract dapat dimulai.
 
-*(Note: This file was last updated on 2025-05-27 based on completion of Step 3.2.)*
+*(Note: This file was last updated on 2025-05-28 based on completion of Step 3.3.)*
