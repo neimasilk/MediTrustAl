@@ -45,7 +45,7 @@ async def test_extract_entities_endpoint_service_raises_value_error(client: Test
     response = client.post(f"{API_V1_STR}/nlp/extract-entities", json={"text": "Test API key error."})
     assert response.status_code == 503
     # The endpoint constructs a detailed message, check for its core part
-    assert "Error communicating with NLP service (DeepSeek API): 500" in response.json()["detail"]
+    assert "NLP service configuration error: DEEPSEEK_API_KEY not configured." in response.json()["detail"]
 
 
 @pytest.mark.asyncio
@@ -60,8 +60,7 @@ async def test_extract_entities_endpoint_service_raises_http_status_error(client
 
     response = client.post(f"{API_V1_STR}/nlp/extract-entities", json={"text": "Test DeepSeek API error."})
     assert response.status_code == 503 # Service Unavailable
-    assert "Service unavailable" in response.json()["detail"]
-    assert "Error communicating with NLP service" in response.json()["detail"]
+    assert "Error communicating with NLP service (DeepSeek API): 500 - DeepSeek API Error" in response.json()["detail"]
 
 
 @pytest.mark.asyncio
@@ -73,8 +72,7 @@ async def test_extract_entities_endpoint_service_raises_request_error(client: Te
 
     response = client.post(f"{API_V1_STR}/nlp/extract-entities", json={"text": "Test network error."})
     assert response.status_code == 503 # Service Unavailable
-    assert "Service unavailable" in response.json()["detail"]
-    assert "Network error communicating with NLP service" in response.json()["detail"]
+    assert "Network error communicating with NLP service: Network error" in response.json()["detail"]
 
 
 def test_extract_entities_nlp_api_invalid_request_missing_text(client: TestClient): # client fixture was already here

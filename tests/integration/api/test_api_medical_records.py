@@ -483,7 +483,7 @@ def test_get_medical_record_detail_success_patient_owner(client: TestClient, aut
     )
     record_id = created_db_record.id
     db_session.commit()
-
+    db_session.refresh(created_db_record)
 
     response = client.get(f"/api/v1/medical-records/{record_id}", headers=headers)
     assert response.status_code == status.HTTP_200_OK
@@ -497,7 +497,7 @@ def test_get_medical_record_detail_success_patient_owner(client: TestClient, aut
     assert validated_detail.record_metadata == {"device":"Oximeter"}
     assert validated_detail.raw_data == raw_data_content
 
-    db_record = crud_medical_record.get_medical_record_by_id(db_session, record_id=created_db_record.id)
+    db_record = crud_medical_record.get_medical_record_by_id(db_session, record_id=record_id)
     assert db_record is not None
     assert db_record.patient_id == user_id
     assert db_record.record_metadata == {"device":"Oximeter"}
@@ -583,12 +583,14 @@ def test_get_medical_record_detail_decryption_failure(
     )
     record_id = created_db_record.id
     db_session.commit()
+    db_session.refresh(created_db_record)
 
+    encrypted_data_val = created_db_record.encrypted_data
 
     response = client.get(f"/api/v1/medical-records/{record_id}", headers=headers)
     assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
     assert "Failed to decrypt record data" in response.json()["detail"]
-    mock_decrypt_data.assert_called_once_with(created_db_record.encrypted_data, TEST_ENCRYPTION_KEY)
+    mock_decrypt_data.assert_called_once_with(encrypted_data_val, TEST_ENCRYPTION_KEY)
 
 
 # --- Doctor Access Tests for GET /api/v1/medical-records/{record_id} ---
@@ -677,19 +679,6 @@ def test_get_medical_record_detail_doctor_record_no_data_hash(
 ):
     # Modify record to have no data_hash
     record_id = created_record_for_access_tests["id"]
-    db_record = crud_medical_record.get_medical_record_by_id(db_session, record_id=record_id)
-    assert db_record is not None, "Record not found in DB for modification"
-    db_record.data_hash = None 
-    # Do not commit this change to avoid IntegrityError.
-    # The endpoint will see the in-memory change if the db_session is not expired or refreshed
-    # For a cleaner test, it might be better to mock get_medical_record_by_id to return this modified object.
-    # However, for this test, we'll rely on the session's in-memory state of db_record.
-    # If the endpoint re-fetches, this test might not work as intended.
-    # Given the current structure, the endpoint uses the db_record passed to it (if not using DI for crud object).
-    # Let's assume the endpoint uses the db_record instance fetched by the test setup for now.
-    # A safer approach would be to mock the crud_medical_record.get_medical_record_by_id call
-    # within the endpoint itself if this test becomes flaky.
-    # For now, let's proceed by simply not committing. The instance `db_record` will have data_hash as None.
     # The endpoint `get_medical_record_detail` fetches its own copy, so this won't work.
     # The proper way is to ensure the record is created without a data_hash IF that's a valid state,
     # or mock the return of `get_medical_record_by_id`.
