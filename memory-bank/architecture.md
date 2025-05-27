@@ -72,20 +72,25 @@ Connection Pool (20 max)
 
 ### Blockchain Architecture
 ```
-Development:
+Development/MVP:
 [Ganache Local Node]
        ↓
-[Truffle Framework]
+[Hardhat Development Environment]  # Sesuai dengan tech-stack.md yang merekomendasikan Hardhat
        ↓
-[Smart Contracts]
+[Smart Contracts (Solidity)]
 
 Production (Future):
 [Hyperledger Fabric]
        ↓
-[Chaincode]
+[Chaincode (Go/Java)]
        ↓
 [Channels]
 ```
+
+**Catatan Migrasi:**
+- Abstraction layer akan dikembangkan untuk memfasilitasi transisi dari Ganache/Ethereum ke Hyperledger Fabric
+- Pengujian migrasi akan dilakukan di lingkungan staging sebelum implementasi produksi
+- Transisi akan dilakukan secara bertahap sesuai dengan rencana migrasi di tech-stack.md
 
 ### Monitoring Architecture
 ```

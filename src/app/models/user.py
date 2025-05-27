@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 from sqlalchemy import Column, String, Boolean, DateTime, Enum as SQLEnum
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
@@ -26,8 +26,8 @@ class User(Base):
     did = Column(String(100), unique=True, nullable=False)  # Decentralized Identifier
     role = Column(SQLEnum(UserRole), nullable=False)
     is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
-    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
     # Relationship to MedicalRecord
     medical_records = relationship("MedicalRecord", back_populates="patient", cascade="all, delete-orphan")
@@ -75,4 +75,4 @@ class TokenData(BaseModel):
 
 class UserLogin(BaseModel):
     username_or_email: str
-    password: constr(min_length=8) 
+    password: constr(min_length=8)

@@ -49,7 +49,7 @@ CREATE INDEX idx_sessions_refresh_token ON sessions(refresh_token);
 CREATE TABLE medical_records (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     patient_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    blockchain_record_id VARCHAR(66) UNIQUE NOT NULL,  -- Ethereum tx hash format
+    blockchain_record_id VARCHAR(66) UNIQUE NOT NULL,  -- Ethereum transaction hash (tx_hash) yang dihasilkan saat mencatat data_hash ke blockchain
     record_type VARCHAR(50) NOT NULL CHECK (record_type IN (
         'DIAGNOSIS',
         'LAB_RESULT',
@@ -60,7 +60,7 @@ CREATE TABLE medical_records (
         'IMAGING',
         'VACCINATION'
     )),
-    metadata JSONB,  -- Additional metadata specific to record type
+    record_metadata JSONB,  -- Additional metadata specific to record type (sesuai dengan nama di model ORM dan Pydantic)
     encrypted_data BYTEA NOT NULL, -- Encrypted FHIR R4 data (AES-256-GCM suggested)
     data_hash VARCHAR(64) NOT NULL,  -- SHA-256 hash of unencrypted data
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -71,7 +71,7 @@ CREATE TABLE medical_records (
 CREATE INDEX idx_medical_records_patient_id ON medical_records(patient_id);
 CREATE INDEX idx_medical_records_blockchain_record_id ON medical_records(blockchain_record_id);
 CREATE INDEX idx_medical_records_record_type ON medical_records(record_type);
-CREATE INDEX idx_medical_records_metadata ON medical_records USING gin (metadata);
+CREATE INDEX idx_medical_records_record_metadata ON medical_records USING gin (record_metadata);
 ```
 
 #### Record Types Documentation
@@ -347,4 +347,4 @@ CREATE TABLE data_deletion_requests (
 
 CREATE INDEX idx_data_deletion_requests_user ON data_deletion_requests(user_id);
 CREATE INDEX idx_data_deletion_requests_status ON data_deletion_requests(status);
-``` 
+```

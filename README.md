@@ -106,7 +106,15 @@ npx hardhat test
 ```
 
 ### Catatan untuk Developer (Developer Notes)
-- **Endpoint `/api/v1/medical-records/patient/me`**: Pengambilan rekam medis melalui endpoint ini sekarang bergantung pada `BlockchainService` yang mengembalikan hash rekam medis terkait DID pasien. Dalam pengembangan lokal dan pengujian integrasi, pastikan metode `get_record_hashes_for_patient` dari `BlockchainService` (yang di-mock dalam `tests/conftest.py`) dikonfigurasi untuk mengembalikan hash yang sesuai agar rekam medis muncul.
+- **Endpoint `/api/v1/medical-records/patient/me`**: Pengambilan rekam medis melalui endpoint ini bergantung pada `BlockchainService` yang mengembalikan hash rekam medis (data_hash) terkait DID pasien melalui metode `get_record_hashes_for_patient`. Perhatikan bahwa:
+  - Fungsi `get_record_hashes_for_patient` mengembalikan array hash rekam medis (data_hash) dari blockchain, bukan transaction hash.
+  - Kolom `blockchain_record_id` di database menyimpan transaction hash (tx_hash) yang dihasilkan saat mencatat data_hash ke blockchain, bukan data_hash itu sendiri.
+  - Pencocokan antara hash dari blockchain dan rekam medis di database dilakukan menggunakan kolom `data_hash`, bukan `blockchain_record_id`.
+  - Dalam pengembangan lokal dan pengujian integrasi, pastikan metode `get_record_hashes_for_patient` dari `BlockchainService` (yang di-mock dalam `tests/conftest.py`) dikonfigurasi untuk mengembalikan hash yang sesuai dengan kolom `data_hash` di database agar rekam medis muncul.
+
+- **Nama Kolom Database vs Model ORM**: Perhatikan bahwa terdapat perbedaan penamaan antara kolom di database dan atribut di model ORM:
+  - Kolom `record_metadata` di database (sebelumnya bernama `metadata` di file migrasi) dipetakan ke atribut `record_metadata` di model ORM dan Pydantic.
+  - Jika Anda menggunakan SQL langsung atau alat database lain, pastikan untuk merujuk ke nama kolom yang benar (`record_metadata`).
 
 ## Troubleshooting
 

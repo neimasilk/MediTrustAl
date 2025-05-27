@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum as PyEnum
 from typing import Optional
 
@@ -32,8 +32,8 @@ class MedicalRecord(Base):
     record_metadata = Column(JSONB, nullable=True) # Renamed from metadata
     encrypted_data = Column(LargeBinary, nullable=False)
     data_hash = Column(String(64), nullable=False)
-    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
-    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
     patient = relationship("User", back_populates="medical_records")
 

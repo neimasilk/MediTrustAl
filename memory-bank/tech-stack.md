@@ -46,6 +46,9 @@ Based on the project proposal (meditrustal\_proposal\_en\_detailed\_v2), the fol
     * High performance and scalability
     * Strong encryption capabilities
     * Compatibility with S3 API for future flexibility
+  * **Deployment Location:**
+    * **MVP:** Self-hosted on development servers
+    * **Production:** Deployed on hospital servers or PIPL-compliant secure cloud infrastructure, sesuai dengan spesifikasi di product-design-document.md yang menyebutkan "Raw medical data stored off-chain (hospital servers/secure cloud)"
 
 ### **2.2. NLP & AI Layer**
 
