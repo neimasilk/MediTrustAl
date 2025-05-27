@@ -15,9 +15,15 @@ contract MedicalRecordRegistry {
     // New state variable for the current subtask
     mapping(string => bytes32[]) private patientRecordHashes;
 
+    // Mapping for access control: recordHash => doctorAddress => accessStatus
+    mapping(bytes32 => mapping(address => bool)) internal recordAccessList;
+
     event RecordAdded(bytes32 indexed recordHash, string indexed patientDid, string recordType, uint256 timestamp, address indexed submitter);
+    event AccessGranted(bytes32 indexed recordHash, address indexed ownerAddress, address indexed doctorAddress, uint256 timestamp);
+    event AccessRevoked(bytes32 indexed recordHash, address indexed ownerAddress, address indexed doctorAddress, uint256 timestamp);
 
     error RecordAlreadyExists(bytes32 recordHash);
+    error NotRecordOwner(bytes32 recordHash, address caller);
 
     // Modified addRecord to align with existing tests and integrate new functionality
     function addRecord(bytes32 recordHash, string calldata patientDid, string calldata recordType) external {
@@ -35,6 +41,32 @@ contract MedicalRecordRegistry {
         patientRecordHashes[patientDid].push(recordHash);
 
         emit RecordAdded(recordHash, patientDid, recordType, block.timestamp, msg.sender);
+    }
+
+    function grantAccess(bytes32 recordHash, address doctorAddress) external {
+        RecordMetadata memory metadata = recordMetadataMap[recordHash];
+        // Ensure the record exists by checking if the submitter is not the zero address
+        require(metadata.submitter != address(0), "Record does not exist"); 
+        if (msg.sender != metadata.submitter) {
+            revert NotRecordOwner(recordHash, msg.sender);
+        }
+        recordAccessList[recordHash][doctorAddress] = true;
+        emit AccessGranted(recordHash, msg.sender, doctorAddress, block.timestamp);
+    }
+
+    function revokeAccess(bytes32 recordHash, address doctorAddress) external {
+        RecordMetadata memory metadata = recordMetadataMap[recordHash];
+        // Ensure the record exists by checking if the submitter is not the zero address
+        require(metadata.submitter != address(0), "Record does not exist");
+        if (msg.sender != metadata.submitter) {
+            revert NotRecordOwner(recordHash, msg.sender);
+        }
+        recordAccessList[recordHash][doctorAddress] = false;
+        emit AccessRevoked(recordHash, msg.sender, doctorAddress, block.timestamp);
+    }
+
+    function checkAccess(bytes32 recordHash, address accessorAddress) external view returns (bool) {
+        return recordAccessList[recordHash][accessorAddress];
     }
 
     // getRecordMetadata function as per existing tests

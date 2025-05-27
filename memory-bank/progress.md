@@ -32,3 +32,19 @@ Example Progress Entry (to be added later after the first baby-step is completed
 **Link to Commit (if relevant):** https://github.com/git-guides/git-commit
 **Additional Notes:** -
 ---
+---
+**Date:** 2025-05-27
+**Baby Step Completed:** Phase 4, Step 4.1 - Simplified Consent Logic in Smart Contract and Backend
+**Summary:**
+*   Modified `MedicalRecordRegistry.sol` smart contract to include `recordAccessList` mapping, `grantAccess`, `revokeAccess`, and `checkAccess` functions with associated events and error handling. Unit tests for these changes were added and passed.
+*   Updated `BlockchainService` in `src/app/core/blockchain.py` with `grant_record_access`, `revoke_record_access`, and `check_record_access` methods, along with corresponding unit tests.
+*   Implemented new API endpoints in `src/app/api/endpoints/medical_records.py`:
+    *   `POST /medical-records/{record_id}/grant-access`
+    *   `POST /medical-records/{record_id}/revoke-access`
+    *   `GET /medical-records/{record_id}/check-access/{accessor_address}` (helper endpoint)
+*   Defined `GrantAccessRequest` Pydantic model with validation.
+*   Modified `GET /medical-records/{record_id}` API endpoint to include access control checks for doctors based on blockchain permissions.
+*   Added comprehensive integration tests for all new and modified API endpoints.
+*   Added deployment instructions for the smart contract to `memory-bank/petunjuk-manual-test.md`.
+**Additional Notes:** User will handle manual deployment of the smart contract to their local Ganache. One integration test (`test_get_medical_record_detail_doctor_record_no_data_hash`) has a minor discrepancy in the expected error message detail, though the HTTP status code is correct.
+---
