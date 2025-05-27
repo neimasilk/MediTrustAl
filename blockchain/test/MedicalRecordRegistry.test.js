@@ -173,4 +173,134 @@ describe("MedicalRecordRegistry", function () {
             expect(hashesC).to.be.an('array').that.is.empty;
         });
     });
+
+    describe("Access Control", function () {
+        let recordHash;
+        let patientDid;
+        let recordType;
+        let ownerAddress; // Will be addr1 who adds the record
+        let doctorAddress; // Will be addr2
+
+        beforeEach(async function () {
+            recordHash = ethers.encodeBytes32String("accessTestRecordHash");
+            patientDid = "did:example:accessPatient";
+            recordType = "X-RAY";
+            ownerAddress = addr1; // addr1 will submit the record
+            doctorAddress = addr2; // addr2 will be the doctor
+
+            // Add a record as addr1
+            await medicalRecordRegistry.connect(ownerAddress).addRecord(recordHash, patientDid, recordType);
+        });
+
+        describe("grantAccess", function () {
+            it("Should allow record owner to grant access and emit AccessGranted event", async function () {
+                const grantTx = await medicalRecordRegistry.connect(ownerAddress).grantAccess(recordHash, doctorAddress.address);
+                const receipt = await grantTx.wait();
+                const expectedTimestamp = (await ethers.provider.getBlock(receipt.blockNumber)).timestamp;
+
+                await expect(grantTx)
+                    .to.emit(medicalRecordRegistry, "AccessGranted")
+                    .withArgs(recordHash, ownerAddress.address, doctorAddress.address, expectedTimestamp);
+
+                expect(await medicalRecordRegistry.checkAccess(recordHash, doctorAddress.address)).to.be.true;
+            });
+
+            it("Should revert if non-owner tries to grant access", async function () {
+                await expect(
+                    medicalRecordRegistry.connect(doctorAddress).grantAccess(recordHash, ownerAddress.address) // doctorAddress (addr2) is not the owner
+                ).to.be.revertedWithCustomError(medicalRecordRegistry, "NotRecordOwner")
+                 .withArgs(recordHash, doctorAddress.address);
+            });
+
+            it("Should revert if trying to grant access to a non-existent record", async function () {
+                const nonExistentRecordHash = ethers.encodeBytes32String("nonExistentForAccess");
+                await expect(
+                    medicalRecordRegistry.connect(ownerAddress).grantAccess(nonExistentRecordHash, doctorAddress.address)
+                ).to.be.revertedWith("Record does not exist"); // Using require message from contract
+            });
+        });
+
+        describe("revokeAccess", function () {
+            beforeEach(async function () {
+                // Grant access first before attempting to revoke
+                await medicalRecordRegistry.connect(ownerAddress).grantAccess(recordHash, doctorAddress.address);
+                expect(await medicalRecordRegistry.checkAccess(recordHash, doctorAddress.address)).to.be.true; // Verify access was granted
+            });
+
+            it("Should allow record owner to revoke access and emit AccessRevoked event", async function () {
+                const revokeTx = await medicalRecordRegistry.connect(ownerAddress).revokeAccess(recordHash, doctorAddress.address);
+                const receipt = await revokeTx.wait();
+                const expectedTimestamp = (await ethers.provider.getBlock(receipt.blockNumber)).timestamp;
+
+                await expect(revokeTx)
+                    .to.emit(medicalRecordRegistry, "AccessRevoked")
+                    .withArgs(recordHash, ownerAddress.address, doctorAddress.address, expectedTimestamp);
+
+                expect(await medicalRecordRegistry.checkAccess(recordHash, doctorAddress.address)).to.be.false;
+            });
+
+            it("Should revert if non-owner tries to revoke access", async function () {
+                // Attempt to revoke by addr2 (doctorAddress), who is not the owner
+                await expect(
+                    medicalRecordRegistry.connect(doctorAddress).revokeAccess(recordHash, doctorAddress.address)
+                ).to.be.revertedWithCustomError(medicalRecordRegistry, "NotRecordOwner")
+                 .withArgs(recordHash, doctorAddress.address);
+            });
+
+            it("Should revert if trying to revoke access to a non-existent record", async function () {
+                const nonExistentRecordHash = ethers.encodeBytes32String("nonExistentForRevoke");
+                await expect(
+                    medicalRecordRegistry.connect(ownerAddress).revokeAccess(nonExistentRecordHash, doctorAddress.address)
+                ).to.be.revertedWith("Record does not exist");
+            });
+
+            it("Should not change access status if revoking access that was never granted", async function () {
+                const anotherDoctorAddress = addr2; // Using addr2 again, but imagine it's a different doctor for clarity
+                // Ensure anotherDoctorAddress does not have access initially for this specific test logic.
+                // Note: in the global beforeEach, doctorAddress (addr2) *was* granted access.
+                // For this specific test, we want to test revoking from someone who *never* had it for *this* record.
+                // However, our current setup grants access to doctorAddress (addr2) in the top-level beforeEach.
+                // So, let's use a new address that definitely doesn't have access.
+                const newDoctorWithoutAccess = ethers.Wallet.createRandom().address;
+
+                expect(await medicalRecordRegistry.checkAccess(recordHash, newDoctorWithoutAccess)).to.be.false;
+
+                const revokeTx = await medicalRecordRegistry.connect(ownerAddress).revokeAccess(recordHash, newDoctorWithoutAccess);
+                const receipt = await revokeTx.wait();
+                const expectedTimestamp = (await ethers.provider.getBlock(receipt.blockNumber)).timestamp;
+
+                await expect(revokeTx)
+                    .to.emit(medicalRecordRegistry, "AccessRevoked") // Event is still emitted as owner can try to revoke
+                    .withArgs(recordHash, ownerAddress.address, newDoctorWithoutAccess, expectedTimestamp);
+
+                expect(await medicalRecordRegistry.checkAccess(recordHash, newDoctorWithoutAccess)).to.be.false; // Still false
+            });
+        });
+
+        describe("checkAccess", function () {
+            it("Should return true if access has been granted", async function () {
+                await medicalRecordRegistry.connect(ownerAddress).grantAccess(recordHash, doctorAddress.address);
+                expect(await medicalRecordRegistry.checkAccess(recordHash, doctorAddress.address)).to.be.true;
+            });
+
+            it("Should return false if access has not been granted", async function () {
+                // Ensure no access for a new address
+                const anotherDoctor = ethers.Wallet.createRandom().address;
+                expect(await medicalRecordRegistry.checkAccess(recordHash, anotherDoctor)).to.be.false;
+            });
+
+            it("Should return false if access was granted then revoked", async function () {
+                await medicalRecordRegistry.connect(ownerAddress).grantAccess(recordHash, doctorAddress.address);
+                expect(await medicalRecordRegistry.checkAccess(recordHash, doctorAddress.address)).to.be.true; // Granted
+
+                await medicalRecordRegistry.connect(ownerAddress).revokeAccess(recordHash, doctorAddress.address);
+                expect(await medicalRecordRegistry.checkAccess(recordHash, doctorAddress.address)).to.be.false; // Revoked
+            });
+
+            it("Should return false for a non-existent record", async function () {
+                const nonExistentRecordHash = ethers.encodeBytes32String("nonExistentForCheckAccess");
+                expect(await medicalRecordRegistry.checkAccess(nonExistentRecordHash, doctorAddress.address)).to.be.false;
+            });
+        });
+    });
 });

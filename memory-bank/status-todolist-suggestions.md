@@ -9,6 +9,7 @@
     * Step 3.1 (Placeholder NLP Service) telah selesai diimplementasikan.
     * Step 3.2 (Placeholder AI Predictive Service) telah selesai diimplementasikan.
     * Step 3.3 (Basic Frontend Shell - Patient Portal) telah selesai diimplementasikan, termasuk fungsionalitas login, dashboard untuk melihat daftar rekam medis, dan logout. Pengujian manual sesuai `petunjuk-manual-test.md` telah berhasil.
+    * Step 4.1 (Simplified Consent Logic in Smart Contract and Backend) telah selesai diimplementasikan.
 * **Last Completed Steps (merangkum `implementation-plan.md`):**
     * Step 1.1: Project Setup and Basic Backend Structure - ✅ SELESAI.
     * Step 1.2: Basic Blockchain Network Setup (Local Development - UserRegistry) - ✅ SELESAI.
@@ -19,7 +20,8 @@
     * Step 3.1: Placeholder NLP Service - ✅ SELESAI.
     * Step 3.2: Placeholder AI Predictive Service - ✅ SELESAI.
     * Step 3.3: Basic Frontend Shell (Patient Portal) - ✅ SELESAI.
-* **Next Step (sesuai `implementation-plan.md`):** Phase 4, Step 4.1 - Simplified Consent Logic in Chaincode.
+    * Step 4.1: Simplified Consent Logic in Smart Contract and Backend - ✅ SELESAI.
+* **Next Step (sesuai `implementation-plan.md`):** Phase 4, Step 4.2 - [Placeholder for next consent/access feature or PIPL alignment].
 
 ## Progress Update (Snapshot 2025-05-27 - Mencerminkan status saat ini):
 1.  **Database Setup** ✅ SELESAI
@@ -95,15 +97,18 @@
     * [x] Konfigurasi CORS di backend.
     * [x] Pembuatan panduan tes manual (`petunjuk-manual-test.md`).
 
+9.  **Consent Management (MVP - Step 4.1)** ✅ SELESAI
+    * [x] Modifikasi _smart contract_ `MedicalRecordRegistry.sol` (fungsi `grantAccess`, `revokeAccess`, `checkAccess`, event `AccessGranted`, `AccessRevoked`).
+    * [x] Update `BlockchainService` (metode `grant_record_access`, `revoke_record_access`, `check_record_access`).
+    * [x] Implementasi endpoint API backend (`grant-access`, `revoke-access`, `check-access`).
+    * [x] Modifikasi endpoint GET `/medical-records/{record_id}` untuk pemeriksaan akses dokter.
+    * [x] Penambahan tes unit dan integrasi untuk fungsionalitas konsen.
+
 ## Immediate Next Steps (Baby-Step To-Do List):
 
-1.  **Implementasi Step 4.1 (Simplified Consent Logic in Chaincode)**:
-    * Modifikasi _smart contract_ `MedicalRecordRegistry.sol`.
-    * Implementasi fungsi `grantAccess` di _smart contract_.
-    * Modifikasi fungsi _query_ rekam medis di _smart contract_ untuk memeriksa akses.
-    * Update `BlockchainService` di backend.
-    * Implementasi endpoint API backend baru untuk `grantAccess`.
-    * Implementasi pengujian untuk fungsionalitas baru ini.
+1.  **Persiapan untuk Step 4.2 [Placeholder for next consent/access feature or PIPL alignment]**:
+    *   Rancang detail implementasi untuk fitur berikutnya terkait konsen atau aspek PIPL.
+    *   Definisikan tugas-tugas spesifik yang akan dimasukkan ke `baby-step.md` berikutnya.
 
 ## Technical Debt & Future Considerations:
 
@@ -129,18 +134,16 @@
     * **[PENDING]** _Error handling_ yang lebih detail dan standar di seluruh API (lihat `implementation-plan.md` bagian "API Standards & Error Handling").
     * **[POTENTIAL REFACTOR/CLARIFICATION]** Endpoint `/api/v1/users/register` (yang hanya berinteraksi dengan blockchain) dan `/api/v1/auth/register` (yang mendaftar ke DB dan blockchain) memiliki potensi tumpang tindih fungsionalitas. Perlu diklarifikasi mana yang menjadi standar atau apakah salah satunya akan di-deprecate. Fokus utama saat ini pada `/api/v1/auth/register` untuk pendaftaran pengguna aplikasi.
     * **[INFO]** `Create Date` pada file migrasi Alembic `a1b2e4306629_create_users_table.py` masih berupa placeholder `<Tanggal Pembuatan Awal Anda>`.
-    * **[DONE]** Update file `memory-bank/progress.md` untuk mencerminkan penyelesaian Step 3.3.
+    * **[DONE]** Update file `memory-bank/progress.md` untuk mencerminkan penyelesaian Step 4.1.
     * **[SUGGESTION]** Sinkronkan bagian "Status Implementasi" di `README.md` agar konsisten dengan `status-todolist-suggestions.md` dan `implementation-plan.md`.
 
 ## Next Meeting Agenda (Saran):
 
-    * **Review Penyelesaian Step 3.3**: Pastikan semua aspek telah selesai dan teruji.
-    * **Kick-off Step 4.1 (Simplified Consent Logic in Chaincode)**:
-        * Bahas detail implementasi di `MedicalRecordRegistry.sol`.
-        * Rancang struktur data untuk daftar akses di _smart contract_.
-        * Definisikan logika untuk fungsi `grantAccess` dan modifikasi fungsi _query_ (misalnya, `getRecordMetadata` jika perlu, atau fungsi _query_ baru khusus dengan pengecekan akses).
-        * Rancang perubahan yang diperlukan di `BlockchainService` dan endpoint API backend.
-    * **Prioritisasi Technical Debt**: Apakah ada item yang kritikal untuk ditangani sebelum lanjut terlalu jauh ke Phase 4?
-    * **Persiapan Frontend untuk Fitur Konsen**: Diskusi awal bagaimana fitur pemberian akses akan ditampilkan di Patient Portal (meskipun implementasi UI mungkin di *step* selanjutnya).
+    * **Review Penyelesaian Step 4.1**: Pastikan semua aspek telah selesai dan teruji.
+    * **Kick-off Step 4.2 [Placeholder for next consent/access feature or PIPL alignment]**:
+        * Bahas detail implementasi untuk fitur berikutnya.
+        * Rancang perubahan yang diperlukan di _smart contract_, backend, dan mungkin frontend.
+    * **Prioritisasi Technical Debt**: Apakah ada item yang kritikal untuk ditangani sebelum lanjut terlalu jauh?
+    * **Persiapan Frontend untuk Fitur Konsen (Lanjutan)**: Jika Step 4.2 melibatkan UI, diskusikan lebih lanjut.
 
-*(Note: This file was last updated on 2025-05-27 based on completion of Step 3.3.)*
+*(Note: This file was last updated on 2025-05-27 based on completion of Step 4.1.)*

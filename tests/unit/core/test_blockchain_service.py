@@ -354,3 +354,243 @@ async def test_get_record_hashes_for_patient_test_mode(mock_web3_and_contracts):
 
         # Reset global instance again so other tests use the fixtured one
         blockchain_module._blockchain_service_instance = None
+
+
+@pytest.mark.asyncio
+async def test_grant_record_access_success(mock_web3_and_contracts):
+    service, mock_w3, _, mock_medical_record_contract, mock_tx_receipt = mock_web3_and_contracts
+    
+    record_hash_hex = "0x" + "a" * 64
+    doctor_address = "0x1234567890123456789012345678901234567890" # Valid address
+
+    # Mock the specific contract function call
+    mock_medical_record_contract.functions.grantAccess.return_value.build_transaction.return_value = {'gas': 200000}
+    mock_w3.eth.wait_for_transaction_receipt.return_value = mock_tx_receipt
+    mock_tx_receipt.status = 1 # Ensure success
+
+    result = await service.grant_record_access(record_hash_hex, doctor_address)
+
+    assert result['success'] is True
+    assert result['transaction_hash'] == "0xmockedtransactionhash"
+    assert result['record_hash'] == record_hash_hex
+    assert result['doctor_address'] == doctor_address
+    
+    record_hash_bytes32 = bytes.fromhex(record_hash_hex[2:])
+    mock_medical_record_contract.functions.grantAccess.assert_called_once_with(
+        record_hash_bytes32, doctor_address
+    )
+    mock_medical_record_contract.functions.grantAccess().build_transaction.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_grant_record_access_revert(mock_web3_and_contracts):
+    service, mock_w3, _, mock_medical_record_contract, mock_tx_receipt = mock_web3_and_contracts
+    
+    record_hash_hex = "0x" + "b" * 64
+    doctor_address = "0x0987654321098765432109876543210987654321"
+
+    # Simulate a transaction revert (status 0)
+    mock_tx_receipt.status = 0
+    mock_medical_record_contract.functions.grantAccess.return_value.build_transaction.return_value = {'gas': 200000}
+    mock_w3.eth.wait_for_transaction_receipt.return_value = mock_tx_receipt
+    
+    result = await service.grant_record_access(record_hash_hex, doctor_address)
+
+    assert result['success'] is False
+    assert result['error'] == "Transaction to grant access failed on blockchain."
+    assert result['transaction_hash'] == "0xmockedtransactionhash"
+
+
+@pytest.mark.asyncio
+async def test_grant_record_access_invalid_doctor_address(mock_web3_and_contracts):
+    service, mock_w3, _, _, _ = mock_web3_and_contracts
+    record_hash_hex = "0x" + "c" * 64
+    invalid_doctor_address = "0xInvalidAddress"
+
+    mock_w3.is_address.return_value = False # Simulate invalid address
+
+    result = await service.grant_record_access(record_hash_hex, invalid_doctor_address)
+    
+    assert result['success'] is False
+    assert "Invalid Ethereum address format for doctor" in result['error']
+    mock_w3.is_address.assert_called_with(invalid_doctor_address)
+
+
+@pytest.mark.asyncio
+async def test_grant_record_access_contract_call_exception(mock_web3_and_contracts):
+    service, mock_w3, _, mock_medical_record_contract, _ = mock_web3_and_contracts
+    record_hash_hex = "0x" + "d" * 64
+    doctor_address = "0xValidAddress00000000000000000000000000000"
+    mock_w3.is_address.return_value = True # Assume address is valid
+
+    # Simulate an exception during the contract call (e.g., build_transaction)
+    mock_medical_record_contract.functions.grantAccess.return_value.build_transaction.side_effect = Exception("Build TX Error")
+    
+    result = await service.grant_record_access(record_hash_hex, doctor_address)
+
+    assert result['success'] is False
+    assert "An unexpected error occurred during grantAccess: Build TX Error" in result['error']
+
+
+@pytest.mark.asyncio
+async def test_revoke_record_access_success(mock_web3_and_contracts):
+    service, mock_w3, _, mock_medical_record_contract, mock_tx_receipt = mock_web3_and_contracts
+    record_hash_hex = "0x" + "e" * 64
+    doctor_address = "0xDoctorAddressForRevokeSuccess0000000000"
+    mock_w3.is_address.return_value = True
+
+    mock_medical_record_contract.functions.revokeAccess.return_value.build_transaction.return_value = {'gas': 200000}
+    mock_w3.eth.wait_for_transaction_receipt.return_value = mock_tx_receipt
+    mock_tx_receipt.status = 1
+
+    result = await service.revoke_record_access(record_hash_hex, doctor_address)
+
+    assert result['success'] is True
+    assert result['transaction_hash'] == "0xmockedtransactionhash"
+    record_hash_bytes32 = bytes.fromhex(record_hash_hex[2:])
+    mock_medical_record_contract.functions.revokeAccess.assert_called_once_with(
+        record_hash_bytes32, doctor_address
+    )
+    mock_medical_record_contract.functions.revokeAccess().build_transaction.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_revoke_record_access_revert(mock_web3_and_contracts):
+    service, mock_w3, _, mock_medical_record_contract, mock_tx_receipt = mock_web3_and_contracts
+    record_hash_hex = "0x" + "f" * 64
+    doctor_address = "0xDoctorAddressForRevokeRevert0000000000"
+    mock_w3.is_address.return_value = True
+    
+    mock_tx_receipt.status = 0 # Simulate revert
+    mock_medical_record_contract.functions.revokeAccess.return_value.build_transaction.return_value = {'gas': 200000}
+    mock_w3.eth.wait_for_transaction_receipt.return_value = mock_tx_receipt
+
+    result = await service.revoke_record_access(record_hash_hex, doctor_address)
+
+    assert result['success'] is False
+    assert result['error'] == "Transaction to revoke access failed on blockchain."
+
+
+@pytest.mark.asyncio
+async def test_revoke_record_access_invalid_doctor_address(mock_web3_and_contracts):
+    service, mock_w3, _, _, _ = mock_web3_and_contracts
+    record_hash_hex = "0x" + "g" * 64
+    invalid_doctor_address = "0xInvalidRevokeAddress"
+    mock_w3.is_address.return_value = False
+
+    result = await service.revoke_record_access(record_hash_hex, invalid_doctor_address)
+
+    assert result['success'] is False
+    assert "Invalid Ethereum address format for doctor" in result['error']
+    mock_w3.is_address.assert_called_with(invalid_doctor_address)
+
+
+@pytest.mark.asyncio
+async def test_revoke_record_access_contract_call_exception(mock_web3_and_contracts):
+    service, mock_w3, _, mock_medical_record_contract, _ = mock_web3_and_contracts
+    record_hash_hex = "0x" + "a" * 64 # Changed 'h' to 'a'
+    doctor_address = "0xValidRevokeAddress0000000000000000000000"
+    mock_w3.is_address.return_value = True
+
+    mock_medical_record_contract.functions.revokeAccess.return_value.build_transaction.side_effect = Exception("Revoke Build TX Error")
+    
+    result = await service.revoke_record_access(record_hash_hex, doctor_address)
+
+    assert result['success'] is False
+    assert "An unexpected error occurred during revokeAccess: Revoke Build TX Error" in result['error']
+
+
+@pytest.mark.asyncio
+async def test_check_record_access_success_has_access(mock_web3_and_contracts):
+    service, mock_w3, _, mock_medical_record_contract, _ = mock_web3_and_contracts
+    record_hash_hex = "0x" + "b" * 64 # Changed 'i' to 'b'
+    accessor_address = "0xAccessorHasAccess0000000000000000000000"
+    mock_w3.is_address.return_value = True
+
+    # Simulate contract call returning True (has access)
+    mock_medical_record_contract.functions.checkAccess.return_value.call.return_value = True
+
+    result = await service.check_record_access(record_hash_hex, accessor_address)
+
+    assert result['success'] is True
+    assert result['has_access'] is True
+    assert result['record_hash'] == record_hash_hex
+    assert result['accessor_address'] == accessor_address
+    
+    record_hash_bytes32 = bytes.fromhex(record_hash_hex[2:])
+    mock_medical_record_contract.functions.checkAccess.assert_called_once_with(
+        record_hash_bytes32, accessor_address
+    )
+    mock_medical_record_contract.functions.checkAccess().call.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_check_record_access_success_no_access(mock_web3_and_contracts):
+    service, mock_w3, _, mock_medical_record_contract, _ = mock_web3_and_contracts
+    record_hash_hex = "0x" + "c" * 64 # Changed 'j' to 'c'
+    accessor_address = "0xAccessorNoAccess00000000000000000000000"
+    mock_w3.is_address.return_value = True
+
+    # Simulate contract call returning False (no access)
+    mock_medical_record_contract.functions.checkAccess.return_value.call.return_value = False
+
+    result = await service.check_record_access(record_hash_hex, accessor_address)
+
+    assert result['success'] is True
+    assert result['has_access'] is False
+    mock_medical_record_contract.functions.checkAccess.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_check_record_access_invalid_accessor_address(mock_web3_and_contracts):
+    service, mock_w3, _, _, _ = mock_web3_and_contracts
+    record_hash_hex = "0x" + "k" * 64
+    invalid_accessor_address = "0xInvalidCheckAddress"
+    mock_w3.is_address.return_value = False # Simulate invalid address
+
+    result = await service.check_record_access(record_hash_hex, invalid_accessor_address)
+
+    assert result['success'] is False
+    assert "Invalid Ethereum address format for accessor" in result['error']
+    mock_w3.is_address.assert_called_with(invalid_accessor_address)
+
+
+@pytest.mark.asyncio
+async def test_check_record_access_contract_call_exception(mock_web3_and_contracts):
+    service, mock_w3, _, mock_medical_record_contract, _ = mock_web3_and_contracts
+    record_hash_hex = "0x" + "d" * 64 # Changed 'l' to 'd'
+    accessor_address = "0xValidCheckAddress00000000000000000000000"
+    mock_w3.is_address.return_value = True
+
+    # Simulate an exception during the contract's .call() method
+    mock_medical_record_contract.functions.checkAccess.return_value.call.side_effect = Exception("CheckAccess Call Error")
+    
+    result = await service.check_record_access(record_hash_hex, accessor_address)
+
+    assert result['success'] is False
+    assert "An unexpected error occurred during checkAccess: CheckAccess Call Error" in result['error']
+
+
+@pytest.mark.asyncio
+async def test_check_record_access_test_mode(mock_web3_and_contracts):
+    # This test needs to ensure BlockchainService is in test_mode (service.w3 is None)
+    from src.app.core import blockchain as blockchain_module
+    blockchain_module._blockchain_service_instance = None # Reset global instance
+    service_test_mode = BlockchainService(test_mode=True)
+    assert service_test_mode.w3 is None
+
+    record_hash_hex = "0x" + "m" * 64
+    
+    # Test with the specific address mocked to have access in test_mode
+    accessor_has_access = "0xDoctorHasAccess"
+    result_has_access = await service_test_mode.check_record_access(record_hash_hex, accessor_has_access)
+    assert result_has_access['success'] is True
+    assert result_has_access['has_access'] is True
+
+    # Test with another address mocked to not have access
+    accessor_no_access = "0xAnotherDoctor"
+    result_no_access = await service_test_mode.check_record_access(record_hash_hex, accessor_no_access)
+    assert result_no_access['success'] is True
+    assert result_no_access['has_access'] is False
+    
+    blockchain_module._blockchain_service_instance = None # Clean up global instance

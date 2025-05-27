@@ -1,6 +1,6 @@
 import uuid
 import pytest
-from unittest.mock import patch, AsyncMock
+from unittest.mock import patch, AsyncMock, MagicMock # Added MagicMock
 
 from fastapi import status
 from fastapi.testclient import TestClient
@@ -104,7 +104,8 @@ def authenticated_patient_token(client: TestClient, db_session: Session):
     return {
         "token": token_data["access_token"], 
         "user_id": uuid.UUID(user_id_from_reg), # Convert string UUID back to UUID object for internal test consistency
-        "user_did": user_did_from_me # This should be the DID string
+        "user_did": user_did_from_me, # This should be the DID string
+        "blockchain_address": None # Patients don't have a blockchain_address in this model yet
     }
 
 
@@ -411,35 +412,91 @@ def test_get_my_medical_records_scenario5_pagination(client: TestClient, authent
 
 # --- GET /api/v1/medical-records/{record_id} ---
 
-def test_get_medical_record_detail_success(client: TestClient, authenticated_patient_token, db_session: Session):
+# Fixture for a doctor user with a known blockchain address
+@pytest.fixture
+def authenticated_doctor_token(client: TestClient, db_session: Session):
+    unique_suffix = uuid.uuid4().hex[:8]
+    email = f"doctor_fixture_{unique_suffix}@example.com"
+    username = f"doc_fix_{unique_suffix}"
+    password = "doctorpassword_fixture"
+    full_name = "Doctor Fixture User"
+    doctor_blockchain_address = f"0xDoctor{unique_suffix[:34]}" # Ensure it's 42 chars
+
+    # Create doctor user directly in DB to set blockchain_address
+    # as register endpoint might not support setting it.
+    user_in_db = crud_user.get_user_by_email(db_session, email=email)
+    if user_in_db: # Should not happen with unique_suffix, but good practice
+        db_session.delete(user_in_db)
+        db_session.commit()
+
+    user_create = UserCreate(
+        email=email, 
+        username=username, 
+        password=password, 
+        full_name=full_name, 
+        role=UserRole.DOCTOR, 
+        # did=f"did:example:doctor:{unique_suffix}" # Doctors might also have DIDs
+    )
+    doctor_did = f"did:example:doctor:{unique_suffix}"
+    # Manually set blockchain_address as UserCreate doesn't have it
+    db_user = crud_user.create_user(db_session, user_in=user_create, did=doctor_did)
+    db_user.blockchain_address = doctor_blockchain_address
+    # db_user.did = f"did:example:doctor:{unique_suffix}" # DID is now set during creation
+    db_session.add(db_user)
+    db_session.commit()
+    db_session.refresh(db_user)
+    
+    login_data = {"username": username, "password": password}
+    login_response = client.post("/api/v1/auth/login", data=login_data)
+    assert login_response.status_code == status.HTTP_200_OK
+    token_data = login_response.json()
+
+    return {
+        "token": token_data["access_token"],
+        "user_id": db_user.id, # UUID object
+        "user_did": doctor_did, # Use the variable that was passed
+        "blockchain_address": db_user.blockchain_address # string
+    }
+
+
+def test_get_medical_record_detail_success_patient_owner(client: TestClient, authenticated_patient_token, db_session: Session):
     token = authenticated_patient_token["token"]
     user_id = authenticated_patient_token["user_id"]
     headers = {"Authorization": f"Bearer {token}"}
 
     raw_data_content = "Detailed vital signs: BP 120/80, HR 70."
+    # Ensure the mock for blockchain service is NOT active for this owner-based access test,
+    # or ensure check_record_access is not called for owners.
+    # For simplicity, we can remove the override if it was set globally by another test,
+    # or ensure this test runs before those that override it globally.
+    # The endpoint logic should bypass blockchain check for owner.
+    if get_blockchain_service in app.dependency_overrides:
+        del app.dependency_overrides[get_blockchain_service]
+
+
     created_db_record = crud_medical_record.create_medical_record(
         db_session, 
         medical_record_in=MedicalRecordCreate(record_type=RecordType.VITAL_SIGNS, raw_data=raw_data_content, record_metadata={"device":"Oximeter"}),
         patient_id=user_id, 
         encrypted_data=encrypt_data(raw_data_content, TEST_ENCRYPTION_KEY), 
-        data_hash=hash_data(raw_data_content)
+        data_hash=hash_data(raw_data_content) # Ensure data_hash is set
     )
     record_id = created_db_record.id
+    db_session.commit()
+
 
     response = client.get(f"/api/v1/medical-records/{record_id}", headers=headers)
     assert response.status_code == status.HTTP_200_OK
     
     record_detail = response.json()
-    # Manually validate against the Pydantic model if necessary, or trust FastAPI's response_model
     validated_detail = MedicalRecordDetailResponse.model_validate(record_detail)
 
     assert validated_detail.id == record_id
     assert validated_detail.patient_id == user_id
     assert validated_detail.record_type == RecordType.VITAL_SIGNS
     assert validated_detail.record_metadata == {"device":"Oximeter"}
-    assert validated_detail.raw_data == raw_data_content # Decrypted data should be present
+    assert validated_detail.raw_data == raw_data_content
 
-    # Verify in DB (ensure the original ORM model still uses record_metadata)
     db_record = crud_medical_record.get_medical_record_by_id(db_session, record_id=created_db_record.id)
     assert db_record is not None
     assert db_record.patient_id == user_id
@@ -490,11 +547,11 @@ def test_get_medical_record_detail_forbidden(client: TestClient, authenticated_p
         data_hash=hash_data(other_user_raw_data)
     )
     
-    # Try to access it with authenticated_patient_token
-    token = authenticated_patient_token["token"]
+    # Try to access it with authenticated_patient_token (PATIENT accessing OTHER PATIENT's record)
+    token = authenticated_patient_token["token"] 
     headers = {"Authorization": f"Bearer {token}"}
     response = client.get(f"/api/v1/medical-records/{other_record.id}", headers=headers)
-    assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.status_code == status.HTTP_403_FORBIDDEN # Patient cannot access other patient's record
 
 def test_get_medical_record_detail_malformed_uuid(client: TestClient, authenticated_patient_token):
     token = authenticated_patient_token["token"]
@@ -515,16 +572,424 @@ def test_get_medical_record_detail_decryption_failure(
     headers = {"Authorization": f"Bearer {token}"}
 
     raw_data_content = "Data that will fail decryption"
+    # Ensure record has data_hash
+    record_data_hash = hash_data(raw_data_content)
     created_db_record = crud_medical_record.create_medical_record(
         db_session,
         medical_record_in=MedicalRecordCreate(record_type=RecordType.LAB_RESULT, raw_data=raw_data_content, record_metadata={"sample_id": "S123"}),
         patient_id=user_id,
         encrypted_data=encrypt_data(raw_data_content, TEST_ENCRYPTION_KEY),
-        data_hash=hash_data(raw_data_content)
+        data_hash=record_data_hash 
     )
     record_id = created_db_record.id
+    db_session.commit()
+
 
     response = client.get(f"/api/v1/medical-records/{record_id}", headers=headers)
     assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
     assert "Failed to decrypt record data" in response.json()["detail"]
     mock_decrypt_data.assert_called_once_with(created_db_record.encrypted_data, TEST_ENCRYPTION_KEY)
+
+
+# --- Doctor Access Tests for GET /api/v1/medical-records/{record_id} ---
+
+def test_get_medical_record_detail_doctor_access_granted(
+    client: TestClient, authenticated_doctor_token, created_record_for_access_tests, db_session: Session
+):
+    doctor_token = authenticated_doctor_token["token"]
+    doctor_address = authenticated_doctor_token["blockchain_address"]
+    record_id = created_record_for_access_tests["id"]
+    record_data_hash = created_record_for_access_tests["data_hash"] # from the patient's record
+    headers = {"Authorization": f"Bearer {doctor_token}"}
+
+    mock_bs_for_check = AsyncMock()
+    mock_bs_for_check.check_record_access.return_value = {"success": True, "has_access": True}
+    app.dependency_overrides[get_blockchain_service] = lambda: mock_bs_for_check
+    
+    response = client.get(f"/api/v1/medical-records/{record_id}", headers=headers)
+    assert response.status_code == status.HTTP_200_OK
+    response_data = response.json()
+    assert response_data["id"] == str(record_id)
+    assert "raw_data" in response_data # Doctor should get decrypted data
+
+    mock_bs_for_check.check_record_access.assert_called_once_with(
+        record_hash_hex=record_data_hash,
+        accessor_address=doctor_address
+    )
+    del app.dependency_overrides[get_blockchain_service]
+
+
+def test_get_medical_record_detail_doctor_access_denied_blockchain(
+    client: TestClient, authenticated_doctor_token, created_record_for_access_tests, db_session: Session
+):
+    doctor_token = authenticated_doctor_token["token"]
+    doctor_address = authenticated_doctor_token["blockchain_address"]
+    record_id = created_record_for_access_tests["id"]
+    headers = {"Authorization": f"Bearer {doctor_token}"}
+
+    mock_bs_for_check = AsyncMock()
+    mock_bs_for_check.check_record_access.return_value = {"success": True, "has_access": False} # Access explicitly denied
+    app.dependency_overrides[get_blockchain_service] = lambda: mock_bs_for_check
+    
+    response = client.get(f"/api/v1/medical-records/{record_id}", headers=headers)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    del app.dependency_overrides[get_blockchain_service]
+
+
+def test_get_medical_record_detail_doctor_blockchain_check_fails(
+    client: TestClient, authenticated_doctor_token, created_record_for_access_tests, db_session: Session
+):
+    doctor_token = authenticated_doctor_token["token"]
+    record_id = created_record_for_access_tests["id"]
+    headers = {"Authorization": f"Bearer {doctor_token}"}
+
+    mock_bs_for_check = AsyncMock()
+    mock_bs_for_check.check_record_access.return_value = {"success": False, "error": "Network error"} # Blockchain call fails
+    app.dependency_overrides[get_blockchain_service] = lambda: mock_bs_for_check
+    
+    response = client.get(f"/api/v1/medical-records/{record_id}", headers=headers)
+    assert response.status_code == status.HTTP_503_SERVICE_UNAVAILABLE # Or 403 as per current code
+    del app.dependency_overrides[get_blockchain_service]
+
+
+def test_get_medical_record_detail_doctor_no_blockchain_address(
+    client: TestClient, authenticated_doctor_token, created_record_for_access_tests, db_session: Session
+):
+    # Modify doctor user to have no blockchain_address
+    doctor_user_id = authenticated_doctor_token["user_id"]
+    db_doctor_user = crud_user.get_user_by_id(db_session, user_id=doctor_user_id) # Corrected function name
+    assert db_doctor_user is not None, "Doctor user not found in DB for modification"
+    db_doctor_user.blockchain_address = None
+    db_session.add(db_doctor_user)
+    db_session.commit()
+
+    doctor_token = authenticated_doctor_token["token"]
+    record_id = created_record_for_access_tests["id"]
+    headers = {"Authorization": f"Bearer {doctor_token}"}
+    
+    response = client.get(f"/api/v1/medical-records/{record_id}", headers=headers)
+    assert response.status_code == status.HTTP_400_BAD_REQUEST # Or 403
+    assert "Doctor user does not have a blockchain address configured" in response.json()["detail"]
+
+
+def test_get_medical_record_detail_doctor_record_no_data_hash(
+    client: TestClient, authenticated_doctor_token, created_record_for_access_tests, db_session: Session
+):
+    # Modify record to have no data_hash
+    record_id = created_record_for_access_tests["id"]
+    db_record = crud_medical_record.get_medical_record_by_id(db_session, record_id=record_id)
+    assert db_record is not None, "Record not found in DB for modification"
+    db_record.data_hash = None 
+    # Do not commit this change to avoid IntegrityError.
+    # The endpoint will see the in-memory change if the db_session is not expired or refreshed
+    # For a cleaner test, it might be better to mock get_medical_record_by_id to return this modified object.
+    # However, for this test, we'll rely on the session's in-memory state of db_record.
+    # If the endpoint re-fetches, this test might not work as intended.
+    # Given the current structure, the endpoint uses the db_record passed to it (if not using DI for crud object).
+    # Let's assume the endpoint uses the db_record instance fetched by the test setup for now.
+    # A safer approach would be to mock the crud_medical_record.get_medical_record_by_id call
+    # within the endpoint itself if this test becomes flaky.
+    # For now, let's proceed by simply not committing. The instance `db_record` will have data_hash as None.
+    # The endpoint `get_medical_record_detail` fetches its own copy, so this won't work.
+    # The proper way is to ensure the record is created without a data_hash IF that's a valid state,
+    # or mock the return of `get_medical_record_by_id`.
+    # Since `data_hash` is NOT NULL, we cannot create it as None.
+    # So, we must mock the `crud_medical_record.get_medical_record_by_id` call.
+
+    # Re-approach: Mock the crud function to return a simple MagicMock with data_hash = None
+    
+    patient_owner_id = created_record_for_access_tests["owner_id"] # The actual owner (patient)
+
+    # Create a MagicMock for the record, setting attributes via constructor
+    mock_record_object = MagicMock(
+        id=record_id,
+        patient_id=patient_owner_id, # Ensure it's not the doctor's ID for is_owner check
+        data_hash=None # Explicitly set data_hash to None
+    )
+
+    # Mock blockchain_service to ensure check_record_access is NOT called
+    mock_bs_for_no_hash_test = AsyncMock()
+    mock_bs_for_no_hash_test.check_record_access.side_effect = AssertionError("check_record_access should not have been called in no_data_hash test")
+    
+    original_bs_override = app.dependency_overrides.get(get_blockchain_service)
+    app.dependency_overrides[get_blockchain_service] = lambda: mock_bs_for_no_hash_test
+
+    try:
+        # Patch the CRUD function to return this simple mock
+        with patch('src.app.api.endpoints.medical_records.crud_medical_record.get_medical_record_by_id', return_value=mock_record_object):
+            doctor_token = authenticated_doctor_token["token"]
+            headers = {"Authorization": f"Bearer {doctor_token}"}
+            
+            response = client.get(f"/api/v1/medical-records/{record_id}", headers=headers)
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert "No data hash for blockchain verification" in response.json()["detail"]
+    finally:
+        # Clean up blockchain_service override
+        if original_bs_override:
+            app.dependency_overrides[get_blockchain_service] = original_bs_override
+        else:
+            del app.dependency_overrides[get_blockchain_service]
+
+
+# --- POST /api/v1/medical-records/{record_id}/grant-access ---
+    headers = {"Authorization": f"Bearer {doctor_token}"}
+    
+    response = client.get(f"/api/v1/medical-records/{record_id}", headers=headers)
+    assert response.status_code == status.HTTP_403_FORBIDDEN # As per current code
+    assert "No data hash for blockchain verification" in response.json()["detail"]
+
+
+# --- POST /api/v1/medical-records/{record_id}/grant-access ---
+
+VALID_DOCTOR_ADDRESS = "0x1234567890123456789012345678901234567890"
+INVALID_DOCTOR_ADDRESS = "0xInvalidAddress"
+
+@pytest.fixture
+def created_record_for_access_tests(client: TestClient, authenticated_patient_token, db_session: Session):
+    """Creates a medical record to be used for access control tests."""
+    token = authenticated_patient_token["token"]
+    user_id = authenticated_patient_token["user_id"]
+    user_did = authenticated_patient_token["user_did"] # Needed for blockchain call mock
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # Mock blockchain service for record creation to ensure blockchain_record_id is set
+    # This is important because the grant/revoke endpoints might implicitly assume a record
+    # is on the blockchain (though our current logic relies on data_hash).
+    mock_bs_for_create = AsyncMock()
+    mock_bs_for_create.add_medical_record_hash.return_value = {
+        "success": True, "transaction_hash": "0xcreate_record_tx_hash"
+    }
+    
+    original_bs_override = app.dependency_overrides.get(get_blockchain_service)
+    app.dependency_overrides[get_blockchain_service] = lambda: mock_bs_for_create
+
+    raw_data = "Test record for access control"
+    # Ensure data_hash is created for this record
+    data_hash_for_record = hash_data(raw_data)
+    record_payload = {
+        "record_type": RecordType.DIAGNOSIS.value,
+        "record_metadata": {"test_type": "access_control"},
+        "raw_data": raw_data
+    }
+    response = client.post("/api/v1/medical-records/", headers=headers, json=record_payload)
+    assert response.status_code == status.HTTP_201_CREATED
+    created_record_data = response.json()
+    assert created_record_data["data_hash"] == data_hash_for_record # Verify hash is in response and correct
+    
+    # Clean up override
+    if original_bs_override:
+        app.dependency_overrides[get_blockchain_service] = original_bs_override
+    else:
+        del app.dependency_overrides[get_blockchain_service]
+        
+    # Return the actual data_hash from the created record, not a re-calculated one.
+    return {"id": uuid.UUID(created_record_data["id"]), "data_hash": created_record_data["data_hash"], "owner_token": token, "owner_id": user_id}
+
+
+def test_grant_access_success(client: TestClient, created_record_for_access_tests, db_session: Session):
+    record_id = created_record_for_access_tests["id"]
+    owner_token = created_record_for_access_tests["owner_token"]
+    record_data_hash = created_record_for_access_tests["data_hash"]
+    headers = {"Authorization": f"Bearer {owner_token}"}
+
+    mock_bs_for_grant = AsyncMock()
+    mock_bs_for_grant.grant_record_access.return_value = {
+        "success": True, "transaction_hash": "0xgrant_tx_hash"
+    }
+    app.dependency_overrides[get_blockchain_service] = lambda: mock_bs_for_grant
+
+    payload = {"doctor_address": VALID_DOCTOR_ADDRESS}
+    response = client.post(f"/api/v1/medical-records/{record_id}/grant-access", headers=headers, json=payload)
+
+    assert response.status_code == status.HTTP_200_OK
+    response_data = response.json()
+    assert response_data["message"] == "Access granted successfully."
+    assert response_data["record_id"] == str(record_id)
+    assert response_data["doctor_address"] == VALID_DOCTOR_ADDRESS
+    assert response_data["transaction_hash"] == "0xgrant_tx_hash"
+
+    mock_bs_for_grant.grant_record_access.assert_called_once_with(
+        record_hash_hex=record_data_hash,
+        doctor_address=VALID_DOCTOR_ADDRESS
+    )
+    del app.dependency_overrides[get_blockchain_service]
+
+
+def test_grant_access_record_not_found(client: TestClient, authenticated_patient_token):
+    token = authenticated_patient_token["token"]
+    headers = {"Authorization": f"Bearer {token}"}
+    non_existent_record_id = uuid.uuid4()
+    payload = {"doctor_address": VALID_DOCTOR_ADDRESS}
+
+    response = client.post(f"/api/v1/medical-records/{non_existent_record_id}/grant-access", headers=headers, json=payload)
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+
+
+def test_grant_access_not_owner(client: TestClient, created_record_for_access_tests, db_session: Session):
+    record_id = created_record_for_access_tests["id"]
+    
+    # Create another user and token
+    other_unique_suffix = uuid.uuid4().hex[:8]
+    other_email = f"other_grant_test_{other_unique_suffix}@example.com"
+    other_username = f"other_grant_{other_unique_suffix}"
+    other_password = "otherpassword"
+    
+    reg_payload = {"email": other_email, "username": other_username, "password": other_password, "full_name": "Other User", "role": UserRole.PATIENT.value}
+    reg_response = client.post("/api/v1/auth/register", json=reg_payload)
+    assert reg_response.status_code == status.HTTP_201_CREATED
+    
+    login_data = {"username": other_username, "password": other_password}
+    login_response = client.post("/api/v1/auth/login", data=login_data)
+    assert login_response.status_code == status.HTTP_200_OK
+    other_user_token = login_response.json()["access_token"]
+    
+    headers = {"Authorization": f"Bearer {other_user_token}"}
+    payload = {"doctor_address": VALID_DOCTOR_ADDRESS}
+    response = client.post(f"/api/v1/medical-records/{record_id}/grant-access", headers=headers, json=payload)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+def test_grant_access_invalid_doctor_address_format(client: TestClient, created_record_for_access_tests):
+    record_id = created_record_for_access_tests["id"]
+    owner_token = created_record_for_access_tests["owner_token"]
+    headers = {"Authorization": f"Bearer {owner_token}"}
+    payload = {"doctor_address": INVALID_DOCTOR_ADDRESS} # Invalid format
+
+    response = client.post(f"/api/v1/medical-records/{record_id}/grant-access", headers=headers, json=payload)
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY # Pydantic validation error
+
+
+def test_grant_access_blockchain_service_failure_revert(client: TestClient, created_record_for_access_tests):
+    record_id = created_record_for_access_tests["id"]
+    owner_token = created_record_for_access_tests["owner_token"]
+    record_data_hash = created_record_for_access_tests["data_hash"]
+    headers = {"Authorization": f"Bearer {owner_token}"}
+
+    mock_bs_for_grant = AsyncMock()
+    mock_bs_for_grant.grant_record_access.return_value = {
+        "success": False, "error": "Smart contract execution reverted: NotRecordOwner" 
+    }
+    app.dependency_overrides[get_blockchain_service] = lambda: mock_bs_for_grant
+
+    payload = {"doctor_address": VALID_DOCTOR_ADDRESS}
+    response = client.post(f"/api/v1/medical-records/{record_id}/grant-access", headers=headers, json=payload)
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST # As per endpoint error handling
+    assert "NotRecordOwner" in response.json()["detail"]
+    del app.dependency_overrides[get_blockchain_service]
+
+
+def test_grant_access_blockchain_service_failure_other(client: TestClient, created_record_for_access_tests):
+    record_id = created_record_for_access_tests["id"]
+    owner_token = created_record_for_access_tests["owner_token"]
+    headers = {"Authorization": f"Bearer {owner_token}"}
+
+    mock_bs_for_grant = AsyncMock()
+    mock_bs_for_grant.grant_record_access.return_value = {
+        "success": False, "error": "Blockchain network unavailable"
+    }
+    app.dependency_overrides[get_blockchain_service] = lambda: mock_bs_for_grant
+
+    payload = {"doctor_address": VALID_DOCTOR_ADDRESS}
+    response = client.post(f"/api/v1/medical-records/{record_id}/grant-access", headers=headers, json=payload)
+
+    assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+    assert "Blockchain network unavailable" in response.json()["detail"]
+    del app.dependency_overrides[get_blockchain_service]
+
+# --- END POST /api/v1/medical-records/{record_id}/grant-access ---
+
+
+# --- POST /api/v1/medical-records/{record_id}/revoke-access ---
+
+def test_revoke_access_success(client: TestClient, created_record_for_access_tests, db_session: Session):
+    record_id = created_record_for_access_tests["id"]
+    owner_token = created_record_for_access_tests["owner_token"]
+    record_data_hash = created_record_for_access_tests["data_hash"]
+    headers = {"Authorization": f"Bearer {owner_token}"}
+
+    mock_bs_for_revoke = AsyncMock()
+    mock_bs_for_revoke.revoke_record_access.return_value = {
+        "success": True, "transaction_hash": "0xrevoke_tx_hash"
+    }
+    app.dependency_overrides[get_blockchain_service] = lambda: mock_bs_for_revoke
+
+    payload = {"doctor_address": VALID_DOCTOR_ADDRESS} # Address being revoked
+    response = client.post(f"/api/v1/medical-records/{record_id}/revoke-access", headers=headers, json=payload)
+
+    assert response.status_code == status.HTTP_200_OK
+    response_data = response.json()
+    assert response_data["message"] == "Access revoked successfully."
+    assert response_data["record_id"] == str(record_id)
+    assert response_data["doctor_address"] == VALID_DOCTOR_ADDRESS
+    assert response_data["transaction_hash"] == "0xrevoke_tx_hash"
+
+    mock_bs_for_revoke.revoke_record_access.assert_called_once_with(
+        record_hash_hex=record_data_hash,
+        doctor_address=VALID_DOCTOR_ADDRESS
+    )
+    del app.dependency_overrides[get_blockchain_service]
+
+
+def test_revoke_access_record_not_found(client: TestClient, authenticated_patient_token):
+    token = authenticated_patient_token["token"]
+    headers = {"Authorization": f"Bearer {token}"}
+    non_existent_record_id = uuid.uuid4()
+    payload = {"doctor_address": VALID_DOCTOR_ADDRESS}
+
+    response = client.post(f"/api/v1/medical-records/{non_existent_record_id}/revoke-access", headers=headers, json=payload)
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+
+
+def test_revoke_access_not_owner(client: TestClient, created_record_for_access_tests, db_session: Session):
+    record_id = created_record_for_access_tests["id"]
+    
+    # Create another user and token (similar to grant_access_not_owner)
+    other_unique_suffix = uuid.uuid4().hex[:8]
+    other_email = f"other_revoke_test_{other_unique_suffix}@example.com"
+    other_username = f"other_revoke_{other_unique_suffix}"
+    # ... (rest of other user creation and login) ...
+    reg_payload = {"email": other_email, "username": other_username, "password": "otherpassword", "full_name": "Other User Revoke", "role": UserRole.PATIENT.value}
+    reg_response = client.post("/api/v1/auth/register", json=reg_payload)
+    assert reg_response.status_code == status.HTTP_201_CREATED
+    login_data = {"username": other_username, "password": "otherpassword"}
+    login_response = client.post("/api/v1/auth/login", data=login_data)
+    assert login_response.status_code == status.HTTP_200_OK
+    other_user_token = login_response.json()["access_token"]
+
+    headers = {"Authorization": f"Bearer {other_user_token}"}
+    payload = {"doctor_address": VALID_DOCTOR_ADDRESS}
+    response = client.post(f"/api/v1/medical-records/{record_id}/revoke-access", headers=headers, json=payload)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+def test_revoke_access_invalid_doctor_address_format(client: TestClient, created_record_for_access_tests):
+    record_id = created_record_for_access_tests["id"]
+    owner_token = created_record_for_access_tests["owner_token"]
+    headers = {"Authorization": f"Bearer {owner_token}"}
+    payload = {"doctor_address": INVALID_DOCTOR_ADDRESS}
+
+    response = client.post(f"/api/v1/medical-records/{record_id}/revoke-access", headers=headers, json=payload)
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+
+def test_revoke_access_blockchain_service_failure_revert(client: TestClient, created_record_for_access_tests):
+    record_id = created_record_for_access_tests["id"]
+    owner_token = created_record_for_access_tests["owner_token"]
+    headers = {"Authorization": f"Bearer {owner_token}"}
+
+    mock_bs_for_revoke = AsyncMock()
+    mock_bs_for_revoke.revoke_record_access.return_value = {
+        "success": False, "error": "Smart contract execution reverted: NotRecordOwner"
+    }
+    app.dependency_overrides[get_blockchain_service] = lambda: mock_bs_for_revoke
+
+    payload = {"doctor_address": VALID_DOCTOR_ADDRESS}
+    response = client.post(f"/api/v1/medical-records/{record_id}/revoke-access", headers=headers, json=payload)
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert "NotRecordOwner" in response.json()["detail"]
+    del app.dependency_overrides[get_blockchain_service]
+
+# --- END POST /api/v1/medical-records/{record_id}/revoke-access ---

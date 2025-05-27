@@ -104,3 +104,35 @@ Dokumen ini berisi langkah-langkah untuk melakukan tes manual pada fungsionalita
 
 ---
 Jika ada masalah atau hasil yang tidak sesuai harapan, catat langkah-langkahnya, hasil yang didapat, dan hasil yang diharapkan untuk dilaporkan.
+
+## Deployment Smart Contract (MedicalRecordRegistry.sol) ke Ganache (Lokal)
+
+Setelah melakukan modifikasi pada `MedicalRecordRegistry.sol` dan tes unitnya berhasil, langkah berikutnya adalah men-deploy ulang _smart contract_ tersebut ke jaringan Ganache lokal Anda.
+
+1.  **Pastikan Ganache Berjalan:**
+    *   Pastikan instance Ganache Anda sudah berjalan dan dikonfigurasi sesuai dengan `hardhat.config.js` (biasanya di `http://127.0.0.1:8545` atau `http://127.0.0.1:7545` dengan `chainId: 1337`).
+    *   Anda bisa menjalankan Ganache dengan perintah (sesuaikan `dbPath` jika perlu):
+        ```bash
+        ganache --deterministic --chain.chainId 1337 --database.dbPath ./.ganache-db
+        ```
+
+2.  **Navigasi ke Direktori Blockchain:**
+    *   Buka terminal Anda dan navigasi ke direktori `blockchain` di dalam proyek Anda:
+        ```bash
+        cd path/to/your/project/blockchain
+        ```
+
+3.  **Jalankan Skrip Deployment:**
+    *   Gunakan Hardhat untuk menjalankan skrip deployment. Skrip ini biasanya berada di direktori `scripts/` (misalnya, `deployMedicalRecordRegistry.js`).
+        ```bash
+        npx hardhat run scripts/deployMedicalRecordRegistry.js --network ganache
+        ```
+    *   **Catatan:** Jika Anda menjalankan perintah dari direktori root proyek, path ke skrip mungkin perlu disesuaikan (misalnya `blockchain/scripts/...`). Namun, instruksi di atas mengasumsikan Anda berada di dalam direktori `blockchain`.
+
+4.  **Verifikasi Deployment:**
+    *   Setelah deployment berhasil, Hardhat akan mencetak alamat kontrak yang baru di-deploy ke konsol.
+    *   Pastikan file ABI (Application Binary Interface) dan alamat kontrak yang baru telah diperbarui di direktori `blockchain/build/deployments/`. File-file ini (biasanya `MedicalRecordRegistry.json` yang berisi ABI dan alamat di jaringan tertentu) sangat penting karena backend (`src/app/core/config.py`) akan membaca informasi ini untuk berinteraksi dengan kontrak.
+    *   Jika `config.py` membaca dari path seperti `blockchain/build/deployments/ganache/MedicalRecordRegistry.json`, pastikan file tersebut ter-update dengan timestamp dan alamat terbaru.
+
+5.  **Restart Backend Server (Jika Perlu):**
+    *   Jika backend server Anda sudah berjalan, restart server tersebut agar ia memuat konfigurasi _smart contract_ yang baru (ABI dan alamat).

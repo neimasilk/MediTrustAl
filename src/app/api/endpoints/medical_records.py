@@ -1,6 +1,7 @@
 import uuid
 import logging # Added import for logging
 from typing import List, Optional
+from datetime import datetime # Added import for datetime
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -19,9 +20,11 @@ from src.app.models.medical_record import (
     MedicalRecordCreate,
     MedicalRecordResponse,
     MedicalRecordDetailResponse,
-    RecordType
+    RecordType,
+    GrantAccessRequest,
+    RevokeAccessRequest
 )
-from src.app.models.user import User
+from src.app.models.user import User, UserRole # Added UserRole
 
 router = APIRouter()
 
@@ -221,7 +224,8 @@ async def get_my_medical_records(
 async def get_medical_record_detail(
     record_id: uuid.UUID,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user), # Corrected dependency
+    current_user: User = Depends(get_current_active_user),
+    blockchain_service: BlockchainService = Depends(get_blockchain_service), # Added blockchain_service
 ):
     """
     Retrieve a specific medical record by its ID.
@@ -234,17 +238,48 @@ async def get_medical_record_detail(
             status_code=status.HTTP_404_NOT_FOUND, detail="Medical record not found"
         )
 
-    # Authorization: Only the patient themselves can access the detailed record
-    # Future: Extend this for authorized healthcare providers
-    if db_record.patient_id != current_user.id:
-        # Add role check here if non-patients (e.g. doctors) should be able to access
-        # For now, strict patient-only access to decrypted data
-        # if current_user.role != UserRole.DOCTOR: # Assuming UserRole enum and role field on User model
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You do not have permission to access this medical record",
+    # Authorization logic
+    is_owner = (db_record.patient_id == current_user.id)
+    can_access = is_owner
+
+    if not is_owner and current_user.role == UserRole.DOCTOR:
+        if not current_user.blockchain_address:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, # Or 403, depends on policy
+                detail="Doctor user does not have a blockchain address configured.",
+            )
+        if not db_record.data_hash:
+            # This record cannot be verified on blockchain, deny access for doctor
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Record cannot be accessed by doctor: No data hash for blockchain verification.",
+            )
+
+        access_check_result = await blockchain_service.check_record_access(
+            record_hash_hex=db_record.data_hash,
+            accessor_address=current_user.blockchain_address
         )
 
+        if not access_check_result.get("success"):
+            # Error during blockchain check, deny access
+            # Log error: access_check_result.get("error")
+            logging.error(f"Blockchain access check failed for doctor {current_user.id} on record {db_record.id}: {access_check_result.get('error')}")
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE, # Or 403
+                detail="Could not verify access on blockchain; access denied.",
+            )
+        
+        if access_check_result.get("has_access"):
+            can_access = True
+        # If has_access is False, can_access remains False (from not is_owner)
+
+    if not can_access:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to access this medical record.",
+        )
+
+    # If can_access is True (either owner or doctor with granted access), proceed to decrypt
     try:
         encryption_key = get_encryption_key()
         decrypted_raw_data = decrypt_data(db_record.encrypted_data, encryption_key)
@@ -270,3 +305,198 @@ async def get_medical_record_detail(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"An unexpected error occurred: {str(e)}",
         )
+
+
+@router.post(
+    "/{record_id}/grant-access",
+    summary="Grant access to a medical record",
+    status_code=status.HTTP_200_OK, # Or 204 No Content if no body is returned on success
+    # response_model=Optional[dict] # Define a suitable response model if needed
+)
+async def grant_medical_record_access(
+    record_id: uuid.UUID,
+    access_request: GrantAccessRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+    blockchain_service: BlockchainService = Depends(get_blockchain_service),
+):
+    """
+    Grant a specified doctor_address access to a specific medical record on the blockchain.
+    The caller must be the owner (patient) of the medical record.
+    """
+    db_record = crud_medical_record.get_medical_record_by_id(db, record_id=record_id)
+    if not db_record:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Medical record not found"
+        )
+
+    if db_record.patient_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to grant access to this medical record",
+        )
+
+    if not db_record.data_hash: # data_hash should exist if record creation was complete
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, # Or 500 if this indicates an internal inconsistency
+            detail="Medical record does not have a data hash; cannot grant access.",
+        )
+
+    # Pydantic model 'GrantAccessRequest' already performed basic validation of doctor_address format.
+    # BlockchainService will do its own more robust check if needed.
+
+    blockchain_result = await blockchain_service.grant_record_access(
+        record_hash_hex=db_record.data_hash,
+        doctor_address=access_request.doctor_address
+    )
+
+    if not blockchain_result.get("success"):
+        error_detail = blockchain_result.get("error", "Failed to grant access on blockchain.")
+        # Check for specific error types from BlockchainService if they are well-defined
+        if "revert" in error_detail.lower() or "NotRecordOwner" in error_detail: # Example check
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error_detail)
+        elif "Invalid Ethereum address format" in error_detail: # From BlockchainService validation
+             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error_detail)
+        # Default to 500 for other blockchain related errors
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=error_detail)
+
+    return {
+        "message": "Access granted successfully.",
+        "record_id": record_id,
+        "doctor_address": access_request.doctor_address,
+        "transaction_hash": blockchain_result.get("transaction_hash")
+    }
+
+
+@router.get(
+    "/{record_id}/check-access/{accessor_address}",
+    summary="Check access to a medical record for a given accessor address",
+    status_code=status.HTTP_200_OK,
+    # response_model= # Define a Pydantic model for the response, e.g., AccessCheckResponse
+)
+async def check_medical_record_access(
+    record_id: uuid.UUID,
+    accessor_address: str, # Path parameter for the address to check
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user), # To verify ownership if needed, or just for consistency
+    blockchain_service: BlockchainService = Depends(get_blockchain_service),
+):
+    """
+    Check if a specified accessor_address (e.g., a doctor) has access to a specific
+    medical record on the blockchain.
+
+    This endpoint can be called by any authenticated user to check access status,
+    but the record itself must exist.
+    """
+    db_record = crud_medical_record.get_medical_record_by_id(db, record_id=record_id)
+    if not db_record:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Medical record not found"
+        )
+
+    # Optional: Add authorization if only specific users (e.g., record owner) can check access.
+    # For now, allowing any authenticated user to check access for any existing record.
+    # if db_record.patient_id != current_user.id:
+    #     raise HTTPException(
+    #         status_code=status.HTTP_403_FORBIDDEN,
+    #         detail="You do not have permission to check access for this medical record",
+    #     )
+        
+    if not db_record.data_hash:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Medical record does not have a data hash; cannot check access.",
+        )
+
+    # Basic validation for accessor_address format (can be enhanced with Web3.is_address)
+    if not accessor_address.startswith('0x') or len(accessor_address) != 42:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid Ethereum address format for accessor."
+        )
+    try:
+        int(accessor_address[2:], 16)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid Ethereum address format for accessor: non-hexadecimal characters found."
+        )
+
+
+    blockchain_result = await blockchain_service.check_record_access(
+        record_hash_hex=db_record.data_hash,
+        accessor_address=accessor_address
+    )
+
+    if not blockchain_result.get("success"):
+        error_detail = blockchain_result.get("error", "Failed to check access on blockchain.")
+        if "Invalid Ethereum address format" in error_detail: # From BlockchainService validation
+             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error_detail)
+        # Default to 500 for other blockchain related errors
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=error_detail)
+
+    return {
+        "record_id": record_id,
+        "accessor_address": accessor_address,
+        "has_access": blockchain_result.get("has_access"),
+        "checked_at": datetime.utcnow().isoformat() # Optional: add a timestamp for the check
+    }
+
+
+@router.post(
+    "/{record_id}/revoke-access",
+    summary="Revoke access to a medical record",
+    status_code=status.HTTP_200_OK,
+    # response_model=Optional[dict] # Define a suitable response model if needed
+)
+async def revoke_medical_record_access(
+    record_id: uuid.UUID,
+    access_request: RevokeAccessRequest, # Uses RevokeAccessRequest
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+    blockchain_service: BlockchainService = Depends(get_blockchain_service),
+):
+    """
+    Revoke a specified doctor_address access to a specific medical record on the blockchain.
+    The caller must be the owner (patient) of the medical record.
+    """
+    db_record = crud_medical_record.get_medical_record_by_id(db, record_id=record_id)
+    if not db_record:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Medical record not found"
+        )
+
+    if db_record.patient_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to revoke access to this medical record",
+        )
+
+    if not db_record.data_hash:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Medical record does not have a data hash; cannot revoke access.",
+        )
+
+    # Pydantic model 'RevokeAccessRequest' (inherited from GrantAccessRequest)
+    # already performed basic validation of doctor_address format.
+
+    blockchain_result = await blockchain_service.revoke_record_access( # Calls revoke_record_access
+        record_hash_hex=db_record.data_hash,
+        doctor_address=access_request.doctor_address
+    )
+
+    if not blockchain_result.get("success"):
+        error_detail = blockchain_result.get("error", "Failed to revoke access on blockchain.")
+        if "revert" in error_detail.lower() or "NotRecordOwner" in error_detail:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error_detail)
+        elif "Invalid Ethereum address format" in error_detail:
+             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error_detail)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=error_detail)
+
+    return {
+        "message": "Access revoked successfully.",
+        "record_id": record_id,
+        "doctor_address": access_request.doctor_address,
+        "transaction_hash": blockchain_result.get("transaction_hash")
+    }

@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from enum import Enum as PyEnum
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, validator
 from sqlalchemy import Column, DateTime, ForeignKey, String, Enum as SQLEnum, LargeBinary
 from sqlalchemy.dialects.postgresql import JSONB, UUID as PGUUID
 from sqlalchemy.orm import relationship
@@ -63,3 +63,33 @@ class MedicalRecordResponse(BaseModel):
 
 class MedicalRecordDetailResponse(MedicalRecordResponse):
     raw_data: Optional[str] = None
+
+
+from pydantic import BaseModel, ConfigDict, validator # Added validator
+
+# ... (rest of the existing imports) ...
+
+# (Existing code for RecordType, MedicalRecord, MedicalRecordBase, MedicalRecordCreate, MedicalRecordResponse, MedicalRecordDetailResponse)
+# ... (ensure these are kept as they are) ...
+
+
+# Pydantic models for new Access Control Endpoints
+
+class GrantAccessRequest(BaseModel):
+    doctor_address: str
+
+    @validator('doctor_address')
+    def validate_doctor_address(cls, v: str) -> str:
+        # Basic validation for Ethereum address format (0x followed by 40 hex chars)
+        # More robust validation can be done using Web3.is_address if web3 is easily available here
+        # or by relying on the BlockchainService/endpoint to do the full check.
+        if not isinstance(v, str) or not v.startswith('0x') or len(v) != 42:
+            raise ValueError('Invalid Ethereum address format')
+        try:
+            int(v[2:], 16) # Check if the part after 0x is hex
+        except ValueError:
+            raise ValueError('Invalid Ethereum address format: non-hexadecimal characters found')
+        return v
+
+class RevokeAccessRequest(GrantAccessRequest): # Can reuse GrantAccessRequest structure
+    pass

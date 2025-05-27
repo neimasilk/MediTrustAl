@@ -271,6 +271,234 @@ class BlockchainService:
                 'error': f"Failed to retrieve record hashes: {error_message}"
             }
 
+    async def grant_record_access(self, record_hash_hex: str, doctor_address: str) -> dict:
+        """
+        Grants a doctor access to a specific medical record hash.
+        """
+        original_record_hash_for_response = record_hash_hex # Preserve for response
+        try:
+            if not self.w3: # Test mode
+                return {
+                    'success': True,
+                    'transaction_hash': '0xgrantaccessabcdef123456',
+                    'record_hash': original_record_hash_for_response,
+                    'doctor_address': doctor_address
+                }
+
+            if not self.w3.is_connected():
+                raise ConnectionError("Could not connect to Ethereum node.")
+            if not self.medical_record_registry_contract:
+                raise ConnectionError("MedicalRecordRegistry contract is not initialized.")
+            if not self.private_key:
+                raise ValueError("Blockchain sender private key not configured.")
+            if not self.w3.is_address(doctor_address):
+                raise ValueError(f"Invalid Ethereum address format for doctor: {doctor_address}")
+
+            # Prepare hash for bytes32 conversion
+            input_hash_str = str(original_record_hash_for_response) # Ensure it's a string
+            
+            hash_for_bytes_conversion: str
+            if input_hash_str.startswith("0x"):
+                hash_for_bytes_conversion = input_hash_str[2:]
+            else:
+                hash_for_bytes_conversion = input_hash_str
+            
+            if len(hash_for_bytes_conversion) != 64:
+                raise ValueError(f"Record hash hex string must be 64 characters (32 bytes) long, got {len(hash_for_bytes_conversion)} from original '{original_record_hash_for_response}'")
+            
+            try:
+                record_hash_bytes32 = bytes.fromhex(hash_for_bytes_conversion)
+            except ValueError as e_fromhex:
+                # This is to make the error more debuggable if it happens
+                raise ValueError(f"bytes.fromhex failed for input '{hash_for_bytes_conversion}'. Original error: {e_fromhex}") from e_fromhex
+
+            # Build transaction
+            tx = self.medical_record_registry_contract.functions.grantAccess(
+                record_hash_bytes32,
+                doctor_address  # The address to grant access to
+            ).build_transaction({
+                'from': self.account,
+                'gas': 200000, # Adjust gas limit as needed
+                'gasPrice': self.w3.eth.gas_price,
+                'nonce': self.w3.eth.get_transaction_count(self.account),
+            })
+
+            signed_tx = self.w3.eth.account.sign_transaction(tx, private_key=self.private_key)
+            tx_hash = self.w3.eth.send_raw_transaction(signed_tx.raw_transaction)
+            receipt = self.w3.eth.wait_for_transaction_receipt(tx_hash)
+
+            if receipt.status == 1:
+                return {
+                    'success': True,
+                    'transaction_hash': receipt.transactionHash.hex(),
+                    'record_hash': original_record_hash_for_response, # Use original for response
+                    'doctor_address': doctor_address
+                }
+            else:
+                # Consider trying to decode error from receipt if possible, or check for known revert reasons
+                return {
+                    'success': False,
+                    'error': 'Transaction to grant access failed on blockchain.',
+                    'transaction_hash': receipt.transactionHash.hex()
+                }
+        except ValueError as ve:
+            return {'success': False, 'error': str(ve)}
+        except ConnectionError as ce:
+            return {'success': False, 'error': str(ce)}
+        except Exception as e: # Catching generic web3 errors or others
+            # Attempt to get more details if it's a contract logic error (revert)
+            # This part is tricky as error messages are not always easily parsable from generic exceptions
+            error_message = str(e)
+            if "revert" in error_message.lower() or "VM Exception" in error_message:
+                 # You might need a more sophisticated way to get the actual revert reason if available
+                error_message = f"Smart contract execution reverted (grantAccess): {error_message}"
+            return {'success': False, 'error': f"An unexpected error occurred during grantAccess: {error_message}"}
+
+    async def revoke_record_access(self, record_hash_hex: str, doctor_address: str) -> dict:
+        """
+        Revokes a doctor's access to a specific medical record hash.
+        """
+        original_record_hash_for_response = record_hash_hex # Preserve for response
+        try:
+            if not self.w3: # Test mode
+                return {
+                    'success': True,
+                    'transaction_hash': '0xrevokeaccessabcdef123456',
+                    'record_hash': original_record_hash_for_response,
+                    'doctor_address': doctor_address
+                }
+
+            if not self.w3.is_connected():
+                raise ConnectionError("Could not connect to Ethereum node.")
+            if not self.medical_record_registry_contract:
+                raise ConnectionError("MedicalRecordRegistry contract is not initialized.")
+            if not self.private_key:
+                raise ValueError("Blockchain sender private key not configured.")
+            if not self.w3.is_address(doctor_address):
+                raise ValueError(f"Invalid Ethereum address format for doctor: {doctor_address}")
+
+            # Prepare hash for bytes32 conversion
+            input_hash_str = str(original_record_hash_for_response) # Ensure it's a string
+            
+            hash_for_bytes_conversion: str
+            if input_hash_str.startswith("0x"):
+                hash_for_bytes_conversion = input_hash_str[2:]
+            else:
+                hash_for_bytes_conversion = input_hash_str
+            
+            if len(hash_for_bytes_conversion) != 64:
+                raise ValueError(f"Record hash hex string must be 64 characters (32 bytes) long, got {len(hash_for_bytes_conversion)} from original '{original_record_hash_for_response}'")
+            
+            try:
+                record_hash_bytes32 = bytes.fromhex(hash_for_bytes_conversion)
+            except ValueError as e_fromhex:
+                # This is to make the error more debuggable if it happens
+                raise ValueError(f"bytes.fromhex failed for input '{hash_for_bytes_conversion}'. Original error: {e_fromhex}") from e_fromhex
+
+            # Build transaction
+            tx = self.medical_record_registry_contract.functions.revokeAccess(
+                record_hash_bytes32,
+                doctor_address
+            ).build_transaction({
+                'from': self.account,
+                'gas': 200000, # Adjust gas limit
+                'gasPrice': self.w3.eth.gas_price,
+                'nonce': self.w3.eth.get_transaction_count(self.account),
+            })
+
+            signed_tx = self.w3.eth.account.sign_transaction(tx, private_key=self.private_key)
+            tx_hash = self.w3.eth.send_raw_transaction(signed_tx.raw_transaction)
+            receipt = self.w3.eth.wait_for_transaction_receipt(tx_hash)
+
+            if receipt.status == 1:
+                return {
+                    'success': True,
+                    'transaction_hash': receipt.transactionHash.hex(),
+                    'record_hash': original_record_hash_for_response, # Use original for response
+                    'doctor_address': doctor_address
+                }
+            else:
+                return {
+                    'success': False,
+                    'error': 'Transaction to revoke access failed on blockchain.',
+                    'transaction_hash': receipt.transactionHash.hex()
+                }
+        except ValueError as ve:
+            return {'success': False, 'error': str(ve)}
+        except ConnectionError as ce:
+            return {'success': False, 'error': str(ce)}
+        except Exception as e:
+            error_message = str(e)
+            if "revert" in error_message.lower() or "VM Exception" in error_message:
+                error_message = f"Smart contract execution reverted (revokeAccess): {error_message}"
+            return {'success': False, 'error': f"An unexpected error occurred during revokeAccess: {error_message}"}
+
+    async def check_record_access(self, record_hash_hex: str, accessor_address: str) -> dict:
+        original_record_hash_for_response = record_hash_hex # Define at the beginning
+        """
+        Checks if an accessor_address has access to a specific medical record hash.
+        """
+        try:
+            if not self.w3: # Test mode
+                # Simulate a specific scenario, e.g., accessor_address has access
+                # Or make it configurable if more complex test scenarios are needed
+                mock_access_status = accessor_address == "0xDoctorHasAccess" # Example logic
+                return {
+                    'success': True,
+                    'has_access': mock_access_status,
+                    'record_hash': original_record_hash_for_response, # Use original
+                    'accessor_address': accessor_address
+                }
+
+            if not self.w3.is_connected():
+                raise ConnectionError("Could not connect to Ethereum node.")
+            if not self.medical_record_registry_contract:
+                raise ConnectionError("MedicalRecordRegistry contract is not initialized.")
+            if not self.w3.is_address(accessor_address): # Validate accessor_address format
+                raise ValueError(f"Invalid Ethereum address format for accessor: {accessor_address}")
+
+            # Prepare hash for bytes32 conversion
+            input_hash_str = str(original_record_hash_for_response) # Ensure it's a string
+            
+            hash_for_bytes_conversion: str
+            if input_hash_str.startswith("0x"):
+                hash_for_bytes_conversion = input_hash_str[2:]
+            else:
+                hash_for_bytes_conversion = input_hash_str
+            
+            if len(hash_for_bytes_conversion) != 64:
+                raise ValueError(f"Record hash hex string must be 64 characters (32 bytes) long, got {len(hash_for_bytes_conversion)} from original '{original_record_hash_for_response}'")
+            
+            try:
+                record_hash_bytes32 = bytes.fromhex(hash_for_bytes_conversion)
+            except ValueError as e_fromhex:
+                # This is to make the error more debuggable if it happens
+                raise ValueError(f"bytes.fromhex failed for input '{hash_for_bytes_conversion}'. Original error: {e_fromhex}") from e_fromhex
+
+            # Call the 'checkAccess' view function
+            has_access = self.medical_record_registry_contract.functions.checkAccess(
+                record_hash_bytes32,
+                accessor_address
+            ).call() # This is a read-only call
+
+            return {
+                'success': True,
+                'has_access': has_access,
+                'record_hash': original_record_hash_for_response, # Use original
+                'accessor_address': accessor_address
+            }
+        except ValueError as ve: # Catches length error and fromhex error
+            return {'success': False, 'error': str(ve)}
+        except ConnectionError as ce:
+            return {'success': False, 'error': str(ce)}
+        except Exception as e:
+            error_message = str(e)
+            # Revert errors are less common for view functions unless an address is invalid,
+            # but good to have a catch-all
+            if "revert" in error_message.lower() or "VM Exception" in error_message:
+                error_message = f"Smart contract execution reverted (checkAccess): {error_message}"
+            return {'success': False, 'error': f"An unexpected error occurred during checkAccess: {error_message}"}
+
 _blockchain_service_instance = None
 
 def get_blockchain_service():
