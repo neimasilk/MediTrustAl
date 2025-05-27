@@ -13,7 +13,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision: str = '9096078f2071'
-down_revision: Union[str, None] = None
+down_revision: Union[str, None] = 'a1b2e4306629'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -28,7 +28,7 @@ record_type_sql_enum = sa.Enum(*record_type_enum_values, name="recordtype")
 def upgrade() -> None:
     """Upgrade schema."""
     # Create the ENUM type in PostgreSQL
-    op.execute(f"CREATE TYPE recordtype AS ENUM ({', '.join([f'''\'{val}\'''' for val in record_type_enum_values])})")
+    
 
     op.create_table(
         'medical_records',
