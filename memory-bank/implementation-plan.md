@@ -179,15 +179,17 @@ This document outlines the step-by-step plan for developing the Minimum Viable P
 
 ## **3\. Phase 3: Basic NLP & AI Placeholder and Frontend Shell**
 
-### **Step 3.1: Placeholder NLP Service**
+### **Step 3.1: Placeholder NLP Service (Foundation for DeepSeek API Integration)**
 
 * **Instruction:**  
-  1. Create a very simple NLP service (e.g., a separate Python Flask/FastAPI microservice, or a module within the main backend if simpler for MVP).  
-  2. This service should have one endpoint (e.g., POST /nlp/extract-entities) that accepts text.  
-  3. For MVP, this service will not perform real NLP. It should simply return a predefined, dummy JSON response indicating mock entities (e.g., {"entities": \[{"text": "Blood Pressure", "type": "VitalSign"}, {"text": "120/80 mmHg", "type": "Measurement"}\]}).  
+  1. Create a very simple NLP service (e.g., a separate Python Flask/FastAPI microservice, or a module within the main backend if simpler for MVP). This serves as the initial placeholder.
+  2. This service should have one endpoint (e.g., POST /nlp/extract-entities) that accepts text. The request and response structures should be designed keeping in mind future integration with a more powerful NLP API.
+  3. For the initial MVP placeholder, this service will not perform real NLP. It should simply return a predefined, dummy JSON response indicating mock entities (e.g., {"entities": \[{"text": "Blood Pressure", "type": "VitalSign"}, {"text": "120/80 mmHg", "type": "Measurement"}\]}).
+  4. **Note on Future Enhancement:** The long-term goal for the MVP is to replace this placeholder logic with actual calls to an external NLP service. The current preferred candidate for this is the DeepSeek API. Further tasks will involve integrating this API to provide real entity extraction capabilities.
 * **Test:**  
   * The placeholder NLP service can be started.  
   * Sending text to POST /nlp/extract-entities returns the predefined dummy JSON entity structure.
+  * (Future Test after DeepSeek Integration): Sending text to POST /nlp/extract-entities will return entities extracted by the DeepSeek API.
 
 ### **Step 3.2: Placeholder AI Predictive Service**
 

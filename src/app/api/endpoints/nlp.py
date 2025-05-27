@@ -19,7 +19,7 @@ class NLPExtractionResponse(BaseModel):
     "/extract-entities",
     response_model=NLPExtractionResponse,
     summary="Extracts Named Entities (Placeholder)",
-    description="Receives a text input and returns a *placeholder* list of extracted medical entities. This is a dummy implementation for MVP."
+    description="Receives a text input and returns a *placeholder* list of extracted medical entities. This is a dummy implementation for MVP, intended to be replaced by a call to an external NLP service (e.g., DeepSeek API)."
 )
 async def extract_entities(request: NLPExtractionRequest):
     # The input text (request.text) is passed to the placeholder,
