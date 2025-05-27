@@ -1,125 +1,122 @@
-# Baby Steps: Penyelesaian Step 2.3 - Integrasi Penuh Pengambilan Data Rekam Medis Pasien
+# Baby Steps: Implementasi Step 3.1 - Placeholder NLP Service
 
-**Tujuan Utama:** Memastikan backend dapat berinteraksi dengan _smart contract_ `MedicalRecordRegistry` yang sudah di-deploy secara "live" (di Ganache) untuk mengambil daftar hash rekam medis pasien, dan kemudian mengambil data lengkap dari database.
+**Tujuan Utama:** Membuat layanan NLP placeholder yang sangat sederhana, sesuai dengan rencana implementasi MVP. Layanan ini belum akan melakukan pemrosesan NLP sebenarnya, tetapi akan mengembalikan respons JSON dummy yang telah ditentukan.
 
 **Prasyarat:**
-* Developer utama telah berhasil men-deploy versi terbaru dari `MedicalRecordRegistry.sol` (yang menyertakan fungsi `getRecordHashesByPatient` dan `mapping patientRecordHashes`) ke jaringan Ganache lokal.
-* Alamat kontrak dan ABI dari `MedicalRecordRegistry` yang baru telah disimpan dengan benar di `blockchain/build/deployments/MedicalRecordRegistry-address.json` dan `MedicalRecordRegistry-abi.json`.
-* Layanan backend FastAPI dapat dijalankan.
-* Database PostgreSQL berjalan dan termigrasi.
+* Step 2.3 (Basic Patient Data Retrieval) telah selesai dan diverifikasi.
+* Lingkungan pengembangan backend (FastAPI) berfungsi dengan baik.
 
 ---
 
-### **Baby Step 2.3.1: Verifikasi Konfigurasi Backend untuk Smart Contract Baru**
+### **Baby Step 3.1.1: Penentuan Lokasi dan Struktur Placeholder NLP Service**
 
-* **Tujuan:** Memastikan aplikasi FastAPI memuat alamat dan ABI yang benar untuk _smart contract_ `MedicalRecordRegistry` yang baru di-deploy.
+* **Tujuan:** Memutuskan apakah placeholder NLP service akan menjadi modul dalam backend FastAPI utama atau microservice terpisah (untuk MVP, modul dalam backend utama mungkin lebih sederhana).
+* **Pertimbangan:**
+    * **Modul dalam Backend Utama (Direkomendasikan untuk MVP):**
+        * **Keuntungan:** Lebih cepat diimplementasikan, tidak perlu setup infrastruktur service baru (routing, deployment terpisah), lebih mudah dipanggil dari service lain di backend utama.
+        * **Struktur Potensial:**
+            ```
+            src/app/
+            ├── api/
+            │   └── endpoints/
+            │       ├── ...
+            │       └── nlp.py  # Router untuk NLP
+            ├── services/
+            │   └── nlp_service.py # Logika placeholder NLP
+            └── core/
+                └── ...
+            ```
+    * **Microservice Terpisah (FastAPI/Flask):**
+        * **Keuntungan:** Pemisahan yang lebih jelas, potensi skalabilitas independen di masa depan.
+        * **Kerugian (untuk MVP):** Overhead setup lebih besar, perlu konfigurasi komunikasi antar-service.
+* **Keputusan (Untuk AI Developer):** Untuk MVP ini, implementasikan sebagai **modul dalam backend FastAPI utama**. Buat file `src/app/services/nlp_service.py` untuk logika dan `src/app/api/endpoints/nlp.py` untuk routing API.
 * **Instruksi:**
-    1.  Hentikan server FastAPI jika sedang berjalan.
-    2.  Hapus file `.env` jika ada untuk memastikan variabel lingkungan tidak meng-override konfigurasi dari file JSON (atau pastikan `.env` tidak berisi `MEDICAL_RECORD_REGISTRY_ADDRESS` dan `MEDICAL_RECORD_REGISTRY_ABI` yang lama).
-    3.  Jalankan kembali server FastAPI:
-        ```bash
-        cd src
-        uvicorn app.main:app --reload --port 8000
-        ```
-    4.  Periksa log output server FastAPI saat startup. Cari pesan yang mengindikasikan bahwa "Medical Record Registry contract ABI and address loaded successfully." dari `src/app/core/config.py`.
-        * Pastikan alamat kontrak yang dimuat sesuai dengan alamat yang Anda catat setelah deployment.
+    1.  Buat file `src/app/services/nlp_service.py`.
+    2.  Buat file `src/app/api/endpoints/nlp.py`.
+    3.  Tambahkan router NLP ke `src/app/main.py`.
 * **Kriteria Penerimaan:**
-    * Server FastAPI berjalan tanpa error terkait pemuatan konfigurasi _smart contract_.
-    * Log menunjukkan bahwa ABI dan alamat untuk `MedicalRecordRegistry` telah dimuat dengan benar dari file JSON yang diperbarui.
-* **Rollback (jika gagal):**
-    * Periksa kembali path ke file `MedicalRecordRegistry-address.json` dan `MedicalRecordRegistry-abi.json` di `src/app/core/config.py`.
-    * Pastikan isi file JSON tersebut valid dan sesuai dengan hasil deployment terbaru.
-    * Pastikan skrip deployment (`scripts/deployMedicalRecordRegistry.js`) sudah benar dalam menyimpan informasi ini.
+    * File-file baru telah dibuat di lokasi yang benar.
+    * Router NLP telah ditambahkan ke instance FastAPI utama di `main.py` (misalnya, dengan prefix `/api/v1/nlp`).
+* **Rollback (jika gagal):** Hapus file yang baru dibuat dan revert perubahan di `main.py`.
 
 ---
 
-### **Baby Step 2.3.2: Pengujian Integrasi API `/medical-records/patient/me` dengan Smart Contract "Live"**
+### **Baby Step 3.1.2: Implementasi Logika Placeholder NLP Service**
 
-* **Tujuan:** Memvalidasi bahwa endpoint `GET /api/v1/medical-records/patient/me` dapat berhasil mengambil daftar hash rekam medis dari _smart contract_ `MedicalRecordRegistry` yang "live" di Ganache dan kemudian mengambil data yang sesuai dari database.
+* **Tujuan:** Mengimplementasikan fungsi di `nlp_service.py` yang menerima teks dan mengembalikan respons JSON dummy.
 * **Instruksi:**
-    1.  Pastikan server FastAPI dan Ganache (dengan kontrak yang sudah di-deploy) berjalan.
-    2.  Identifikasi seorang pengguna (pasien) yang sudah terdaftar di sistem (atau daftarkan pengguna baru melalui API jika perlu). Pastikan pengguna ini memiliki `did` yang valid.
-    3.  Buat beberapa (misalnya 2-3) rekam medis untuk pengguna ini melalui endpoint `POST /api/v1/medical-records/`.
-        * Catat `data_hash` dari setiap rekam medis yang dibuat. Ini akan tercatat di _smart contract_.
-    4.  Gunakan `pytest` untuk menjalankan tes integrasi spesifik yang menargetkan endpoint `GET /api/v1/medical-records/patient/me`. Fokus pada tes-tes di `tests/integration/api/test_api_medical_records.py` yang relevan, khususnya:
-        * `test_get_my_medical_records_scenario1_blockchain_match`
-        * `test_get_my_medical_records_scenario2_partial_or_no_db_match` (jika Anda ingin membuat skenario ini secara manual)
-        * `test_get_my_medical_records_scenario3_no_blockchain_records` (untuk pengguna lain atau setelah menghapus hash dari kontrak)
-        * `test_get_my_medical_records_scenario5_pagination`
-    5.  **Penting:** Untuk tes ini, Anda mungkin perlu menyesuaikan `conftest.py` atau tes spesifik agar **TIDAK** me-mock `BlockchainService` sepenuhnya, melainkan memungkinkan interaksi nyata dengan Ganache untuk fungsi `get_record_hashes_for_patient`. Atau, pastikan mock di `conftest.py` untuk `get_record_hashes_for_patient` (yang sekarang `AsyncMock`) dapat dikonfigurasi per tes untuk mengembalikan data yang diharapkan seolah-olah berasal dari kontrak live.
-        * **Alternatif 1 (Interaksi Nyata):** Buat fixture baru atau modifikasi `client` fixture untuk kasus di mana interaksi blockchain nyata diinginkan. Ini lebih merupakan tes E2E mini.
-        * **Alternatif 2 (Refined Mocking):** Pastikan Anda dapat meng-override `return_value` dari `blockchain_service_mock.get_record_hashes_for_patient` di setiap fungsi tes di `test_api_medical_records.py` untuk menyimulasikan output kontrak yang benar. Ini sudah dilakukan di tes yang ada. Pastikan data yang di-return mock (daftar hash) konsisten dengan apa yang Anda harapkan dari kontrak yang di-deploy.
-    6.  Analisis hasil tes. Jika ada kegagalan:
-        * Periksa log FastAPI untuk detail error saat berinteraksi dengan `BlockchainService` atau kontrak.
-        * Periksa log Ganache untuk melihat apakah ada _revert_ atau error pada level _smart contract_.
-        * Gunakan `breakpoint()` atau `print()` di `src/app/core/blockchain.py` dalam metode `get_record_hashes_for_patient` untuk melihat data mentah yang dikembalikan oleh kontrak.
-* **Kriteria Penerimaan:**
-    * Semua tes integrasi yang relevan di `test_api_medical_records.py` untuk endpoint `GET /medical-records/patient/me` lolos ketika berinteraksi (baik secara nyata maupun melalui mock yang akurat) dengan _smart contract_ `MedicalRecordRegistry` yang telah di-deploy.
-    * Respons dari API mencerminkan data yang benar sesuai dengan hash yang ada di blockchain dan data yang ada di database.
-* **Rollback (jika gagal):**
-    * Kembali ke penggunaan `BlockchainService` yang sepenuhnya di-mock untuk endpoint ini.
-    * Analisis error: Apakah masalahnya di logika backend, cara pemanggilan kontrak, atau di logika _smart contract_ itu sendiri?
-    * Jika masalah di _smart contract_, perbaiki, deploy ulang, dan ulangi Baby Step 2.3.1.
-
----
-
-### **Baby Step 2.3.3: Verifikasi Manual Fungsionalitas (Opsional tapi Direkomendasikan)**
-
-* **Tujuan:** Melakukan verifikasi manual dari keseluruhan alur untuk memastikan fungsionalitas sesuai harapan di luar lingkup tes otomatis.
-* **Instruksi:**
-    1.  Gunakan alat seperti Postman atau `curl`.
-    2.  **Registrasi dan Login:**
-        * Daftarkan pengguna baru (Pasien A) melalui `POST /api/v1/auth/register`. Catat `user_id` dan `did`.
-        * Login sebagai Pasien A melalui `POST /api/v1/auth/login` untuk mendapatkan token akses.
-    3.  **Buat Rekam Medis:**
-        * Sebagai Pasien A (menggunakan tokennya), buat 2-3 rekam medis melalui `POST /api/v1/medical-records/`.
-        * Contoh payload:
-            ```json
+    1.  Dalam `src/app/services/nlp_service.py`, buat sebuah fungsi, misalnya `extract_entities_placeholder`, yang:
+        * Menerima satu argumen string (misalnya, `text_input: str`).
+        * Mengabaikan `text_input` (karena ini adalah placeholder).
+        * Mengembalikan dictionary Python yang identik dengan struktur JSON dummy yang ditentukan:
+            ```python
             {
-              "record_type": "DIAGNOSIS",
-              "record_metadata": {"symptom": "headache"},
-              "raw_data": "Patient reports persistent headache for 3 days."
+                "entities": [
+                    {"text": "Blood Pressure", "type": "VitalSign"},
+                    {"text": "120/80 mmHg", "type": "Measurement"}
+                ]
             }
             ```
-            ```json
-            {
-              "record_type": "LAB_RESULT",
-              "record_metadata": {"test_name": "Blood Sugar"},
-              "raw_data": "Fasting Blood Sugar: 95 mg/dL"
-            }
-            ```
-        * Perhatikan `data_hash` dari respons atau dari log FastAPI. Buka Ganache dan periksa transaksi ke _smart contract_ `MedicalRecordRegistry`. Pastikan event `RecordAdded` terpancar dengan `recordHash`, `patientDid`, dan `recordType` yang benar.
-    4.  **Ambil Daftar Rekam Medis:**
-        * Sebagai Pasien A, panggil `GET /api/v1/medical-records/patient/me`.
-        * Verifikasi bahwa responsnya adalah daftar rekam medis yang baru saja dibuat (metadata saja). Jumlahnya harus sesuai. Hash data di respons harus cocok dengan yang Anda catat/lihat di blockchain.
-    5.  **Ambil Detail Rekam Medis:**
-        * Ambil salah satu `id` rekam medis dari respons di atas.
-        * Sebagai Pasien A, panggil `GET /api/v1/medical-records/{record_id_tersebut}`.
-        * Verifikasi bahwa `raw_data` yang terdekripsi muncul dan sesuai dengan yang Anda input.
-    6.  **(Opsional) Skenario Negatif:**
-        * Coba ambil rekam medis pasien lain (jika Anda punya pengguna lain dan tokennya) untuk memastikan otorisasi bekerja.
-        * Coba ambil rekam medis dengan ID yang tidak ada.
 * **Kriteria Penerimaan:**
-    * Semua langkah manual berhasil dan data yang ditampilkan konsisten antara input, database, blockchain (hash), dan output API.
-    * Tidak ada error tak terduga di log FastAPI maupun Ganache.
-* **Rollback (jika gagal):**
-    * Identifikasi langkah mana yang gagal.
-    * Periksa log dan gunakan debugger jika perlu untuk menelusuri alur data.
+    * Fungsi `extract_entities_placeholder` ada di `src/app/services/nlp_service.py`.
+    * Fungsi tersebut mengembalikan dictionary Python yang sesuai dengan struktur yang ditentukan, terlepas dari inputnya.
+* **Rollback (jika gagal):** Perbaiki implementasi fungsi hingga sesuai.
 
 ---
 
-### **Baby Step 2.3.4: Pembaruan Dokumentasi**
+### **Baby Step 3.1.3: Implementasi Endpoint API untuk Placeholder NLP Service**
 
-* **Tujuan:** Memastikan `README.md` dan dokumentasi relevan lainnya (jika ada) diperbarui untuk mencerminkan status penyelesaian Step 2.3.
+* **Tujuan:** Membuat endpoint API `POST /api/v1/nlp/extract-entities` yang menggunakan logika dari `nlp_service.py`.
 * **Instruksi:**
-    1.  Perbarui `README.md` di bagian "Catatan untuk Developer" untuk mengonfirmasi bahwa `BlockchainService` sekarang diharapkan berinteraksi dengan _smart contract_ `MedicalRecordRegistry` yang "live" untuk fungsi `get_record_hashes_for_patient`.
-    2.  Perbarui `memory-bank/progress.md` dengan ringkasan penyelesaian Step 2.3 secara keseluruhan.
-    3.  Perbarui `memory-bank/status-todolist-suggestions.md` untuk menandai Step 2.3 sebagai SELESAI dan mengidentifikasi langkah berikutnya (misalnya, memulai Step 3 atau menangani _technical debt_).
+    1.  Dalam `src/app/api/endpoints/nlp.py`:
+        * Impor `APIRouter` dan fungsi `extract_entities_placeholder` dari `nlp_service.py`.
+        * Buat Pydantic model untuk request body, misalnya `NLPExtractionRequest`, yang memiliki satu field `text: str`.
+        * Buat Pydantic model untuk response body, misalnya `NLPExtractionResponse`, yang mencerminkan struktur JSON dummy (misalnya, field `entities: List[Dict[str, str]]`).
+        * Definisikan endpoint `POST /extract-entities` yang:
+            * Menerima request body yang sesuai dengan `NLPExtractionRequest`.
+            * Memanggil fungsi `extract_entities_placeholder` (input teks dari request bisa diabaikan oleh fungsi placeholder).
+            * Mengembalikan respons yang sesuai dengan `NLPExtractionResponse`.
+    2.  Pastikan router ini ditambahkan ke aplikasi FastAPI utama di `src/app/main.py` dengan prefix `/api/v1/nlp`.
 * **Kriteria Penerimaan:**
-    * Dokumentasi yang disebutkan telah diperbarui dan akurat.
-* **Rollback (jika gagal):**
-    * Revisi pembaruan dokumentasi hingga akurat.
+    * Endpoint `POST /api/v1/nlp/extract-entities` dapat diakses.
+    * Endpoint menerima JSON dengan field `text`.
+    * Endpoint mengembalikan JSON response dengan struktur `{"entities": [{"text": "Blood Pressure", "type": "VitalSign"}, {"text": "120/80 mmHg", "type": "Measurement"}]}`.
+* **Rollback (jika gagal):** Periksa Pydantic model, routing, dan pemanggilan service. Pastikan router sudah benar ditambahkan di `main.py`.
 
 ---
 
-Setelah semua baby steps ini berhasil diselesaikan, Step 2.3 dari `implementation-plan.md` dapat dianggap sepenuhnya selesai.
+### **Baby Step 3.1.4: Penulisan Tes Unit untuk Placeholder NLP Service**
+
+* **Tujuan:** Membuat tes unit untuk memverifikasi fungsionalitas placeholder NLP service dan endpoint API-nya.
+* **Instruksi:**
+    1.  Buat file tes baru, misalnya `tests/unit/services/test_nlp_service.py`.
+        * Tes fungsi `extract_entities_placeholder` untuk memastikan ia selalu mengembalikan struktur dummy yang benar, apa pun inputnya.
+    2.  Buat file tes baru, misalnya `tests/integration/api/test_api_nlp.py`.
+        * Tes endpoint `POST /api/v1/nlp/extract-entities`:
+            * Kirim request valid dengan data teks.
+            * Verifikasi status code adalah 200 OK.
+            * Verifikasi body respons adalah JSON dummy yang diharapkan.
+            * Tes dengan request body yang tidak valid (misalnya, field `text` hilang atau tipe salah) untuk memastikan validasi Pydantic bekerja (status code 422).
+* **Kriteria Penerimaan:**
+    * Semua tes unit dan integrasi untuk placeholder NLP service lolos.
+    * Tes mencakup skenario *happy path* dan *error/invalid input*.
+* **Rollback (jika gagal):** Perbaiki kode service, endpoint, atau tes hingga semua tes lolos.
+
+---
+
+### **Baby Step 3.1.5: Pembaruan Dokumentasi API (Swagger/OpenAPI)**
+
+* **Tujuan:** Memastikan endpoint baru untuk NLP terdokumentasi secara otomatis dalam dokumentasi Swagger UI / OpenAPI.
+* **Instruksi:**
+    1.  Jalankan server FastAPI (`uvicorn src.app.main:app --reload`).
+    2.  Akses dokumentasi API interaktif (biasanya di `http://localhost:8000/docs`).
+    3.  Verifikasi bahwa endpoint `POST /api/v1/nlp/extract-entities` muncul dengan benar, termasuk deskripsi, model request, dan model respons.
+    4.  Jika perlu, tambahkan deskripsi yang lebih baik atau ringkasan pada definisi router atau endpoint di `src/app/api/endpoints/nlp.py` menggunakan parameter `summary` dan `description` di decorator FastAPI.
+* **Kriteria Penerimaan:**
+    * Endpoint NLP baru terdokumentasi dengan benar di Swagger UI.
+    * Model request dan response terlihat jelas.
+* **Rollback (jika gagal):** Periksa tipe Pydantic model, decorator FastAPI, dan pastikan server berjalan dengan kode terbaru.
+
+---
+
+Setelah semua baby steps ini berhasil diselesaikan, Step 3.1 dari `implementation-plan.md` dapat dianggap sepenuhnya selesai.
