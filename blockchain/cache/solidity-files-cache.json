@@ -1,9 +1,9 @@
 {
   "_format": "hh-sol-cache-2",
   "files": {
-    "/app/blockchain/contracts/MedicalRecordRegistry.sol": {
-      "lastModificationDate": 1748334550213,
-      "contentHash": "3a2bded1687b13ee610afdb1354f8bb8",
+    "D:\\documents\\MediTrustAl\\blockchain\\contracts\\MedicalRecordRegistry.sol": {
+      "lastModificationDate": 1748395753970,
+      "contentHash": "7417d9232036d2688b15bae9b29e1091",
       "sourceName": "blockchain/contracts/MedicalRecordRegistry.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -35,6 +35,42 @@
       ],
       "artifacts": [
         "MedicalRecordRegistry"
+      ]
+    },
+    "D:\\documents\\MediTrustAl\\blockchain\\contracts\\UserRegistry.sol": {
+      "lastModificationDate": 1748407504335,
+      "contentHash": "7aebeb0a711e52a3f1f03b440b8179bc",
+      "sourceName": "blockchain/contracts/UserRegistry.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "evmVersion": "paris",
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "UserRegistry"
       ]
     }
   }

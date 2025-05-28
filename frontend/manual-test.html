@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediTrustAl - Manual Test Frontend</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        .login-container {
+            text-align: center;
+        }
+        .dashboard-container {
+            display: none;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+        }
+        h2 {
+            color: #555;
+            margin-bottom: 1rem;
+        }
+        .form-group {
+            margin-bottom: 1rem;
+            text-align: left;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #555;
+            font-weight: 500;
+        }
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+        }
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #5a6fd8;
+        }
+        .error {
+            color: #e74c3c;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
+        .success {
+            color: #27ae60;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+        .logout-btn {
+            background: #e74c3c;
+            width: auto;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+        .logout-btn:hover {
+            background: #c0392b;
+        }
+        .feature-section {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        .feature-section h3 {
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+        .test-btn {
+            background: #28a745;
+            margin: 0.5rem 0;
+            padding: 0.5rem;
+            font-size: 0.9rem;
+        }
+        .test-btn:hover {
+            background: #218838;
+        }
+        .api-status {
+            margin-top: 1rem;
+            padding: 0.5rem;
+            border-radius: 3px;
+            font-size: 0.9rem;
+        }
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Login Page -->
+        <div id="loginPage" class="login-container">
+            <h1>MediTrustAl</h1>
+            <h2>Patient Portal Login</h2>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button type="submit">Login</button>
+                <div id="loginError" class="error"></div>
+                <div id="loginSuccess" class="success"></div>
+            </form>
+        </div>
+
+        <!-- Dashboard Page -->
+        <div id="dashboardPage" class="dashboard-container">
+            <div class="nav">
+                <h2>Dashboard</h2>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+            
+            <div class="feature-section">
+                <h3>Medical Records</h3>
+                <button class="test-btn" onclick="testMedicalRecords()">Test Medical Records API</button>
+                <div id="medicalRecordsStatus" class="api-status"></div>
+            </div>
+
+            <div class="feature-section">
+                <h3>Consent Management</h3>
+                <button class="test-btn" onclick="testConsentManagement()">Test Consent API</button>
+                <div id="consentStatus" class="api-status"></div>
+            </div>
+
+            <div class="feature-section">
+                <h3>Audit Logs</h3>
+                <button class="test-btn" onclick="testAuditLogs()">Test Audit Logs API</button>
+                <div id="auditStatus" class="api-status"></div>
+            </div>
+
+            <div class="feature-section">
+                <h3>Blockchain Integration</h3>
+                <button class="test-btn" onclick="testBlockchain()">Test Blockchain API</button>
+                <div id="blockchainStatus" class="api-status"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+        let authToken = localStorage.getItem('authToken');
+
+        // Check if user is already logged in
+        if (authToken) {
+            showDashboard();
+        }
+
+        // Login form handler
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    authToken = data.access_token;
+                    localStorage.setItem('authToken', authToken);
+                    document.getElementById('loginSuccess').textContent = 'Login successful!';
+                    document.getElementById('loginError').textContent = '';
+                    setTimeout(showDashboard, 1000);
+                } else {
+                    document.getElementById('loginError').textContent = data.detail || 'Login failed';
+                    document.getElementById('loginSuccess').textContent = '';
+                }
+            } catch (error) {
+                document.getElementById('loginError').textContent = 'Connection error. Make sure backend is running on port 8000.';
+                document.getElementById('loginSuccess').textContent = '';
+            }
+        });
+
+        function showDashboard() {
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('dashboardPage').style.display = 'block';
+        }
+
+        function logout() {
+            localStorage.removeItem('authToken');
+            authToken = null;
+            document.getElementById('loginPage').style.display = 'block';
+            document.getElementById('dashboardPage').style.display = 'none';
+            document.getElementById('email').value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('loginError').textContent = '';
+            document.getElementById('loginSuccess').textContent = '';
+        }
+
+        async function apiCall(endpoint, method = 'GET', body = null) {
+            const options = {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                }
+            };
+            
+            if (body) {
+                options.body = JSON.stringify(body);
+            }
+            
+            return fetch(`${API_BASE}${endpoint}`, options);
+        }
+
+        function updateStatus(elementId, success, message) {
+            const element = document.getElementById(elementId);
+            element.className = `api-status ${success ? 'status-success' : 'status-error'}`;
+            element.textContent = message;
+        }
+
+        async function testMedicalRecords() {
+            try {
+                const response = await apiCall('/medical-records/');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    updateStatus('medicalRecordsStatus', true, `✓ Medical Records API working. Found ${data.length || 0} records.`);
+                } else {
+                    updateStatus('medicalRecordsStatus', false, `✗ Error: ${data.detail || 'Unknown error'}`);
+                }
+            } catch (error) {
+                updateStatus('medicalRecordsStatus', false, '✗ Connection error');
+            }
+        }
+
+        async function testConsentManagement() {
+            try {
+                const response = await apiCall('/consent/');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    updateStatus('consentStatus', true, `✓ Consent API working. Found ${data.length || 0} consents.`);
+                } else {
+                    updateStatus('consentStatus', false, `✗ Error: ${data.detail || 'Unknown error'}`);
+                }
+            } catch (error) {
+                updateStatus('consentStatus', false, '✗ Connection error');
+            }
+        }
+
+        async function testAuditLogs() {
+            try {
+                const response = await apiCall('/audit/logs');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    updateStatus('auditStatus', true, `✓ Audit Logs API working. Found ${data.length || 0} logs.`);
+                } else {
+                    updateStatus('auditStatus', false, `✗ Error: ${data.detail || 'Unknown error'}`);
+                }
+            } catch (error) {
+                updateStatus('auditStatus', false, '✗ Connection error');
+            }
+        }
+
+        async function testBlockchain() {
+            try {
+                const response = await apiCall('/blockchain/status');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    updateStatus('blockchainStatus', true, `✓ Blockchain API working. Status: ${data.status || 'Connected'}`);
+                } else {
+                    updateStatus('blockchainStatus', false, `✗ Error: ${data.detail || 'Unknown error'}`);
+                }
+            } catch (error) {
+                updateStatus('blockchainStatus', false, '✗ Connection error');
+            }
+        }
+    </script>
+</body>
+</html>

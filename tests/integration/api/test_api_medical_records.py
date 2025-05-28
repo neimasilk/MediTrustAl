@@ -497,12 +497,14 @@ def test_get_medical_record_detail_success_patient_owner(client: TestClient, aut
     assert validated_detail.record_metadata == {"device":"Oximeter"}
     assert validated_detail.raw_data == raw_data_content
 
+    # Get fresh record from database to avoid DetachedInstanceError
     db_record = crud_medical_record.get_medical_record_by_id(db_session, record_id=record_id)
     assert db_record is not None
     assert db_record.patient_id == user_id
     assert db_record.record_metadata == {"device":"Oximeter"}
     assert db_record.data_hash == hash_data(raw_data_content)
-    assert db_record.blockchain_record_id == created_db_record.blockchain_record_id
+    # blockchain_record_id should be None since we're not actually calling blockchain service in this test
+    assert db_record.blockchain_record_id is None
     
     # Verify encryption
     decrypted_db_data = decrypt_data(db_record.encrypted_data, TEST_ENCRYPTION_KEY)
@@ -712,7 +714,7 @@ def test_get_medical_record_detail_doctor_record_no_data_hash(
             response = client.get(f"/api/v1/medical-records/{record_id}", headers=headers)
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
-        assert "No data hash for blockchain verification" in response.json()["detail"]
+        assert "Record cannot be accessed by doctor: No data hash for blockchain verification" in response.json()["detail"]
     finally:
         # Clean up blockchain_service override
         if original_bs_override:
@@ -721,12 +723,7 @@ def test_get_medical_record_detail_doctor_record_no_data_hash(
             del app.dependency_overrides[get_blockchain_service]
 
 
-# --- POST /api/v1/medical-records/{record_id}/grant-access ---
-    headers = {"Authorization": f"Bearer {doctor_token}"}
-    
-    response = client.get(f"/api/v1/medical-records/{record_id}", headers=headers)
-    assert response.status_code == status.HTTP_403_FORBIDDEN # As per current code
-    assert "No data hash for blockchain verification" in response.json()["detail"]
+
 
 
 # --- POST /api/v1/medical-records/{record_id}/grant-access ---
