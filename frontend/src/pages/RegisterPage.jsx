@@ -55,7 +55,7 @@ const RegisterPage = () => {
   };
 
   return (
-    <Container component="main" maxWidth="xs">
+    <Container component="main" maxWidth="xs" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
       <Box
         sx={{
           marginTop: 8,
@@ -64,8 +64,29 @@ const RegisterPage = () => {
           alignItems: 'center',
         }}
       >
-        <Typography component="h1" variant="h5">
-          Sign Up
+        {/* Logo Placeholder */}
+        <Box
+          sx={{
+            width: 70,
+            height: 70,
+            backgroundColor: 'grey.300',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            mb: 2,
+            fontSize: '1.4em',
+            color: 'text.secondary',
+            fontWeight: 'bold',
+          }}
+        >
+          MTA
+        </Box>
+        <Typography component="h1" variant="h4" sx={{ mb: 1, color: 'primary.main' }}>
+          Create Account
+        </Typography>
+        <Typography component="p" sx={{ mb: 3, color: 'text.secondary' }}>
+          Join MediTrustAl to manage your health data securely.
         </Typography>
         {error && <Alert severity="error" sx={{ mt: 2, width: '100%' }}>{error}</Alert>}
         <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
@@ -80,6 +101,7 @@ const RegisterPage = () => {
             autoFocus
             value={username}
             onChange={(e) => setUsername(e.target.value)}
+            placeholder="Choose a username"
           />
           <TextField
             margin="normal"
@@ -91,6 +113,7 @@ const RegisterPage = () => {
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            placeholder="your@email.com"
           />
           <TextField
             margin="normal"
@@ -102,6 +125,7 @@ const RegisterPage = () => {
             autoComplete="name"
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
+            placeholder="Your full name"
           />
           <TextField
             margin="normal"
@@ -114,6 +138,7 @@ const RegisterPage = () => {
             autoComplete="new-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            placeholder="Create a strong password"
           />
           <TextField
             margin="normal"
@@ -126,9 +151,10 @@ const RegisterPage = () => {
             autoComplete="new-password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
+            placeholder="Re-enter your password"
           />
           <FormControl fullWidth margin="normal" required>
-            <InputLabel id="role-select-label">Role</InputLabel
+            <InputLabel id="role-select-label">Role</InputLabel>
             <Select
               labelId="role-select-label"
               id="role"
@@ -141,27 +167,20 @@ const RegisterPage = () => {
               {/* <MenuItem value="ADMIN">Admin</MenuItem> */}
             </Select>
           </FormControl>
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            name="confirmPassword"
-            label="Confirm Password"
-            type="password"
-            id="confirmPassword"
-            autoComplete="new-password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-          />
           <Button
             type="submit"
             fullWidth
             variant="contained"
-            sx={{ mt: 3, mb: 2 }}
             disabled={isLoading}
+            sx={{ mt: 3, mb: 2, backgroundColor: '#27ae60', '&:hover': { backgroundColor: '#229954' } }}
           >
-            {isLoading ? <CircularProgress size={24} /> : 'Sign Up'}
+            {isLoading ? <CircularProgress size={24} /> : 'Register'}
           </Button>
+          <Box sx={{ mt: 2, textAlign: 'center' }}>
+            <Button onClick={() => navigate('/login')} variant="text">
+              Already have an account? Login
+            </Button>
+          </Box>
         </Box>
       </Box>
     </Container>

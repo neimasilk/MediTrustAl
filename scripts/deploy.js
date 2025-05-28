@@ -43,19 +43,19 @@ function saveDeploymentInfo(contract, contractName) {
     fs.mkdirSync(deploymentInfoDir, { recursive: true });
   }
 
-  const deploymentInfo = {
-    contractName: contractName,
-    contractAddress: contractAddress,
-    abi: contractArtifact.abi,
-    bytecode: contractArtifact.bytecode,
-    deployedBytecode: contractArtifact.deployedBytecode,
-    deploymentTimestamp: new Date().toISOString(),
-    network: hre.network.name
-  };
+  // Save contract address
+  fs.writeFileSync(
+    path.join(deploymentInfoDir, `${contractName}-address.json`),
+    JSON.stringify({ address: contractAddress }, undefined, 2)
+  );
 
-  const deploymentInfoPath = path.join(deploymentInfoDir, `${contractName}.json`);
-  fs.writeFileSync(deploymentInfoPath, JSON.stringify(deploymentInfo, null, 2));
-  console.log(`${contractName} deployment info saved to:`, deploymentInfoPath);
+  // Save ABI
+  fs.writeFileSync(
+    path.join(deploymentInfoDir, `${contractName}-abi.json`),
+    JSON.stringify(contractArtifact.abi, undefined, 2)
+  );
+
+  console.log(`Deployment info for ${contractName} saved to ${deploymentInfoDir}`);
 }
 
 main()

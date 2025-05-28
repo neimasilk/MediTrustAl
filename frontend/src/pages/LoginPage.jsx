@@ -48,7 +48,7 @@ const LoginPage = () => {
   };
 
   return (
-    <Container component="main" maxWidth="xs">
+    <Container component="main" maxWidth="xs" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
       <Box
         sx={{
           marginTop: 8,
@@ -57,8 +57,29 @@ const LoginPage = () => {
           alignItems: 'center',
         }}
       >
-        <Typography component="h1" variant="h5">
-          Login
+        {/* Logo Placeholder - Consider adding an actual logo image */}
+        <Box
+          sx={{
+            width: 80,
+            height: 80,
+            backgroundColor: 'grey.300', // Placeholder color
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            mb: 2,
+            fontSize: '1.5em',
+            color: 'text.secondary',
+            fontWeight: 'bold',
+          }}
+        >
+          MTA {/* Placeholder Text for Logo */}
+        </Box>
+        <Typography component="h1" variant="h4" sx={{ mb: 1, color: 'primary.main' }}>
+          MediTrustAl
+        </Typography>
+        <Typography component="p" sx={{ mb: 3, color: 'text.secondary' }}>
+          Securely access your health platform.
         </Typography>
         <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
           <TextField
@@ -73,6 +94,7 @@ const LoginPage = () => {
             value={usernameOrEmail}
             onChange={(e) => setUsernameOrEmail(e.target.value)}
             disabled={isLoading}
+            placeholder="e.g., patient_a or patient@example.com"
           />
           <TextField
             margin="normal"
@@ -86,6 +108,7 @@ const LoginPage = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             disabled={isLoading}
+            placeholder="Enter your password"
           />
           {error && (
             <Alert severity="error" sx={{ mt: 2, width: '100%' }}>
@@ -102,9 +125,13 @@ const LoginPage = () => {
           >
             {isLoading ? <CircularProgress size={24} /> : 'Login'}
           </Button>
-          <Box sx={{ mt: 2, textAlign: 'center' }}>
+          <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
             <Link href="/register" variant="body2">
               {"Don't have an account? Sign Up"}
+            </Link>
+            <Typography variant="body2" sx={{ color: 'text.secondary' }}>|</Typography>
+            <Link href="#" variant="body2" onClick={(e) => { e.preventDefault(); alert('Forgot Password clicked - TBD'); }}>
+              {"Forgot Password?"}
             </Link>
           </Box>
         </Box>
