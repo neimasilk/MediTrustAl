@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediTrustAl - Patient Data Access History Mockup</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            background-color: #f4f7f9;
+            color: #333;
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            width: 250px;
+            background: #2c3e50;
+            color: white;
+            padding-top: 20px;
+        }
+        .sidebar-header {
+            padding: 20px;
+            text-align: center;
+            font-size: 1.5em;
+            border-bottom: 1px solid #34495e;
+        }
+        .sidebar-nav ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .sidebar-nav li a {
+            display: block;
+            padding: 15px 20px;
+            color: #ecf0f1;
+            text-decoration: none;
+            transition: background 0.2s;
+            border-left: 3px solid transparent;
+        }
+        .sidebar-nav li a:hover, .sidebar-nav li a.active {
+            background: #34495e;
+            border-left-color: #3498db;
+        }
+        .sidebar-nav li a .icon {
+            margin-right: 10px;
+        }
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .top-nav {
+            background: #ffffff;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            border-bottom: 1px solid #e0e0e0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .user-profile {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        .user-profile img {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .user-profile span {
+            font-weight: 500;
+        }
+        .logout-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 20px;
+            font-size: 0.9em;
+        }
+        .logout-btn:hover {
+            background: #c0392b;
+        }
+        .content-area {
+            padding: 30px;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+        .content-header h1 {
+            margin-top: 0;
+            color: #2c3e50;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+        }
+        .filter-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+            display: flex;
+            gap: 20px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .filter-group label {
+            margin-bottom: 6px;
+            font-size: 0.85em;
+            color: #555;
+            font-weight: 500;
+        }
+        .filter-group input[type="date"],
+        .filter-group select {
+            padding: 10px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        .filter-btn {
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            height: fit-content; /* Align with input bottom */
+        }
+        .filter-btn:hover {
+            background-color: #2980b9;
+        }
+        .table-section {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            overflow-x: auto; /* For responsive table */
+        }
+        .table-section h2 {
+            margin-top: 0;
+            color: #2c3e50;
+            font-size: 1.4em;
+            margin-bottom: 15px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            text-align: left;
+            padding: 12px 15px;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 0.9em;
+            word-break: break-word;
+        }
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #555;
+            text-transform: uppercase;
+        }
+        tr:hover {
+            background-color: #f1f5f8;
+        }
+        .pagination {
+            margin-top: 25px;
+            text-align: center;
+        }
+        .pagination button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 0 5px;
+            font-size: 0.9em;
+        }
+        .pagination button:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+        .pagination span {
+            margin: 0 10px;
+            font-size: 0.95em;
+            vertical-align: middle;
+        }
+        .details-json {
+            font-family: monospace;
+            font-size: 0.85em;
+            background-color: #f0f0f0;
+            padding: 5px;
+            border-radius: 3px;
+            white-space: pre-wrap; /* Ensures JSON formatting is respected */
+            word-break: break-all;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+
+        /* Simple icons (using text/emoji for mockup) */
+        .icon-dashboard::before { content: "🏠"; }
+        .icon-records::before { content: "📄"; }
+        .icon-consent::before { content: "🤝"; }
+        .icon-history::before { content: "📜"; }
+        .icon-profile::before { content: "👤"; }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-header">MediTrustAl</div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="#"><span class="icon icon-dashboard"></span>Dashboard</a></li>
+                <li><a href="#"><span class="icon icon-records"></span>Medical Records</a></li>
+                <li><a href="#"><span class="icon icon-consent"></span>Consent Management</a></li>
+                <li><a href="#" class="active"><span class="icon icon-history"></span>Access History</a></li>
+                <li><a href="#"><span class="icon icon-profile"></span>Profile</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <div class="main-content">
+        <header class="top-nav">
+            <div class="user-profile">
+                <img src="https://placehold.co/40x40/EBF4FF/764ABC?text=PA&font=Inter" alt="User Avatar"
+                     onerror="this.onerror=null; this.src='https://placehold.co/40x40/cccccc/ffffff?text=Error&font=Inter';">
+                <span>Patient A</span>
+            </div>
+            <button class="logout-btn">Logout</button>
+        </header>
+
+        <main class="content-area">
+            <div class="content-header">
+                <h1>My Data Access History</h1>
+            </div>
+
+            <div class="filter-section">
+                <div class="filter-group">
+                    <label for="dateFrom">Date From:</label>
+                    <input type="date" id="dateFrom" name="dateFrom">
+                </div>
+                <div class="filter-group">
+                    <label for="dateTo">Date To:</label>
+                    <input type="date" id="dateTo" name="dateTo">
+                </div>
+                <div class="filter-group">
+                    <label for="actionType">Action Type:</label>
+                    <select id="actionType" name="actionType">
+                        <option value="">All Actions</option>
+                        <option value="VIEW_RECORD_SUCCESS">View Record (Success)</option>
+                        <option value="VIEW_RECORD_FAILURE_FORBIDDEN">View Record (Forbidden)</option>
+                        <option value="GRANT_ACCESS_SUCCESS">Grant Access (Success)</option>
+                        <option value="GRANT_ACCESS_FAILURE_BLOCKCHAIN">Grant Access (Blockchain Error)</option>
+                        <option value="REVOKE_ACCESS_SUCCESS">Revoke Access (Success)</option>
+                    </select>
+                </div>
+                <button class="filter-btn" onclick="applyFilters()">Apply Filters</button>
+            </div>
+
+            <div class="table-section">
+                <h2>Detailed Log Entries</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Actor (User/System)</th>
+                            <th>Action Type</th>
+                            <th>Target Record ID</th>
+                            <th>Target Address (Doctor)</th>
+                            <th>IP Address</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>2025-05-27 10:15:30 UTC</td>
+                            <td>Dr. X (user_id_doc_x)</td>
+                            <td>VIEW_RECORD_SUCCESS</td>
+                            <td>rec_001</td>
+                            <td>-</td>
+                            <td>192.168.1.101</td>
+                            <td class="details-json">{}</td>
+                        </tr>
+                        <tr>
+                            <td>2025-05-26 15:30:05 UTC</td>
+                            <td>Patient A (user_id_patient_a)</td>
+                            <td>GRANT_ACCESS_SUCCESS</td>
+                            <td>rec_001</td>
+                            <td>0xDocWalletX...</td>
+                            <td>203.0.113.45</td>
+                            <td class="details-json">{"transaction_hash": "0xtxGrantHash123..."}</td>
+                        </tr>
+                        <tr>
+                            <td>2025-05-26 10:05:12 UTC</td>
+                            <td>Patient A (user_id_patient_a)</td>
+                            <td>REVOKE_ACCESS_FAILURE_BLOCKCHAIN</td>
+                            <td>rec_002</td>
+                            <td>0xAnotherDoc...</td>
+                            <td>203.0.113.45</td>
+                            <td class="details-json">{"error": "Blockchain network timeout", "blockchain_error_type": "TIMEOUT"}</td>
+                        </tr>
+                        <tr>
+                            <td>2025-05-25 09:00:45 UTC</td>
+                            <td>Patient A (user_id_patient_a)</td>
+                            <td>VIEW_RECORD_SUCCESS</td>
+                            <td>rec_002</td>
+                            <td>-</td>
+                            <td>203.0.113.45</td>
+                            <td class="details-json">{}</td>
+                        </tr>
+                         <tr>
+                            <td>2025-05-24 11:20:00 UTC</td>
+                            <td>Dr. Y (user_id_doc_y)</td>
+                            <td>VIEW_RECORD_FAILURE_FORBIDDEN</td>
+                            <td>rec_003</td>
+                            <td>-</td>
+                            <td>198.51.100.2</td>
+                            <td class="details-json">{"error": "You do not have permission to access this medical record."}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                 </div>
+
+            <div class="pagination">
+                <button onclick="prevPage()" id="prevBtn" disabled>&laquo; Previous</button>
+                <span>Page <span id="currentPage">1</span> of <span id="totalPages">5</span></span>
+                <button onclick="nextPage()" id="nextBtn">Next &raquo;</button>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let currentPage = 1;
+        const totalPages = 5; // Mock total pages
+
+        function applyFilters() {
+            const dateFrom = document.getElementById('dateFrom').value;
+            const dateTo = document.getElementById('dateTo').value;
+            const actionType = document.getElementById('actionType').value;
+            alert(`Applying filters:\nDate From: ${dateFrom}\nDate To: ${dateTo}\nAction Type: ${actionType}\n(Mock - No actual filtering implemented)`);
+            // In a real app, this would fetch data with filters
+        }
+
+        function updatePaginationButtons() {
+            document.getElementById('currentPage').textContent = currentPage;
+            document.getElementById('totalPages').textContent = totalPages;
+            document.getElementById('prevBtn').disabled = currentPage === 1;
+            document.getElementById('nextBtn').disabled = currentPage === totalPages;
+        }
+
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                updatePaginationButtons();
+                alert(`Loading previous page: ${currentPage} (Mock)`);
+                // Fetch and display data for currentPage
+            }
+        }
+
+        function nextPage() {
+            if (currentPage < totalPages) {
+                currentPage++;
+                updatePaginationButtons();
+                alert(`Loading next page: ${currentPage} (Mock)`);
+                // Fetch and display data for currentPage
+            }
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            updatePaginationButtons();
+        });
+    </script>
+</body>
+</html>

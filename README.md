@@ -64,15 +64,16 @@ Sistem manajemen rekam medis berbasis blockchain dengan integrasi AI untuk anali
 
 1. Buat file `.env` di root project:
    ```env
-   GANACHE_RPC_URL=http://127.0.0.1:7545
+   GANACHE_RPC_URL=http://127.0.0.1:7545 # Pastikan Ganache berjalan di port 7545
    DATABASE_URL=postgresql://postgres:postgres@localhost:5432/meditrustal
    JWT_SECRET_KEY=your-secret-key-for-jwt
    ```
 
 2. Jalankan migrasi database:
    ```bash
-   python -m alembic upgrade head
+   python -m alembic -c ./alembic.ini upgrade head
    ```
+   *Catatan: Pastikan Anda menjalankan perintah ini dari direktori root proyek.*
 
 ### 5. Menjalankan Aplikasi
 

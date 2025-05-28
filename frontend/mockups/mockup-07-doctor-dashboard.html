@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediTrustAl - Doctor Dashboard Mockup</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            background-color: #f4f7f9;
+            color: #333;
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            width: 250px;
+            background: #2c3e50;
+            color: white;
+            padding-top: 20px;
+        }
+        .sidebar-header {
+            padding: 20px;
+            text-align: center;
+            font-size: 1.5em;
+            border-bottom: 1px solid #34495e;
+        }
+        .sidebar-nav ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .sidebar-nav li a {
+            display: block;
+            padding: 15px 20px;
+            color: #ecf0f1;
+            text-decoration: none;
+            transition: background 0.2s;
+            border-left: 3px solid transparent;
+        }
+        .sidebar-nav li a:hover, .sidebar-nav li a.active {
+            background: #34495e;
+            border-left-color: #1abc9c; /* Doctor theme color */
+        }
+        .sidebar-nav li a .icon {
+            margin-right: 10px;
+        }
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .top-nav {
+            background: #ffffff;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            border-bottom: 1px solid #e0e0e0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .user-profile {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        .user-profile img {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .user-profile span {
+            font-weight: 500;
+        }
+        .logout-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 20px;
+            font-size: 0.9em;
+        }
+        .logout-btn:hover {
+            background: #c0392b;
+        }
+        .content-area {
+            padding: 30px;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+        .content-header h1 {
+            margin-top: 0;
+            color: #2c3e50;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+        }
+        .search-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .search-section input[type="text"] {
+            flex-grow: 1;
+            padding: 12px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            font-size: 1em;
+            min-width: 200px; /* Ensure input is not too small */
+        }
+        .search-section input[type="text"]:focus {
+            outline: none;
+            border-color: #1abc9c; /* Doctor theme color */
+            box-shadow: 0 0 0 2px rgba(26, 188, 156, 0.2);
+        }
+        .search-btn {
+            padding: 12px 25px;
+            background-color: #1abc9c; /* Doctor theme color */
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        .search-btn:hover {
+            background-color: #16a085;
+        }
+        .patient-list-section {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+        .patient-list-section h2 {
+            margin-top: 0;
+            color: #2c3e50;
+            font-size: 1.4em;
+            margin-bottom: 15px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            text-align: left;
+            padding: 12px 15px;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 0.9em;
+            word-break: break-word;
+        }
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #555;
+            text-transform: uppercase;
+        }
+        tr:hover {
+            background-color: #f1f5f8;
+        }
+        .action-btn {
+            background-color: #1abc9c; /* Doctor theme color */
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: background-color 0.2s;
+            text-decoration: none; /* For links styled as buttons */
+            display: inline-flex;
+            align-items: center;
+        }
+        .action-btn:hover {
+            background-color: #16a085;
+        }
+        .action-btn .icon {
+            margin-right: 5px;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+
+        /* Simple icons (using text/emoji for mockup) */
+        .icon-dashboard::before { content: "🏠"; }
+        .icon-search-patient::before { content: "🔍"; }
+        .icon-accessed-records::before { content: "📂"; }
+        .icon-profile::before { content: "👤"; }
+        .icon-view::before { content: "👁️"; }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: static;
+                border-bottom: 2px solid #34495e;
+            }
+            .sidebar-nav li a {
+                text-align: center;
+                border-left: none;
+                border-bottom: 1px solid #34495e;
+            }
+             .sidebar-nav li:last-child a {
+                border-bottom: none;
+            }
+            .top-nav {
+                justify-content: space-between;
+            }
+            .search-section {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .search-section input[type="text"], .search-btn {
+                width: 100%;
+            }
+            .content-area {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-header">MediTrustAl</div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="#" class="active"><span class="icon icon-dashboard"></span>Dashboard</a></li>
+                <li><a href="#"><span class="icon icon-search-patient"></span>Search Patient</a></li>
+                <li><a href="#"><span class="icon icon-accessed-records"></span>Accessed Records</a></li>
+                <li><a href="#"><span class="icon icon-profile"></span>Profile</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <div class="main-content">
+        <header class="top-nav">
+            <div class="user-profile">
+                 <img src="https://placehold.co/40x40/1abc9c/FFFFFF?text=DR&font=Inter" alt="Doctor Avatar"
+                      onerror="this.onerror=null; this.src='https://placehold.co/40x40/cccccc/ffffff?text=Error&font=Inter';">
+                <span>Dr. Smith</span>
+            </div>
+            <button class="logout-btn">Logout</button>
+        </header>
+
+        <main class="content-area">
+            <div class="content-header">
+                <h1>Doctor Dashboard</h1>
+            </div>
+
+            <div class="search-section">
+                <input type="text" id="patientSearch" placeholder="Search Patient by DID or Name...">
+                <button class="search-btn" onclick="searchPatient()">Search</button>
+            </div>
+            <div id="searchResults" class="patient-list-section" style="display:none;">
+                 <h2>Search Results</h2>
+                 <div class="empty-state">No patients found matching your criteria.</div>
+            </div>
+
+
+            <div class="patient-list-section">
+                <h2>Recently Accessed / My Patients</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Patient Name (Placeholder)</th>
+                            <th>Patient DID</th>
+                            <th>Last Accessed</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>John Doe</td>
+                            <td>did:meditrustal:patient123...xyz</td>
+                            <td>2025-05-27</td>
+                            <td><a href="#" class="action-btn" onclick="viewPatientDetails('did:meditrustal:patient123...xyz')"><span class="icon icon-view"></span> View Details</a></td>
+                        </tr>
+                        <tr>
+                            <td>Jane Smith</td>
+                            <td>did:meditrustal:patient456...abc</td>
+                            <td>2025-05-26</td>
+                            <td><a href="#" class="action-btn" onclick="viewPatientDetails('did:meditrustal:patient456...abc')"><span class="icon icon-view"></span> View Details</a></td>
+                        </tr>
+                        <tr>
+                            <td>Robert Brown</td>
+                            <td>did:meditrustal:patient789...def</td>
+                            <td>2025-05-25</td>
+                             <td><a href="#" class="action-btn" onclick="viewPatientDetails('did:meditrustal:patient789...def')"><span class="icon icon-view"></span> View Details</a></td>
+                        </tr>
+                        </tbody>
+                </table>
+                 </div>
+        </main>
+    </div>
+
+    <script>
+        function searchPatient() {
+            const searchTerm = document.getElementById('patientSearch').value;
+            const resultsSection = document.getElementById('searchResults');
+            if (searchTerm.trim() === "") {
+                resultsSection.innerHTML = '<h2>Search Results</h2><div class="empty-state">Please enter a search term.</div>';
+                resultsSection.style.display = 'block';
+                return;
+            }
+            alert(`Searching for patient: ${searchTerm} (Mock - No actual search implemented)`);
+            // Simulate search results
+            resultsSection.innerHTML = `
+                <h2>Search Results for "${searchTerm}"</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Patient Name</th>
+                            <th>Patient DID</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Searched Patient Alpha</td>
+                            <td>did:meditrustal:searchedAlpha</td>
+                            <td><a href="#" class="action-btn" onclick="viewPatientDetails('did:meditrustal:searchedAlpha')"><span class="icon icon-view"></span> View Details</a></td>
+                        </tr>
+                    </tbody>
+                </table>`;
+            resultsSection.style.display = 'block';
+        }
+
+        function viewPatientDetails(patientDid) {
+            alert(`Viewing details for patient DID: ${patientDid} (Mock - Navigating to M08)`);
+            // window.location.href = `mockup-08-doctor-patient-detail.html?did=${patientDid}`;
+        }
+    </script>
+</body>
+</html>

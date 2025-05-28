@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediTrustAl - Registration Mockup</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            background-color: #f4f7f9;
+            color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .register-container {
+            background: #ffffff;
+            padding: 30px 40px;
+            border-radius: 8px;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 450px; /* Slightly wider for more fields */
+            text-align: center;
+        }
+        .register-container h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1.8em;
+        }
+        .register-container p {
+            color: #7f8c8d;
+            margin-bottom: 25px;
+            font-size: 0.95em;
+        }
+        .form-group {
+            margin-bottom: 15px; /* Adjusted margin */
+            text-align: left;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 6px; /* Adjusted margin */
+            color: #555;
+            font-weight: 500;
+            font-size: 0.9em;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px; /* Adjusted padding */
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            font-size: 0.95em; /* Adjusted font size */
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+        .register-btn {
+            width: 100%;
+            padding: 12px;
+            background: #27ae60; /* Green for register */
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 10px; /* Added margin top */
+        }
+        .register-btn:hover {
+            background: #229954;
+        }
+        .links {
+            margin-top: 20px;
+            font-size: 0.9em;
+        }
+        .links a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        .links a:hover {
+            text-decoration: underline;
+        }
+        .message-area { /* Combined for error and success */
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 15px;
+            font-size: 0.9em;
+            display: none; /* Hidden by default */
+        }
+        .error-message {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .success-message {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .logo-placeholder {
+            width: 70px; /* Slightly smaller */
+            height: 70px;
+            background-color: #e0e0e0;
+            border-radius: 50%;
+            margin: 0 auto 15px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4em;
+            color: #7f8c8d;
+            font-weight: bold;
+        }
+         .logo-placeholder img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        /* Responsive adjustments */
+        @media (max-width: 480px) {
+            .register-container {
+                padding: 25px 20px;
+            }
+            .register-container h1 {
+                font-size: 1.6em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <div class="logo-placeholder">
+             <img src="https://placehold.co/70x70/2c3e50/FFFFFF?text=MTA&font=Inter" alt="MediTrustAl Logo"
+                  onerror="this.onerror=null; this.src='https://placehold.co/70x70/cccccc/000000?text=Logo&font=Inter';">
+        </div>
+        <h1>Create Account</h1>
+        <p>Join MediTrustAl to manage your health data securely.</p>
+        
+        <form id="registerForm">
+            <div class="form-group">
+                <label for="regUsername">Username</label>
+                <input type="text" id="regUsername" name="regUsername" required placeholder="Choose a username">
+            </div>
+            <div class="form-group">
+                <label for="regEmail">Email</label>
+                <input type="email" id="regEmail" name="regEmail" required placeholder="your@email.com">
+            </div>
+            <div class="form-group">
+                <label for="regFullName">Full Name</label>
+                <input type="text" id="regFullName" name="regFullName" required placeholder="Your full name">
+            </div>
+            <div class="form-group">
+                <label for="regPassword">Password</label>
+                <input type="password" id="regPassword" name="regPassword" required placeholder="Create a strong password">
+            </div>
+            <div class="form-group">
+                <label for="regConfirmPassword">Confirm Password</label>
+                <input type="password" id="regConfirmPassword" name="regConfirmPassword" required placeholder="Re-enter your password">
+            </div>
+            <div class="form-group">
+                <label for="regRole">Role</label>
+                <select id="regRole" name="regRole">
+                    <option value="PATIENT">Patient</option>
+                    <option value="DOCTOR">Doctor</option>
+                </select>
+            </div>
+            <button type="submit" class="register-btn" onclick="handleRegister(event)">Register</button>
+        </form>
+
+        <div id="registerMessage" class="message-area">
+            </div>
+
+        <div class="links">
+            <a href="#" onclick="navigateToLogin()">Already have an account? Login</a>
+        </div>
+    </div>
+
+    <script>
+        function handleRegister(event) {
+            event.preventDefault(); // Prevent actual form submission for mockup
+            const username = document.getElementById('regUsername').value;
+            const email = document.getElementById('regEmail').value;
+            const fullName = document.getElementById('regFullName').value;
+            const password = document.getElementById('regPassword').value;
+            const confirmPassword = document.getElementById('regConfirmPassword').value;
+            const role = document.getElementById('regRole').value;
+            const messageDiv = document.getElementById('registerMessage');
+
+            messageDiv.style.display = 'none';
+            messageDiv.className = 'message-area'; // Reset class
+
+            if (!username || !email || !fullName || !password || !confirmPassword) {
+                messageDiv.textContent = "All fields are required.";
+                messageDiv.classList.add('error-message');
+                messageDiv.style.display = 'block';
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                messageDiv.textContent = "Passwords do not match.";
+                messageDiv.classList.add('error-message');
+                messageDiv.style.display = 'block';
+                return;
+            }
+
+            // Simulate API call
+            messageDiv.textContent = "Processing registration...";
+            messageDiv.style.color = "blue"; // Neutral color for processing
+            messageDiv.style.display = 'block';
+
+            setTimeout(() => {
+                // Simulate success or failure
+                const success = Math.random() > 0.3; // 70% chance of success for mockup
+                if (success) {
+                    messageDiv.textContent = `Registration successful for ${username} as a ${role}! Please login. (Mock)`;
+                    messageDiv.classList.add('success-message');
+                    document.getElementById('registerForm').reset(); 
+                } else {
+                    messageDiv.textContent = "Registration failed. Username or Email might already exist. (Mock)";
+                    messageDiv.classList.add('error-message');
+                }
+            }, 1500);
+        }
+
+        function navigateToLogin() {
+            alert("Navigating to Login Page... (mockup-01-login.html)");
+            // window.location.href = 'mockup-01-login.html'; 
+        }
+    </script>
+</body>
+</html>

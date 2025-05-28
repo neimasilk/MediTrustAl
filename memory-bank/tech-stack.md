@@ -36,7 +36,7 @@ Based on the project proposal (meditrustal_proposal_en_detailed_v2), the followi
       * Advanced identity management
       * Compliance with healthcare regulations
   * **Smart Contracts:**
-    * **MVP:** Solidity with Hardhat development environment
+    * **MVP:** Solidity with Hardhat development environment (versi ^2.24.1 dari `package.json`)
     * **Production:** Chaincode in Go/Java (Hyperledger Fabric)
 * **Off-Chain Storage:**  
   * **Recommendation:** MinIO self-hosted
@@ -105,30 +105,33 @@ Based on the project proposal (meditrustal_proposal_en_detailed_v2), the followi
     * Automatic data validation and serialization with Pydantic.
     * Built-in support for asynchronous programming.
     * Key dependencies and their versions for the MVP are:
-        - fastapi==0.110.0
-        - uvicorn[standard]==0.27.1  (ASGI server)
-        - pydantic[email]==2.6.3 (Data validation; [email] extra is required)
-        - python-jose[cryptography]==3.3.0 (JWT handling)
-        - passlib[bcrypt]==1.7.4 (Password hashing)
-        - psycopg2-binary==2.9.9 (PostgreSQL driver)
-        - alembic==1.13.1 (Database migrations)
-        - sqlalchemy>=2.0.0
-        - web3>=6.0.0
-        - python-dotenv>=0.19.0
-        - base58>=2.1.0
-        - black
-        - flake8
-        - pytest>=7.0.0
-        - pytest-asyncio>=0.21.0
-        - httpx>=0.24.0
-        - python-multipart>=0.0.6
+        - fastapi (dari `requirements.txt`)
+        - uvicorn[standard] (dari `requirements.txt`)
+        - pydantic[email]>=2.0.0 (dari `requirements.txt`)
+        - python-jose[cryptography]>=3.3.0 (dari `requirements.txt`)
+        - passlib[bcrypt]>=1.7.4 (dari `requirements.txt`)
+        - psycopg2-binary>=2.9.0 (dari `requirements.txt`)
+        - alembic>=1.12.0 (dari `requirements.txt`)
+        - sqlalchemy>=2.0.0 (dari `requirements.txt`)
+        - web3>=6.0.0 (dari `requirements.txt`)
+        - python-dotenv>=0.19.0 (dari `requirements.txt`)
+        - base58>=2.1.0 (dari `requirements.txt`)
+        - black (dari `requirements.txt`)
+        - flake8 (dari `requirements.txt`)
+        - pytest>=7.0.0 (dari `requirements.txt`)
+        - pytest-asyncio>=0.21.0 (dari `requirements.txt`)
+        - httpx>=0.24.0 (dari `requirements.txt`)
+        - python-multipart>=0.0.6 (dari `requirements.txt`)
+        - pydantic-settings (dari `requirements.txt`)
+        - respx (dari `requirements.txt`)
+        - pytest-mock (dari `requirements.txt`)
   * **Linting & Formatting (Python):** Black will be used for code formatting, and Flake8 for linting, with configurations in `pyproject.toml` and `.flake8` respectively.
   * **Rationale (Original General):**
     * **Node.js:** Excellent for I/O-bound applications, real-time features (potentially needed for notifications/alerts), and has a large ecosystem. TypeScript adds static typing for better maintainability.
     * **Python (Django/FastAPI):** Leverages the same language as the AI/NLP stack, potentially simplifying team structure. FastAPI is modern, fast, and good for building APIs. Django is robust and full-featured.
   * **API Design:** RESTful APIs or GraphQL, depending on frontend needs.
 * **Frontend Development (Patient, Doctor, Researcher, Admin Portals):**  
-  * **Framework:** **React.js**
+  * **Framework:** **React.js** (versi ^19.1.0 dari `frontend/package.json`)
   * **Rationale:**  
     * Large ecosystem with healthcare-specific components
     * Strong TypeScript support for better maintainability

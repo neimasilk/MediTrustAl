@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediTrustAl - User Profile Mockup</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            background-color: #f4f7f9;
+            color: #333;
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            width: 250px;
+            background: #2c3e50;
+            color: white;
+            padding-top: 20px;
+        }
+        .sidebar-header {
+            padding: 20px;
+            text-align: center;
+            font-size: 1.5em;
+            border-bottom: 1px solid #34495e;
+        }
+        .sidebar-nav ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .sidebar-nav li a {
+            display: block;
+            padding: 15px 20px;
+            color: #ecf0f1;
+            text-decoration: none;
+            transition: background 0.2s;
+            border-left: 3px solid transparent;
+        }
+        .sidebar-nav li a:hover, .sidebar-nav li a.active {
+            background: #34495e;
+            border-left-color: #3498db; /* Default theme color for active */
+        }
+        .sidebar-nav li a .icon {
+            margin-right: 10px;
+        }
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .top-nav {
+            background: #ffffff;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: flex-end; /* Align items to the right */
+            align-items: center;
+            border-bottom: 1px solid #e0e0e0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .user-profile-nav { /* Renamed for clarity */
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        .user-profile-nav img {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .user-profile-nav span {
+            font-weight: 500;
+        }
+        .logout-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 20px;
+            font-size: 0.9em;
+        }
+        .logout-btn:hover {
+            background: #c0392b;
+        }
+        .content-area {
+            padding: 30px;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+        .content-header h1 {
+            margin-top: 0;
+            color: #2c3e50;
+            font-size: 1.8em;
+            margin-bottom: 25px;
+        }
+        
+        .profile-card {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            max-width: 800px;
+            margin: 0 auto; /* Center the card */
+        }
+        .profile-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin-right: 25px;
+            object-fit: cover;
+            border: 3px solid #3498db;
+        }
+        .profile-name-role h2 {
+            margin: 0 0 5px 0;
+            font-size: 1.6em;
+            color: #2c3e50;
+        }
+        .profile-name-role p {
+            margin: 0;
+            font-size: 1em;
+            color: #7f8c8d;
+            text-transform: capitalize;
+        }
+        .profile-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .detail-group {
+            margin-bottom: 15px;
+        }
+        .detail-group label {
+            display: block;
+            font-size: 0.85em;
+            color: #7f8c8d;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        .detail-group .value {
+            font-size: 1em;
+            color: #333;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+            word-break: break-all;
+        }
+        .detail-group .value.placeholder {
+            color: #95a5a6;
+            font-style: italic;
+        }
+
+        .profile-actions {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            text-align: right;
+        }
+        .profile-actions button {
+            padding: 10px 20px;
+            margin-left: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.9em;
+            border: 1px solid transparent;
+            transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+        }
+        .btn-edit-profile {
+            background-color: #3498db;
+            color: white;
+        }
+        .btn-edit-profile:hover {
+            background-color: #2980b9;
+        }
+        .btn-change-password {
+            background-color: #f1c40f;
+            color: #333;
+        }
+        .btn-change-password:hover {
+            background-color: #f39c12;
+        }
+        
+        /* Simple icons for sidebar */
+        .icon-dashboard::before { content: "🏠"; }
+        .icon-records::before { content: "📄"; }
+        .icon-consent::before { content: "🤝"; }
+        .icon-history::before { content: "📜"; }
+        .icon-profile::before { content: "👤"; }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none; /* Or make it collapsible */
+            }
+            .content-area {
+                padding: 15px;
+            }
+            .profile-card {
+                padding: 20px;
+            }
+            .profile-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            .profile-avatar {
+                margin-right: 0;
+                margin-bottom: 15px;
+            }
+            .profile-actions {
+                text-align: center;
+            }
+            .profile-actions button {
+                width: 100%;
+                margin-left: 0;
+                margin-bottom: 10px;
+            }
+            .profile-actions button:last-child {
+                margin-bottom: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-header">MediTrustAl</div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="#"><span class="icon icon-dashboard"></span>Dashboard</a></li>
+                <li><a href="#"><span class="icon icon-records"></span>Medical Records</a></li>
+                <li><a href="#"><span class="icon icon-consent"></span>Consent Management</a></li>
+                <li><a href="#"><span class="icon icon-history"></span>Access History</a></li>
+                <li><a href="#" class="active"><span class="icon icon-profile"></span>Profile</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <div class="main-content">
+        <header class="top-nav">
+            <div class="user-profile-nav">
+                 <img src="https://placehold.co/40x40/EBF4FF/764ABC?text=PA&font=Inter" alt="User Avatar"
+                      onerror="this.onerror=null; this.src='https://placehold.co/40x40/cccccc/ffffff?text=Error&font=Inter';">
+                <span>Patient A</span>
+            </div>
+            <button class="logout-btn">Logout</button>
+        </header>
+
+        <main class="content-area">
+            <div class="content-header">
+                <h1>User Profile</h1>
+            </div>
+
+            <div class="profile-card">
+                <div class="profile-header">
+                    <img src="https://placehold.co/100x100/3498DB/FFFFFF?text=PA&font=Inter" alt="Profile Avatar" class="profile-avatar"
+                         onerror="this.onerror=null; this.src='https://placehold.co/100x100/cccccc/000000?text=Error&font=Inter';">
+                    <div class="profile-name-role">
+                        <h2 id="profileFullName">Patient Alpha User</h2>
+                        <p id="profileRole">Patient</p>
+                    </div>
+                </div>
+
+                <div class="profile-details">
+                    <div class="detail-group">
+                        <label for="profileUsername">Username</label>
+                        <div class="value" id="profileUsername">patient_a</div>
+                    </div>
+                    <div class="detail-group">
+                        <label for="profileEmail">Email Address</label>
+                        <div class="value" id="profileEmail">patient.a@example.com</div>
+                    </div>
+                    <div class="detail-group">
+                        <label for="profileDID">Decentralized ID (DID)</label>
+                        <div class="value" id="profileDID">did:meditrustal:example123abc456def</div>
+                    </div>
+                    <div class="detail-group">
+                        <label for="profileBlockchainAddress">Blockchain Address</label>
+                        <div class="value" id="profileBlockchainAddress">
+                            0x1234567890abcdef1234567890abcdef12345678
+                            </div>
+                    </div>
+                     <div class="detail-group">
+                        <label for="profileJoinedDate">Joined Date</label>
+                        <div class="value" id="profileJoinedDate">2024-01-15</div>
+                    </div>
+                     <div class="detail-group">
+                        <label for="profileLastUpdate">Profile Last Updated</label>
+                        <div class="value" id="profileLastUpdate">2025-03-10</div>
+                    </div>
+                </div>
+
+                <div class="profile-actions">
+                    <button class="btn-edit-profile" onclick="alert('Edit Profile clicked (mock functionality)')">Edit Profile</button>
+                    <button class="btn-change-password" onclick="alert('Change Password clicked (mock functionality)')">Change Password</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Mock data loading - in a real app, this would come from an API
+        document.addEventListener('DOMContentLoaded', function() {
+            const user = {
+                fullName: "Patient Alpha User",
+                role: "Patient",
+                username: "patient_alpha",
+                email: "patient.alpha@example.com",
+                did: "did:meditrustal:zkWn4GF3pG2qR7sX9kLzW",
+                blockchainAddress: "0x0000000000000000000000000000000000000000", // Or "N/A" if not applicable
+                joinedDate: "2024-01-15",
+                lastUpdate: "2025-03-10",
+                avatar: "https://placehold.co/100x100/3498DB/FFFFFF?text=PA&font=Inter" // Placeholder for nav too
+            };
+
+            // Populate top nav user
+            const topNavUserImg = document.querySelector('.top-nav .user-profile-nav img');
+            const topNavUserName = document.querySelector('.top-nav .user-profile-nav span');
+            if (topNavUserImg) topNavUserImg.src = user.avatar.replace('100x100', '40x40'); // Smaller avatar for top nav
+            if (topNavUserName) topNavUserName.textContent = user.fullName.split(' ')[0]; // First name
+
+
+            // Populate profile card
+            document.getElementById('profileFullName').textContent = user.fullName;
+            document.getElementById('profileRole').textContent = user.role;
+            document.querySelector('.profile-avatar').src = user.avatar;
+            
+            document.getElementById('profileUsername').textContent = user.username;
+            document.getElementById('profileEmail').textContent = user.email;
+            document.getElementById('profileDID').textContent = user.did;
+            
+            const bcAddressEl = document.getElementById('profileBlockchainAddress');
+            if (user.blockchainAddress && user.blockchainAddress !== "0x0000000000000000000000000000000000000000") {
+                bcAddressEl.textContent = user.blockchainAddress;
+                bcAddressEl.classList.remove('placeholder');
+            } else {
+                bcAddressEl.innerHTML = '<span class="placeholder">(Not applicable or not set)</span>';
+            }
+            
+            document.getElementById('profileJoinedDate').textContent = user.joinedDate;
+            document.getElementById('profileLastUpdate').textContent = user.lastUpdate;
+        });
+    </script>
+</body>
+</html>

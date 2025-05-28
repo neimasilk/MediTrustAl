@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediTrustAl - Notifications Mockup</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            background-color: #f4f7f9;
+            color: #333;
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            width: 250px;
+            background: #2c3e50;
+            color: white;
+            padding-top: 20px;
+        }
+        .sidebar-header {
+            padding: 20px;
+            text-align: center;
+            font-size: 1.5em;
+            border-bottom: 1px solid #34495e;
+        }
+        .sidebar-nav ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .sidebar-nav li a {
+            display: block;
+            padding: 15px 20px;
+            color: #ecf0f1;
+            text-decoration: none;
+            transition: background 0.2s;
+            border-left: 3px solid transparent;
+        }
+        .sidebar-nav li a:hover, .sidebar-nav li a.active {
+            background: #34495e;
+            border-left-color: #3498db; /* Default theme color for active */
+        }
+        .sidebar-nav li a .icon {
+            margin-right: 10px;
+        }
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .top-nav {
+            background: #ffffff;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            border-bottom: 1px solid #e0e0e0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .user-profile {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        .user-profile img {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .user-profile span {
+            font-weight: 500;
+        }
+        .logout-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 20px;
+            font-size: 0.9em;
+        }
+        .logout-btn:hover {
+            background: #c0392b;
+        }
+        .content-area {
+            padding: 30px;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+        .content-header h1 {
+            margin-top: 0;
+            color: #2c3e50;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+        }
+        
+        .notification-container {
+            max-width: 600px; /* Limit width for better readability */
+            margin: 0 auto; /* Center the container */
+        }
+
+        .alert {
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            font-size: 0.95em;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .alert-icon {
+            font-size: 1.5em;
+            margin-right: 15px;
+            line-height: 1;
+        }
+        .alert-content {
+            flex-grow: 1;
+        }
+        .alert-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+        }
+        .alert-close {
+            background: none;
+            border: none;
+            font-size: 1.2em;
+            cursor: pointer;
+            color: inherit; /* Inherit color from parent alert */
+            opacity: 0.7;
+            padding: 0 5px;
+        }
+        .alert-close:hover {
+            opacity: 1;
+        }
+
+        .alert-success {
+            color: #155724;
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+        .alert-success .alert-icon::before { content: "✅"; }
+
+        .alert-error {
+            color: #721c24;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        .alert-error .alert-icon::before { content: "❌"; }
+
+        .alert-warning {
+            color: #856404;
+            background-color: #fff3cd;
+            border-color: #ffeeba;
+        }
+        .alert-warning .alert-icon::before { content: "⚠️"; }
+
+        .alert-info {
+            color: #0c5460;
+            background-color: #d1ecf1;
+            border-color: #bee5eb;
+        }
+        .alert-info .alert-icon::before { content: "ℹ️"; }
+
+        .action-buttons {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .action-buttons button {
+            padding: 10px 15px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        /* Simple icons for sidebar */
+        .icon-dashboard::before { content: "🏠"; }
+        .icon-records::before { content: "📄"; }
+        .icon-consent::before { content: "🤝"; }
+        .icon-history::before { content: "📜"; }
+        .icon-profile::before { content: "👤"; }
+        .icon-notifications::before { content: "🔔"; }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none; /* Or make it collapsible */
+            }
+            .content-area {
+                padding: 15px;
+            }
+            .notification-container {
+                padding: 0 10px;
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-header">MediTrustAl</div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="#"><span class="icon icon-dashboard"></span>Dashboard</a></li>
+                <li><a href="#"><span class="icon icon-records"></span>Medical Records</a></li>
+                <li><a href="#"><span class="icon icon-consent"></span>Consent Management</a></li>
+                <li><a href="#"><span class="icon icon-history"></span>Access History</a></li>
+                <li><a href="#" class="active"><span class="icon icon-notifications"></span>Notifications</a></li>
+                <li><a href="#"><span class="icon icon-profile"></span>Profile</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <div class="main-content">
+        <header class="top-nav">
+            <div class="user-profile">
+                 <img src="https://placehold.co/40x40/EBF4FF/764ABC?text=U&font=Inter" alt="User Avatar"
+                      onerror="this.onerror=null; this.src='https://placehold.co/40x40/cccccc/ffffff?text=Error&font=Inter';">
+                <span>User Name</span>
+            </div>
+            <button class="logout-btn">Logout</button>
+        </header>
+
+        <main class="content-area">
+            <div class="content-header">
+                <h1>Notification Styles</h1>
+            </div>
+
+            <div class="notification-container">
+                <div class="alert alert-success" id="alertSuccess">
+                    <span class="alert-icon"></span>
+                    <div class="alert-content">
+                        <span class="alert-title">Success!</span>
+                        Your profile has been updated successfully.
+                    </div>
+                    <button class="alert-close" onclick="closeAlert('alertSuccess')">&times;</button>
+                </div>
+
+                <div class="alert alert-error" id="alertError">
+                    <span class="alert-icon"></span>
+                    <div class="alert-content">
+                        <span class="alert-title">Error!</span>
+                        Failed to save medical record. Please check your input and try again.
+                    </div>
+                    <button class="alert-close" onclick="closeAlert('alertError')">&times;</button>
+                </div>
+
+                <div class="alert alert-warning" id="alertWarning">
+                    <span class="alert-icon"></span>
+                    <div class="alert-content">
+                        <span class="alert-title">Warning!</span>
+                        Your session is about to expire in 5 minutes.
+                    </div>
+                    <button class="alert-close" onclick="closeAlert('alertWarning')">&times;</button>
+                </div>
+
+                <div class="alert alert-info" id="alertInfo">
+                    <span class="alert-icon"></span>
+                    <div class="alert-content">
+                        <span class="alert-title">Information</span>
+                        A new version of the platform is available. Please refresh your page.
+                    </div>
+                    <button class="alert-close" onclick="closeAlert('alertInfo')">&times;</button>
+                </div>
+
+                <div class="action-buttons">
+                    <button onclick="showAlert('alertSuccess')">Show Success</button>
+                    <button onclick="showAlert('alertError')">Show Error</button>
+                    <button onclick="showAlert('alertWarning')">Show Warning</button>
+                    <button onclick="showAlert('alertInfo')">Show Info</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function closeAlert(alertId) {
+            document.getElementById(alertId).style.display = 'none';
+        }
+
+        function showAlert(alertId) {
+            // First, hide all alerts to prevent multiple from showing if rapidly clicked
+            document.getElementById('alertSuccess').style.display = 'none';
+            document.getElementById('alertError').style.display = 'none';
+            document.getElementById('alertWarning').style.display = 'none';
+            document.getElementById('alertInfo').style.display = 'none';
+            
+            // Then show the requested alert
+            document.getElementById(alertId).style.display = 'flex';
+        }
+    </script>
+</body>
+</html>

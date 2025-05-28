@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediTrustAl - Doctor: Patient Detail Mockup</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            background-color: #f4f7f9;
+            color: #333;
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            width: 250px;
+            background: #2c3e50;
+            color: white;
+            padding-top: 20px;
+        }
+        .sidebar-header {
+            padding: 20px;
+            text-align: center;
+            font-size: 1.5em;
+            border-bottom: 1px solid #34495e;
+        }
+        .sidebar-nav ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .sidebar-nav li a {
+            display: block;
+            padding: 15px 20px;
+            color: #ecf0f1;
+            text-decoration: none;
+            transition: background 0.2s;
+            border-left: 3px solid transparent;
+        }
+        .sidebar-nav li a:hover, .sidebar-nav li a.active {
+            background: #34495e;
+            border-left-color: #1abc9c; /* Doctor theme color */
+        }
+        .sidebar-nav li a .icon {
+            margin-right: 10px;
+        }
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .top-nav {
+            background: #ffffff;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between; /* Adjusted for back button */
+            align-items: center;
+            border-bottom: 1px solid #e0e0e0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .back-btn {
+            background-color: #7f8c8d;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            text-decoration: none;
+        }
+        .back-btn:hover {
+            background-color: #6c7a7d;
+        }
+        .user-profile {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        .user-profile img {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .user-profile span {
+            font-weight: 500;
+        }
+        .logout-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 20px;
+            font-size: 0.9em;
+        }
+        .logout-btn:hover {
+            background: #c0392b;
+        }
+        .content-area {
+            padding: 30px;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+        .content-header h1 {
+            margin-top: 0;
+            color: #2c3e50;
+            font-size: 1.8em;
+            margin-bottom: 5px;
+        }
+         .content-header .patient-did {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            margin-bottom: 20px;
+            word-break: break-all;
+        }
+        .patient-info-section {
+            background: white;
+            padding: 20px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+        }
+        .patient-info-section h2 {
+            margin-top: 0;
+            color: #16a085; /* Doctor theme accent */
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        .info-item p {
+            margin: 5px 0;
+            font-size: 0.95em;
+        }
+        .info-item strong {
+            color: #34495e;
+        }
+
+        .records-section {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+        .records-section h2 {
+            margin-top: 0;
+            color: #2c3e50;
+            font-size: 1.4em;
+            margin-bottom: 15px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            text-align: left;
+            padding: 12px 15px;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 0.9em;
+            word-break: break-word;
+        }
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #555;
+            text-transform: uppercase;
+        }
+        tr:hover {
+            background-color: #f1f5f8;
+        }
+        .action-btn {
+            background-color: #1abc9c; /* Doctor theme color */
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: background-color 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+        }
+        .action-btn:hover {
+            background-color: #16a085;
+        }
+        .action-btn .icon {
+            margin-right: 5px;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+
+        /* Simple icons */
+        .icon-dashboard::before { content: "🏠"; }
+        .icon-search-patient::before { content: "🔍"; }
+        .icon-accessed-records::before { content: "📂"; }
+        .icon-profile::before { content: "👤"; }
+        .icon-view::before { content: "👁️"; }
+        .icon-back::before { content: "⬅️"; }
+
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none; /* Hide sidebar on mobile for this page, or make it collapsible */
+            }
+            .top-nav {
+                justify-content: space-between;
+            }
+            .content-area {
+                padding: 15px;
+            }
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-header">MediTrustAl</div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="mockup-07-doctor-dashboard.html"><span class="icon icon-dashboard"></span>Dashboard</a></li>
+                <li><a href="#" class="active"><span class="icon icon-search-patient"></span>Search Patient</a></li>
+                <li><a href="#"><span class="icon icon-accessed-records"></span>Accessed Records</a></li>
+                <li><a href="#"><span class="icon icon-profile"></span>Profile</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <div class="main-content">
+        <header class="top-nav">
+            <a href="mockup-07-doctor-dashboard.html" class="back-btn"><span class="icon icon-back"></span> Back to Dashboard</a>
+            <div class="user-profile">
+                 <img src="https://placehold.co/40x40/1abc9c/FFFFFF?text=DR&font=Inter" alt="Doctor Avatar"
+                      onerror="this.onerror=null; this.src='https://placehold.co/40x40/cccccc/ffffff?text=Error&font=Inter';">
+                <span>Dr. Smith</span>
+            </div>
+            <button class="logout-btn">Logout</button>
+        </header>
+
+        <main class="content-area">
+            <div class="content-header">
+                <h1>Patient Details</h1>
+                <p class="patient-did">DID: <span id="patientDidDisplay">did:meditrustal:patient123...xyz</span></p>
+            </div>
+
+            <div class="patient-info-section">
+                <h2>Patient Information</h2>
+                <div class="info-grid">
+                    <div class="info-item"><p><strong>Name:</strong> <span id="patientName">John Doe</span> (Placeholder)</p></div>
+                    <div class="info-item"><p><strong>Age:</strong> <span id="patientAge">45</span> (Placeholder)</p></div>
+                    <div class="info-item"><p><strong>Gender:</strong> <span id="patientGender">Male</span> (Placeholder)</p></div>
+                    <div class="info-item"><p><strong>Contact:</strong> <span id="patientContact">john.doe@email.com</span> (Placeholder)</p></div>
+                    <div class="info-item"><p><strong>Primary Concern:</strong> <span id="patientConcern">Chronic Back Pain</span> (Placeholder)</p></div>
+                    <div class="info-item"><p><strong>Last Visit:</strong> <span id="patientLastVisit">2025-05-15</span> (Placeholder)</p></div>
+                </div>
+            </div>
+
+            <div class="records-section">
+                <h2>Accessible Medical Records</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Record ID</th>
+                            <th>Type</th>
+                            <th>Date Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="accessibleRecordsTableBody">
+                        <tr>
+                            <td>rec_001</td>
+                            <td>DIAGNOSIS</td>
+                            <td>2025-05-20</td>
+                            <td><a href="#" class="action-btn" onclick="viewRecordDetail('rec_001')"><span class="icon icon-view"></span> View Record</a></td>
+                        </tr>
+                        <tr>
+                            <td>rec_005</td>
+                            <td>LAB_RESULT</td>
+                            <td>2025-04-10</td>
+                            <td><a href="#" class="action-btn" onclick="viewRecordDetail('rec_005')"><span class="icon icon-view"></span> View Record</a></td>
+                        </tr>
+                        </tbody>
+                </table>
+                <div id="noRecordsMessage" class="empty-state" style="display:none;">No medical records accessible for this patient.</div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+
+        function loadPatientDetails() {
+            const patientDid = getQueryParam('did');
+            const patientName = getQueryParam('name') || "Patient Name Placeholder"; // Get name if passed
+            
+            if (patientDid) {
+                document.getElementById('patientDidDisplay').textContent = patientDid;
+                // In a real app, fetch actual patient details using the DID
+                document.getElementById('patientName').textContent = patientName; 
+                // Mock accessible records based on DID or fetch from backend
+                const recordsTableBody = document.getElementById('accessibleRecordsTableBody');
+                const noRecordsMsg = document.getElementById('noRecordsMessage');
+
+                // Example: Mock records based on a known DID
+                if (patientDid === "did:meditrustal:patient123...xyz") {
+                    recordsTableBody.innerHTML = `
+                        <tr>
+                            <td>rec_001</td>
+                            <td>DIAGNOSIS</td>
+                            <td>2025-05-20</td>
+                            <td><a href="#" class="action-btn" onclick="viewRecordDetail('rec_001')"><span class="icon icon-view"></span> View Record</a></td>
+                        </tr>
+                        <tr>
+                            <td>rec_007</td>
+                            <td>MEDICAL_HISTORY</td>
+                            <td>2025-03-01</td>
+                            <td><a href="#" class="action-btn" onclick="viewRecordDetail('rec_007')"><span class="icon icon-view"></span> View Record</a></td>
+                        </tr>`;
+                    noRecordsMsg.style.display = 'none';
+                } else if (patientDid === "did:meditrustal:patient456...abc") {
+                     recordsTableBody.innerHTML = `
+                        <tr>
+                            <td>rec_002</td>
+                            <td>LAB_RESULT</td>
+                            <td>2025-05-15</td>
+                            <td><a href="#" class="action-btn" onclick="viewRecordDetail('rec_002')"><span class="icon icon-view"></span> View Record</a></td>
+                        </tr>`;
+                    noRecordsMsg.style.display = 'none';
+                }
+                else {
+                    recordsTableBody.innerHTML = ''; // Clear if no specific mock
+                    noRecordsMsg.style.display = 'block';
+                }
+            } else {
+                document.getElementById('patientDidDisplay').textContent = "N/A";
+                document.getElementById('patientName').textContent = "N/A";
+                document.getElementById('accessibleRecordsTableBody').innerHTML = '';
+                document.getElementById('noRecordsMessage').style.display = 'block';
+            }
+        }
+
+        function viewRecordDetail(recordId) {
+            const patientDid = document.getElementById('patientDidDisplay').textContent;
+            alert(`Viewing detail for record ID: ${recordId} of patient DID: ${patientDid} (Mock - Navigating to M09)`);
+            // window.location.href = `mockup-09-doctor-record-detail.html?recordId=${recordId}&patientDid=${patientDid}`;
+        }
+
+        document.addEventListener('DOMContentLoaded', loadPatientDetails);
+    </script>
+</body>
+</html>

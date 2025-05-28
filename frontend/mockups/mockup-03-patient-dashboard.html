@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediTrustAl - Patient Dashboard Mockup</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            background-color: #f4f7f9;
+            color: #333;
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            width: 250px;
+            background: #2c3e50;
+            color: white;
+            padding-top: 20px;
+            transition: width 0.3s;
+        }
+        .sidebar-header {
+            padding: 20px;
+            text-align: center;
+            font-size: 1.5em;
+            border-bottom: 1px solid #34495e;
+        }
+        .sidebar-nav ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .sidebar-nav li a {
+            display: block;
+            padding: 15px 20px;
+            color: #ecf0f1;
+            text-decoration: none;
+            transition: background 0.2s;
+            border-left: 3px solid transparent;
+        }
+        .sidebar-nav li a:hover, .sidebar-nav li a.active {
+            background: #34495e;
+            border-left-color: #3498db;
+        }
+        .sidebar-nav li a .icon {
+            margin-right: 10px;
+        }
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .top-nav {
+            background: #ffffff;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            border-bottom: 1px solid #e0e0e0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .user-profile {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        .user-profile img {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .user-profile span {
+            font-weight: 500;
+        }
+        .logout-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 20px;
+            font-size: 0.9em;
+        }
+        .logout-btn:hover {
+            background: #c0392b;
+        }
+        .content-area {
+            padding: 30px;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+        .content-header h1 {
+            margin-top: 0;
+            color: #2c3e50;
+            font-size: 1.8em;
+            margin-bottom: 5px;
+        }
+        .content-header p {
+            color: #7f8c8d;
+            margin-bottom: 25px;
+            font-size: 0.95em;
+        }
+        .widget-container {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        .widget {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            flex: 1;
+            text-align: center;
+        }
+        .widget h3 {
+            margin-top: 0;
+            color: #3498db;
+            font-size: 1.1em;
+        }
+        .widget .value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 10px 0;
+        }
+        .section {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+        }
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .section-header h2 {
+            margin: 0;
+            color: #2c3e50;
+            font-size: 1.4em;
+        }
+        .create-record-btn {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+        .create-record-btn:hover {
+            background: #229954;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            text-align: left;
+            padding: 12px 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #555;
+            font-size: 0.9em;
+            text-transform: uppercase;
+        }
+        td {
+            font-size: 0.95em;
+            color: #333;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+        tr:hover {
+            background-color: #f1f5f8;
+        }
+        .action-btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: background-color 0.2s;
+        }
+        .action-btn:hover {
+            background-color: #2980b9;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+        .view-all-link {
+            display: block;
+            text-align: right;
+            margin-top: 10px;
+            color: #3498db;
+            text-decoration: none;
+            font-size: 0.9em;
+        }
+        .view-all-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Simple icons (using text) */
+        .icon-dashboard::before { content: "🏠"; }
+        .icon-records::before { content: "📄"; }
+        .icon-consent::before { content: "🤝"; }
+        .icon-history::before { content: "📜"; }
+        .icon-profile::before { content: "👤"; }
+        .icon-settings::before { content: "⚙️"; }
+
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-header">MediTrustAl</div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="#" class="active"><span class="icon icon-dashboard"></span>Dashboard</a></li>
+                <li><a href="#"><span class="icon icon-records"></span>Medical Records</a></li>
+                <li><a href="#"><span class="icon icon-consent"></span>Consent Management</a></li>
+                <li><a href="#"><span class="icon icon-history"></span>Access History</a></li>
+                <li><a href="#"><span class="icon icon-profile"></span>Profile</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <div class="main-content">
+        <header class="top-nav">
+            <div class="user-profile">
+                <img src="https://via.placeholder.com/40" alt="User Avatar">
+                <span>Patient A</span>
+            </div>
+            <button class="logout-btn">Logout</button>
+        </header>
+
+        <main class="content-area">
+            <div class="content-header">
+                <h1>Welcome, Patient A!</h1>
+                <p>Here's an overview of your health dashboard.</p>
+            </div>
+
+            <div class="widget-container">
+                <div class="widget">
+                    <h3>Total Records</h3>
+                    <div class="value">5</div>
+                </div>
+                <div class="widget">
+                    <h3>Active Consents</h3>
+                    <div class="value">2</div>
+                </div>
+                <div class="widget">
+                    <h3>Last Login</h3>
+                    <div class="value">2025-05-28</div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header">
+                    <h2>My Medical Records</h2>
+                    <button class="create-record-btn">Create New Record</button>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Record ID</th>
+                            <th>Type</th>
+                            <th>Date Created</th>
+                            <th>Data Hash (Short)</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>rec_001</td>
+                            <td>DIAGNOSIS</td>
+                            <td>2025-05-20</td>
+                            <td>a1b2c3d4...</td>
+                            <td><button class="action-btn" onclick="openManageAccessModal('rec_001')"><span class="icon icon-settings"></span> Manage Access</button></td>
+                        </tr>
+                        <tr>
+                            <td>rec_002</td>
+                            <td>LAB_RESULT</td>
+                            <td>2025-05-15</td>
+                            <td>e5f6g7h8...</td>
+                            <td><button class="action-btn" onclick="openManageAccessModal('rec_002')"><span class="icon icon-settings"></span> Manage Access</button></td>
+                        </tr>
+                        <tr>
+                            <td>rec_003</td>
+                            <td>PRESCRIPTION</td>
+                            <td>2025-05-10</td>
+                            <td>i9j0k1l2...</td>
+                            <td><button class="action-btn" onclick="openManageAccessModal('rec_003')"><span class="icon icon-settings"></span> Manage Access</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+                </div>
+
+            <div class="section">
+                <div class="section-header">
+                    <h2>Recent Data Access History</h2>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date & Time</th>
+                            <th>Accessed By</th>
+                            <th>Action</th>
+                            <th>Record ID</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>2025-05-27 10:15 AM</td>
+                            <td>Dr. X (0xDocWalletX...)</td>
+                            <td>VIEW_RECORD_SUCCESS</td>
+                            <td>rec_001</td>
+                        </tr>
+                        <tr>
+                            <td>2025-05-26 03:30 PM</td>
+                            <td>You (Patient A)</td>
+                            <td>GRANT_ACCESS_SUCCESS to Dr. X</td>
+                            <td>rec_001</td>
+                        </tr>
+                         <tr>
+                            <td>2025-05-25 09:00 AM</td>
+                            <td>You (Patient A)</td>
+                            <td>VIEW_RECORD_SUCCESS</td>
+                            <td>rec_002</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <a href="#" class="view-all-link">View All Access History &rarr;</a>
+            </div>
+        </main>
+    </div>
+
+    <div id="manageAccessModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+        <div style="background:white; padding:20px; border-radius:8px; width:450px;">
+            <h3>Manage Access for Record <span id="modalRecordId"></span></h3>
+            <p>Record Type: <span id="modalRecordType">DIAGNOSIS</span></p>
+            <p>Data Hash: <span id="modalRecordHash">a1b2c3d4...</span></p>
+            <hr style="margin: 15px 0;">
+            <h4>Grant/Revoke Access</h4>
+            <div style="margin-bottom:10px;">
+                <label for="doctorAddress" style="display:block; margin-bottom:5px;">Doctor's Blockchain Address:</label>
+                <input type="text" id="doctorAddress" placeholder="0x..." style="width:calc(100% - 20px); padding:8px; border-radius:4px; border:1px solid #ccc;">
+            </div>
+            <button onclick="alert('Granting access... (mock)')" style="background:#27ae60; color:white; padding:8px 15px; border:none; border-radius:4px; cursor:pointer; margin-right:10px;">Grant Access</button>
+            <button onclick="alert('Revoking access... (mock)')" style="background:#e74c3c; color:white; padding:8px 15px; border:none; border-radius:4px; cursor:pointer;">Revoke Access</button>
+            
+            <h4 style="margin-top:20px;">Current Access List:</h4>
+            <ul id="accessList" style="list-style:none; padding-left:0; font-size:0.9em;">
+                <li>Dr. X (0xDocWalletX...) - Granted on 2025-05-26</li>
+                </ul>
+            <button onclick="closeManageAccessModal()" style="margin-top:20px; padding:8px 15px; cursor:pointer;">Close</button>
+        </div>
+    </div>
+
+    <script>
+        function openManageAccessModal(recordId) {
+            document.getElementById('modalRecordId').textContent = recordId;
+            // In a real app, fetch record details and current access list
+            document.getElementById('manageAccessModal').style.display = 'flex';
+        }
+        function closeManageAccessModal() {
+            document.getElementById('manageAccessModal').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

@@ -71,6 +71,8 @@ Connection Pool (20 max)
 ```
 
 ### Blockchain Architecture
+
+**Catatan:** Untuk MVP yang didemokan, interaksi akan terjadi dengan Ganache dan smart contract yang sudah di-deploy secara lokal.
 ```
 Development/MVP:
 [Ganache Local Node]
@@ -108,7 +110,7 @@ Alerts → PagerDuty
        ↓
 [NLP Pipeline]
 ├── Text Extraction
-├── Entity Recognition  # Currently a placeholder; planned for MVP via DeepSeek API
+├── Entity Recognition  # Currently a placeholder; planned for MVP via DeepSeek API (Implementasi MVP awal menggunakan DeepSeek API, pengembangan lebih lanjut untuk fitur NLP lainnya akan mengikuti)
 ├── Relation Extraction
 └── Text Classification
        ↓

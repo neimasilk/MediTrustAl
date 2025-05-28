@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediTrustAl - Create New Medical Record Mockup</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            background-color: #e9ebee; /* Light gray background to highlight modal/page */
+            color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .page-container { /* Can be styled as a modal or a full page section */
+            background: #ffffff;
+            padding: 30px 40px;
+            border-radius: 8px;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 700px; /* Wider for form content */
+            text-align: left;
+        }
+        .page-container h1 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+            font-size: 1.7em;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr; /* Single column by default */
+            gap: 20px;
+        }
+        /* For wider screens, you might use two columns for some fields */
+        /* @media (min-width: 600px) {
+            .form-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .full-width {
+                grid-column: 1 / -1;
+            }
+        } */
+        .form-group {
+            margin-bottom: 5px; /* Reduced bottom margin as gap handles spacing */
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+            font-size: 0.9em;
+        }
+        .form-group input[type="text"],
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            font-size: 0.95em;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+        .form-group input[type="text"]:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        .form-actions {
+            margin-top: 30px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        .form-actions button {
+            padding: 10px 25px;
+            border-radius: 4px;
+            font-size: 1em;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: background-color 0.2s;
+        }
+        .btn-save {
+            background-color: #27ae60;
+            color: white;
+        }
+        .btn-save:hover {
+            background-color: #229954;
+        }
+        .btn-cancel {
+            background-color: #7f8c8d;
+            color: white;
+        }
+        .btn-cancel:hover {
+            background-color: #6c7a7d;
+        }
+        .feedback-message {
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 20px;
+            font-size: 0.9em;
+            display: none; /* Hidden by default */
+            text-align: center;
+        }
+        .feedback-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .feedback-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .metadata-info {
+            font-size: 0.85em;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <h1>Create New Medical Record</h1>
+        
+        <form id="createRecordForm">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="recordType">Record Type</label>
+                    <select id="recordType" name="recordType" onchange="updateMetadataPlaceholder()">
+                        <option value="DIAGNOSIS">Diagnosis</option>
+                        <option value="LAB_RESULT">Lab Result</option>
+                        <option value="PRESCRIPTION">Prescription</option>
+                        <option value="TREATMENT_PLAN">Treatment Plan</option>
+                        <option value="MEDICAL_HISTORY">Medical History</option>
+                        <option value="VITAL_SIGNS">Vital Signs</option>
+                        <option value="IMAGING">Imaging</option>
+                        <option value="VACCINATION">Vaccination</option>
+                    </select>
+                </div>
+
+                <div class="form-group full-width"> <label for="recordMetadata">Metadata (JSON format)</label>
+                    <textarea id="recordMetadata" name="recordMetadata" rows="4" placeholder='e.g., {"doctor_id": "doc_123", "hospital": "General Hospital"}'></textarea>
+                    <p class="metadata-info">Enter additional information as a JSON object. Examples:</p>
+                    <ul id="metadataExamples" class="metadata-info" style="padding-left: 20px; margin-top: 0;">
+                        </ul>
+                </div>
+
+                <div class="form-group full-width"> <label for="rawData">Raw Data / Notes</label>
+                    <textarea id="rawData" name="rawData" rows="8" placeholder="Enter the detailed medical notes or data here..."></textarea>
+                </div>
+            </div>
+
+            <div id="formFeedback" class="feedback-message"></div>
+
+            <div class="form-actions">
+                <button type="button" class="btn-cancel" onclick="handleCancel()">Cancel</button>
+                <button type="submit" class="btn-save" onclick="handleSaveRecord(event)">Save Record</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        const metadataPlaceholders = {
+            DIAGNOSIS: '{"diagnosis_code": "A01.0", "severity": "Moderate", "diagnosing_doctor": "Dr. Smith"}',
+            LAB_RESULT: '{"test_name": "Blood Glucose", "value": "110", "unit": "mg/dL", "reference_range": "70-100"}',
+            PRESCRIPTION: '{"medication_name": "Amoxicillin", "dosage": "250mg", "frequency": "TID", "duration": "7 days"}',
+            TREATMENT_PLAN: '{"objective": "Reduce blood pressure", "interventions": ["Diet modification", "Exercise program"]}',
+            MEDICAL_HISTORY: '{"past_conditions": ["Hypertension"], "allergies": ["Penicillin"]}',
+            VITAL_SIGNS: '{"blood_pressure": "120/80 mmHg", "heart_rate": "72 bpm", "temperature": "36.8 C"}',
+            IMAGING: '{"image_type": "X-Ray", "body_part": "Chest", "findings": "Clear lungs"}',
+            VACCINATION: '{"vaccine_name": "Influenza Vaccine", "date_administered": "2024-10-15", "batch_number": "FLUVAX2024"}'
+        };
+
+        const metadataExamplesList = {
+            DIAGNOSIS: ['<code>{"diagnosis_code": "A01.0", "severity": "Moderate"}</code>'],
+            LAB_RESULT: ['<code>{"test_name": "Blood Glucose", "value": "110 mg/dL"}</code>'],
+            PRESCRIPTION: ['<code>{"medication_name": "Amoxicillin", "dosage": "250mg"}</code>'],
+            TREATMENT_PLAN: ['<code>{"objective": "Reduce pain", "next_review": "2025-07-01"}</code>'],
+            MEDICAL_HISTORY: ['<code>{"primary_complaint": "Headache for 3 days"}</code>'],
+            VITAL_SIGNS: ['<code>{"bp": "120/80", "hr": "70", "temp_c": "37.0"}</code>'],
+            IMAGING: ['<code>{"modality": "X-Ray", "region": "Chest", "report_id": "IMG001"}</code>'],
+            VACCINATION: ['<code>{"vaccine": "Flu Shot", "lot_number": "XYZ123"}</code>']
+        };
+
+        function updateMetadataPlaceholder() {
+            const recordType = document.getElementById('recordType').value;
+            const metadataTextarea = document.getElementById('recordMetadata');
+            const examplesUl = document.getElementById('metadataExamples');
+            
+            metadataTextarea.placeholder = metadataPlaceholders[recordType] || 'e.g., {"key": "value"}';
+            
+            examplesUl.innerHTML = ''; // Clear previous examples
+            if (metadataExamplesList[recordType]) {
+                metadataExamplesList[recordType].forEach(example => {
+                    const li = document.createElement('li');
+                    li.innerHTML = example;
+                    examplesUl.appendChild(li);
+                });
+            } else {
+                 const li = document.createElement('li');
+                 li.innerHTML = '<code>{"custom_field": "your_value"}</code>';
+                 examplesUl.appendChild(li);
+            }
+        }
+
+        function showFormFeedback(message, type) {
+            const feedbackDiv = document.getElementById('formFeedback');
+            feedbackDiv.textContent = message;
+            feedbackDiv.className = 'feedback-message'; // Reset classes
+            if (type === 'success') {
+                feedbackDiv.classList.add('feedback-success');
+            } else if (type === 'error') {
+                feedbackDiv.classList.add('feedback-error');
+            }
+            feedbackDiv.style.display = 'block';
+        }
+
+        function handleSaveRecord(event) {
+            event.preventDefault(); // Prevent actual form submission for mockup
+            const recordType = document.getElementById('recordType').value;
+            const metadata = document.getElementById('recordMetadata').value;
+            const rawData = document.getElementById('rawData').value;
+
+            if (!rawData.trim()) {
+                showFormFeedback("Raw Data / Notes cannot be empty.", 'error');
+                return;
+            }
+
+            let parsedMetadata = {};
+            if (metadata.trim()) {
+                try {
+                    parsedMetadata = JSON.parse(metadata);
+                } catch (e) {
+                    showFormFeedback("Metadata is not valid JSON. Please correct it or leave it empty.", 'error');
+                    return;
+                }
+            }
+            
+            showFormFeedback("Saving medical record...", 'info'); // Use a neutral color for processing
+            
+            // Simulate API call
+            setTimeout(() => {
+                // Simulate success or failure
+                const success = Math.random() > 0.2; // 80% chance of success for mockup
+                if (success) {
+                    showFormFeedback("Medical record saved successfully! (Mock)", 'success');
+                    document.getElementById('createRecordForm').reset();
+                    updateMetadataPlaceholder(); // Reset placeholder after form reset
+                } else {
+                    showFormFeedback("Failed to save medical record. Please try again. (Mock)", 'error');
+                }
+            }, 2000);
+        }
+
+        function handleCancel() {
+            alert("Operation cancelled. (Returning to dashboard - Mock)");
+            // In a real app, you might use: window.location.href = 'mockup-03-patient-dashboard.html';
+            // Or if this is a modal, simply close the modal.
+            document.getElementById('createRecordForm').reset();
+            updateMetadataPlaceholder();
+            showFormFeedback("", ""); // Clear feedback
+            document.getElementById('formFeedback').style.display = 'none';
+        }
+
+        // Initialize placeholder on page load
+        document.addEventListener('DOMContentLoaded', updateMetadataPlaceholder);
+    </script>
+</body>
+</html>

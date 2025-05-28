@@ -277,7 +277,7 @@
 
         async function testMedicalRecords() {
             try {
-                const response = await apiCall('/medical-records/');
+                const response = await apiCall(endpoint);
                 const data = await response.json();
                 
                 if (response.ok) {
@@ -292,7 +292,29 @@
 
         async function testConsentManagement() {
             try {
-                const response = await apiCall('/consent/');
+                let url = `${API_BASE}${endpoint}`;
+                let options = {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                };
+                if (methodType === 'POST_CONSENT') {
+                    // Placeholder for actual record_id and doctor_address
+                    // You would typically get these from user input or other state
+                    const recordId = prompt("Enter Record ID for consent management:");
+                    const doctorAddress = prompt("Enter Doctor's Blockchain Address:");
+                    if (!recordId || !doctorAddress) {
+                        document.getElementById('consentStatus').textContent = 'Record ID and Doctor Address are required.';
+                        document.getElementById('consentStatus').className = 'api-status status-error';
+                        return;
+                    }
+                    url = `${API_BASE}${endpoint.replace('{record_id}', recordId)}`;
+                    options.method = 'POST';
+                    options.body = JSON.stringify({ doctor_address: doctorAddress });
+                }
+                const response = await fetch(url, options);
                 const data = await response.json();
                 
                 if (response.ok) {
@@ -307,7 +329,7 @@
 
         async function testAuditLogs() {
             try {
-                const response = await apiCall('/audit/logs');
+                const response = await apiCall(endpoint);
                 const data = await response.json();
                 
                 if (response.ok) {

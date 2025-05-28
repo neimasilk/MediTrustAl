@@ -84,8 +84,8 @@ Project Directory (~20GB):
    createdb meditrustal
    
    # Run migrations
-   cd src
-   alembic upgrade head
+   # Pastikan Anda berada di root direktori proyek
+   python -m alembic upgrade head
    ```
 
 4. **Local Blockchain Setup**
@@ -97,7 +97,8 @@ Project Directory (~20GB):
    npm install -g ganache@7.9.2
    
    # Start local blockchain
-   ganache --deterministic --chain.chainId 1337 --database.dbPath ./.ganache-db
+   # Pastikan port 7545 tersedia
+   ganache --port 7545 --deterministic --chain.chainId 1337 --database.dbPath ./.ganache-db
    ```
 
 5. **Frontend Setup**
@@ -129,7 +130,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES=30
 REFRESH_TOKEN_EXPIRE_DAYS=7
 
 # Blockchain
-BLOCKCHAIN_PROVIDER_URL=http://127.0.0.1:8545
+BLOCKCHAIN_PROVIDER_URL=http://127.0.0.1:7545
 CHAIN_ID=1337
 GAS_PRICE=20000000000
 GAS_LIMIT=6721975

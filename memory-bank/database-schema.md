@@ -29,6 +29,7 @@ CREATE INDEX idx_users_blockchain_address ON users(blockchain_address);
 ```
 
 ### 2. sessions
+(Catatan: Tabel sessions saat ini belum diimplementasikan dalam migrasi Alembic. Relevansinya akan ditinjau kembali untuk implementasi refresh token atau manajemen sesi server-side di masa mendatang.)
 ```sql
 CREATE TABLE sessions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -49,7 +50,7 @@ CREATE INDEX idx_sessions_refresh_token ON sessions(refresh_token);
 CREATE TABLE medical_records (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     patient_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    blockchain_record_id VARCHAR(66) UNIQUE NOT NULL,  -- Ethereum transaction hash (tx_hash) yang dihasilkan saat mencatat data_hash ke blockchain
+    blockchain_record_id VARCHAR(66) UNIQUE NOT NULL,  -- Ethereum transaction hash (tx_hash) yang dihasilkan saat mencatat data_hash ke blockchain. Ini adalah ID transaksi di blockchain.
     record_type VARCHAR(50) NOT NULL CHECK (record_type IN (
         'DIAGNOSIS',
         'LAB_RESULT',

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediTrustAl - Login Mockup</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            background-color: #f4f7f9;
+            color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .login-container {
+            background: #ffffff;
+            padding: 30px 40px;
+            border-radius: 8px;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        .login-container h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1.8em;
+        }
+        .login-container p {
+            color: #7f8c8d;
+            margin-bottom: 25px;
+            font-size: 0.95em;
+        }
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+            font-size: 0.9em;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            font-size: 1em;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .login-btn:hover {
+            background: #2980b9;
+        }
+        .links {
+            margin-top: 20px;
+            font-size: 0.9em;
+        }
+        .links a {
+            color: #3498db;
+            text-decoration: none;
+            margin: 0 8px;
+        }
+        .links a:hover {
+            text-decoration: underline;
+        }
+        .error-message {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 15px;
+            font-size: 0.9em;
+            display: none; /* Hidden by default */
+        }
+         /* Placeholder for logo */
+        .logo-placeholder {
+            width: 80px;
+            height: 80px;
+            background-color: #e0e0e0;
+            border-radius: 50%;
+            margin: 0 auto 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            color: #7f8c8d;
+            font-weight: bold;
+        }
+        .logo-placeholder img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* if using an actual image */
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 25px 20px;
+            }
+            .login-container h1 {
+                font-size: 1.6em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo-placeholder">
+            <img src="https://placehold.co/80x80/2c3e50/FFFFFF?text=MTA&font=Inter" alt="MediTrustAl Logo"
+                 onerror="this.onerror=null; this.src='https://placehold.co/80x80/cccccc/000000?text=Logo&font=Inter';">
+        </div>
+        <h1>MediTrustAl</h1>
+        <p>Securely access your health platform.</p>
+        
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="usernameOrEmail">Username or Email</label>
+                <input type="text" id="usernameOrEmail" name="usernameOrEmail" required placeholder="e.g., patient_a or patient@example.com">
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required placeholder="Enter your password">
+            </div>
+            <button type="submit" class="login-btn" onclick="handleLogin(event)">Login</button>
+        </form>
+
+        <div id="errorMessage" class="error-message">
+            Invalid credentials. Please try again.
+        </div>
+
+        <div class="links">
+            <a href="#" onclick="navigateToRegister()">Don't have an account? Sign Up</a>
+            <span style="color: #ccc;">|</span>
+            <a href="#" onclick="navigateToForgotPassword()">Forgot Password?</a>
+        </div>
+    </div>
+
+    <script>
+        function handleLogin(event) {
+            event.preventDefault(); // Prevent actual form submission for mockup
+            const username = document.getElementById('usernameOrEmail').value;
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('errorMessage');
+
+            if (username === "test@example.com" && password === "password123") {
+                errorDiv.style.display = 'none';
+                alert("Login Successful! (Mock - Redirecting to Dashboard...)");
+                // In a real app, you would redirect: window.location.href = 'mockup-03-patient-dashboard.html';
+            } else if (username === "" || password === "") {
+                errorDiv.textContent = "Username/Email and Password cannot be empty.";
+                errorDiv.style.display = 'block';
+            }
+            else {
+                errorDiv.textContent = "Invalid credentials. Please try again. (Mock)";
+                errorDiv.style.display = 'block';
+            }
+        }
+
+        function navigateToRegister() {
+            alert("Navigating to Registration Page... (mockup-02-register.html)");
+            // window.location.href = 'mockup-02-register.html';
+        }
+
+        function navigateToForgotPassword() {
+            alert("Navigating to Forgot Password Page... (Not yet created)");
+        }
+    </script>
+</body>
+</html>

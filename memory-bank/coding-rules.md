@@ -40,6 +40,8 @@ These rules provide more specific guidance based on the chosen tech stack.
 
 ### **Blockchain (Hyperledger Fabric \- if chosen)**
 
+**Panduan MVP (Ganache & Solidity):** Untuk pengembangan MVP, ikuti struktur dan praktik terbaik Solidity dengan Hardhat seperti yang telah diimplementasikan. Gunakan `MedicalRecordRegistry.sol` dan `UserRegistry.sol` sebagai acuan.
+
 7. **Rule: Chaincode Structure**  
    * **Instruction:** "When developing Hyperledger Fabric chaincode (smart contracts), ensure a clear separation of concerns. For example, differentiate logic for different asset types or transactions. Follow recommended Fabric patterns for chaincode development (e.g., using the contract API)."  
    * **Context Files:** memory-bank/tech-stack.md  

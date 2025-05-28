@@ -1,11 +1,8 @@
 # Petunjuk Manual Test untuk Frontend Patient Portal
 
-Dokumen ini berisi langkah-langkah untuk melakukan tes manual pada fungsionalitas dasar Patient Portal frontend dan beberapa aspek backend terkait.
+Dokumen ini berisi langkah-langkah untuk melakukan tes manual pada fungsionalitas frontend, dengan fokus awal pada Halaman Login (Mockup-01) dan Halaman Registrasi (Mockup-02).
 
-**Catatan Penting:** Saat ini, terdapat 5 tes backend otomatis yang gagal:
-*   3 kegagalan di `tests/integration/api/test_api_medical_records.py` (berkaitan dengan `DetachedInstanceError` dan `IntegrityError` - kemungkinan masalah sesi SQLAlchemy dalam tes).
-*   2 kegagalan `AssertionError` di `tests/integration/api/test_api_nlp.py` (berkaitan dengan detail pesan error yang tidak cocok saat mock service NLP menghasilkan exception).
-Mohon lakukan verifikasi manual yang lebih teliti pada fungsionalitas terkait (detail rekam medis, terutama terkait error handling dekripsi dan kasus dokter tanpa hash; dan error handling pada endpoint NLP).
+**Catatan Penting:** Semua tes backend otomatis telah berhasil dijalankan. Fokus pengujian manual saat ini adalah pada verifikasi implementasi frontend.
 
 ## Prerequisites (Persiapan Awal):
 
@@ -33,7 +30,9 @@ Mohon lakukan verifikasi manual yang lebih teliti pada fungsionalitas terkait (d
 
 ## Test Cases Frontend:
 
-### 1. Tampilan Halaman Login (Login Page UI)
+## A. Test Cases Frontend: Halaman Login (Mockup-01)
+
+### A.1. Tampilan Halaman Login (Login Page UI)
 
 *   **Tindakan:**
     1.  Buka browser (misalnya Chrome, Firefox).
@@ -46,7 +45,7 @@ Mohon lakukan verifikasi manual yang lebih teliti pada fungsionalitas terkait (d
         *   Input field untuk "Password".
         *   Tombol "Login" (atau "Masuk").
 
-### 2. Login dengan Kredensial Tidak Valid
+### A.2. Login dengan Kredensial Tidak Valid
 
 *   **Tindakan:**
     1.  Di halaman login, masukkan kombinasi username/email dan password yang salah atau tidak terdaftar.
@@ -56,7 +55,7 @@ Mohon lakukan verifikasi manual yang lebih teliti pada fungsionalitas terkait (d
     *   Anda tetap berada di halaman `/login`.
     *   Periksa _browser console_ (Developer Tools > Console): tidak boleh ada error fatal yang menghentikan aplikasi. Error terkait respons API (misalnya 401 atau 400) boleh ada.
 
-### 3. Login dengan Kredensial Valid
+### A.3. Login dengan Kredensial Valid
 
 *   **Tindakan:**
     1.  Di halaman login, masukkan username/email dan password yang benar untuk Pasien A.
@@ -65,7 +64,7 @@ Mohon lakukan verifikasi manual yang lebih teliti pada fungsionalitas terkait (d
     *   Anda akan diarahkan ke halaman `/dashboard`.
     *   Buka Developer Tools > Application > Local Storage: sebuah item `access_token` (atau nama serupa yang didefinisikan di `tokenManager.js`) harus ada dan berisi token JWT.
 
-### 4. Tampilan Halaman Dashboard (Setelah Login)
+### A.4. Tampilan Halaman Dashboard (Setelah Login)
 
 *   **Tindakan:**
     1.  Setelah berhasil login sebagai Pasien A, Anda berada di halaman `/dashboard`.
@@ -79,7 +78,7 @@ Mohon lakukan verifikasi manual yang lebih teliti pada fungsionalitas terkait (d
     *   **Jika Pasien A tidak memiliki rekam medis:**
         *   Pesan seperti "Anda belum memiliki rekam medis" atau "Tidak ada data rekam medis" akan ditampilkan.
 
-### 5. Akses Rute Terproteksi (Dashboard)
+### A.5. Akses Rute Terproteksi (Dashboard)
 
 *   **Tindakan (Ketika Belum Login):**
     1.  Pastikan Anda sudah logout atau buka _incognito window_ baru.
@@ -94,7 +93,97 @@ Mohon lakukan verifikasi manual yang lebih teliti pada fungsionalitas terkait (d
     *   Anda tetap berada di halaman `/dashboard`.
     *   Data di dashboard (termasuk daftar rekam medis) akan dimuat ulang dengan benar.
 
-### 6. Fungsionalitas Logout
+### A.6. Fungsionalitas Logout
+
+## B. Test Cases Frontend: Halaman Registrasi (Mockup-02)
+
+### B.1. Tampilan Halaman Registrasi (Registration Page UI)
+
+*   **Tindakan:**
+    1.  Buka browser (misalnya Chrome, Firefox).
+    2.  Navigasi ke alamat frontend, lalu klik link "Daftar di sini" dari halaman login, atau langsung ke `http://localhost:5173/register`.
+*   **Hasil yang Diharapkan:**
+    *   Anda akan berada di halaman `/register`.
+    *   Halaman registrasi harus menampilkan:
+        *   Judul (misalnya, "Buat Akun Baru" atau "Registrasi").
+        *   Input field untuk "Email".
+        *   Input field untuk "Username".
+        *   Input field untuk "Nama Lengkap".
+        *   Input field untuk "Password".
+        *   Input field untuk "Konfirmasi Password".
+        *   (Opsional, jika ada di UI) Input field atau pilihan untuk "Role" (misalnya, default ke 'patient').
+        *   (Opsional, jika ada di UI) Input field untuk "Alamat Blockchain".
+        *   Tombol "Daftar" (atau "Register").
+        *   Link ke halaman login (misalnya, "Sudah punya akun? Login di sini").
+
+### B.2. Registrasi dengan Data Tidak Valid atau Tidak Lengkap
+
+*   **Tindakan (Password Tidak Cocok):**
+    1.  Di halaman registrasi, isi semua field dengan data valid, namun masukkan password yang berbeda di field "Password" dan "Konfirmasi Password".
+    2.  Klik tombol "Daftar".
+*   **Hasil yang Diharapkan (Password Tidak Cocok):**
+    *   Sebuah pesan error validasi frontend ditampilkan (misalnya, "Password dan Konfirmasi Password tidak cocok.").
+    *   Anda tetap berada di halaman `/register`.
+    *   Tidak ada request yang dikirim ke backend.
+
+*   **Tindakan (Email Tidak Valid):**
+    1.  Di halaman registrasi, masukkan format email yang tidak valid (misalnya, "test@test").
+    2.  Isi field lain dengan benar.
+    3.  Klik tombol "Daftar".
+*   **Hasil yang Diharapkan (Email Tidak Valid):**
+    *   Sebuah pesan error validasi frontend ditampilkan (misalnya, "Format email tidak valid.").
+    *   Anda tetap berada di halaman `/register`.
+
+*   **Tindakan (Field Wajib Kosong):**
+    1.  Kosongkan salah satu field wajib (misalnya, Username).
+    2.  Isi field lain dengan benar.
+    3.  Klik tombol "Daftar".
+*   **Hasil yang Diharapkan (Field Wajib Kosong):**
+    *   Sebuah pesan error validasi frontend ditampilkan (misalnya, "Username tidak boleh kosong.").
+    *   Anda tetap berada di halaman `/register`.
+
+### B.3. Registrasi dengan Username atau Email yang Sudah Ada
+
+*   **Persiapan:**
+    *   Pastikan ada pengguna yang sudah terdaftar dengan username `existinguser` dan email `existing@example.com`.
+*   **Tindakan (Username Sudah Ada):**
+    1.  Di halaman registrasi, masukkan `existinguser` di field Username.
+    2.  Isi field lain dengan data baru yang valid.
+    3.  Klik tombol "Daftar".
+*   **Hasil yang Diharapkan (Username Sudah Ada):**
+    *   Sebuah pesan error dari backend ditampilkan di UI (misalnya, "Username sudah digunakan." atau "User with this username already exists").
+    *   Anda tetap berada di halaman `/register`.
+
+*   **Tindakan (Email Sudah Ada):**
+    1.  Di halaman registrasi, masukkan `existing@example.com` di field Email.
+    2.  Isi field lain dengan data baru yang valid.
+    3.  Klik tombol "Daftar".
+*   **Hasil yang Diharapkan (Email Sudah Ada):**
+    *   Sebuah pesan error dari backend ditampilkan di UI (misalnya, "Email sudah terdaftar." atau "User with this email already exists").
+    *   Anda tetap berada di halaman `/register`.
+
+### B.4. Registrasi Berhasil
+
+*   **Tindakan:**
+    1.  Di halaman registrasi, isi semua field dengan data yang valid dan unik (belum terdaftar).
+    2.  Pastikan password dan konfirmasi password cocok.
+    3.  Klik tombol "Daftar".
+*   **Hasil yang Diharapkan:**
+    *   Sebuah pesan sukses ditampilkan di UI (misalnya, "Registrasi berhasil! Silakan login.").
+    *   Anda diarahkan ke halaman `/login`.
+    *   Verifikasi di database backend: pengguna baru telah dibuat di tabel `users` dengan data yang sesuai.
+    *   (Opsional, jika ada) Verifikasi di blockchain (Ganache): jika registrasi juga mendaftarkan user di `UserRegistry`, pastikan entri baru ada.
+
+### B.5. Link ke Halaman Login
+
+*   **Tindakan:**
+    1.  Di halaman registrasi, klik link "Sudah punya akun? Login di sini" (atau teks serupa).
+*   **Hasil yang Diharapkan:**
+    *   Anda diarahkan ke halaman `/login`.
+
+## C. Test Cases Frontend Lanjutan (Setelah Login & Registrasi Stabil)
+(Bagian ini akan diisi kemudian setelah M01 dan M02 selesai dan stabil)
+
 
 *   **Tindakan:**
     1.  Pastikan Anda sedang login dan berada di halaman `/dashboard`.

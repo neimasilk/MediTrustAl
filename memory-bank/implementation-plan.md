@@ -2,6 +2,8 @@
 
 ## **0\. Introduction & Guiding Principles**
 
+**Catatan:** Sebagian besar langkah implementasi fitur teknis dalam dokumen ini telah diselesaikan untuk MVP per tanggal 2025-05-28 (lihat `memory-bank/progress.md`). Dokumen ini kini berfungsi sebagai arsip perencanaan awal MVP dan referensi untuk standar API serta penanganan error.
+
 This document outlines the step-by-step plan for developing the Minimum Viable Product (MVP) of the MediTrustAl platform. This plan is intended for an AI developer (e.g., Claude Sonnet 3.7 Thinking in Cursor) and should be executed sequentially.
 
 **Key Principles for AI Developer:**
