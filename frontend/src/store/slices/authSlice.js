@@ -61,8 +61,22 @@ const authSlice = createSlice({
         removeToken();
       }
     },
+    registerStart(state) {
+      state.isLoading = true;
+      state.error = null;
+    },
+    registerSuccess(state, action) {
+      state.isLoading = false;
+      state.isAuthenticated = false; // User is registered, not logged in
+      // Optionally, store registration success message or user data if API returns it
+      // For now, just manage loading/error state
+    },
+    registerFailure(state, action) {
+      state.isLoading = false;
+      state.error = action.payload.error;
+    },
   },
 });
 
-export const { loginStart, loginSuccess, loginFailure, logout, validateToken } = authSlice.actions;
+export const { loginStart, loginSuccess, loginFailure, logout, validateToken, registerStart, registerSuccess, registerFailure } = authSlice.actions;
 export default authSlice.reducer;

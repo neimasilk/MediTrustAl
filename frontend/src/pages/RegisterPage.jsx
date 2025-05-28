@@ -1,12 +1,11 @@
 // frontend/src/pages/RegisterPage.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Container, Box, Typography, TextField, Button, Alert, CircularProgress, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import * as authService from '../services/authService';
 import { getErrorMessage, logError } from '../utils/errorHandler';
-// Placeholder for registration-specific actions if needed in Redux
-// import { registerStart, registerSuccess, registerFailure } from '../store/slices/authSlice'; 
+import { registerStart, registerSuccess, registerFailure } from '../store/slices/authSlice';
 
 const RegisterPage = () => {
   const [username, setUsername] = useState('');
@@ -15,19 +14,17 @@ const RegisterPage = () => {
   const [role, setRole] = useState('PATIENT'); // Added role state with default
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const dispatch = useDispatch(); // Keep dispatch if you plan to use Redux for registration state
+  const dispatch = useDispatch();
+  const { isLoading, error } = useSelector((state) => state.auth);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (password !== confirmPassword) {
-      setError('Passwords do not match.');
+      dispatch(registerFailure({ error: 'Passwords do not match.' }));
       return;
     }
-    setIsLoading(true);
-    setError('');
+    dispatch(registerStart());
 
     try {
       console.log('Submitting registration with:', { username, email, fullName, role, password }); // Log data yang dikirim
@@ -42,22 +39,18 @@ const RegisterPage = () => {
       console.log('Registration response:', response); // Log respons dari server
 
       if (response && response.status === 201) { // Assuming 201 Created for successful registration
-        // Optionally, log the user in directly or navigate to login page
-        // dispatch(registerSuccess({ user: response.data.user, token: response.data.access_token }));
+        dispatch(registerSuccess());
         console.log('Registration successful, navigating to login.');
         navigate('/login?registrationSuccess=true'); // Redirect to login with a success message
       } else {
         const { userMessage } = getErrorMessage({ response });
         logError('Registration - Unexpected response', { response }, { username, email, fullName, role });
-        setError(userMessage);
+        dispatch(registerFailure({ error: userMessage }));
       }
     } catch (err) {
       const { userMessage } = getErrorMessage(err);
       logError('Registration - API call failed', err, { username, email, fullName, role });
-      setError(userMessage);
-    } finally {
-      console.log('Finished registration attempt, setting isLoading to false.');
-      setIsLoading(false);
+      dispatch(registerFailure({ error: userMessage }));
     }
   };
 

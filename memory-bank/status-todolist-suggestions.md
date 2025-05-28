@@ -30,19 +30,19 @@
 ## Immediate Next Steps (Baby-Step To-Do List) - Fokus Implementasi Frontend Awal:
 
 1.  **Implementasi Frontend - Mockup-01 (Login Page):**
-    * [ ] Buat komponen `LoginPage.jsx` di `frontend/src/pages/`.
-    * [ ] Implementasikan UI berdasarkan `frontend/mockups/mockup-01-login.html`.
-    * [ ] Hubungkan dengan state management (Redux `authSlice`) untuk menangani input, loading, dan error.
-    * [ ] Integrasikan dengan `api.js` untuk memanggil endpoint `/auth/token`.
-    * [ ] Handle respons sukses (simpan token, navigasi ke dashboard) dan error (tampilkan pesan).
-    * [ ] Pastikan ada link ke halaman registrasi.
+    * [x] Buat komponen `LoginPage.jsx` di `frontend/src/pages/`.
+    * [x] Implementasikan UI berdasarkan `frontend/mockups/mockup-01-login.html`.
+    * [x] Hubungkan dengan state management (Redux `authSlice`) untuk menangani input, loading, dan error.
+    * [x] Integrasikan dengan `api.js` untuk memanggil endpoint `/auth/token`.
+    * [x] Handle respons sukses (simpan token, navigasi ke dashboard) dan error (tampilkan pesan).
+    * [x] Pastikan ada link ke halaman registrasi.
 2.  **Implementasi Frontend - Mockup-02 (Registration Page):**
-    * [ ] Buat komponen `RegisterPage.jsx` di `frontend/src/pages/`.
-    * [ ] Implementasikan UI berdasarkan `frontend/mockups/mockup-02-register.html`.
-    * [ ] Hubungkan dengan state management (Redux `authSlice`) untuk menangani input, loading, dan error.
-    * [ ] Integrasikan dengan `api.js` untuk memanggil endpoint `/auth/register`.
-    * [ ] Handle respons sukses (tampilkan pesan, navigasi ke login) dan error (tampilkan pesan).
-    * [ ] Pastikan ada link ke halaman login.
+    * [x] Buat komponen `RegisterPage.jsx` di `frontend/src/pages/`.
+    * [x] Implementasikan UI berdasarkan `frontend/mockups/mockup-02-register.html`.
+    * [x] Hubungkan dengan state management (Redux `authSlice`) untuk menangani input, loading, dan error.
+    * [x] Integrasikan dengan `api.js` untuk memanggil endpoint `/auth/register`.
+    * [x] Handle respons sukses (tampilkan pesan, navigasi ke login) dan error (tampilkan pesan).
+    * [x] Pastikan ada link ke halaman login.
 3.  **Pengujian Manual Awal (Login & Registrasi):**
     * [ ] Lakukan pengujian manual untuk alur login dan registrasi sesuai `petunjuk-manual-test.md` (setelah diupdate).
     * [ ] Verifikasi fungsionalitas, penanganan error, dan penyimpanan token.
@@ -51,7 +51,7 @@
     * [ ] Update `petunjuk-manual-test.md` dengan instruksi lengkap untuk pengujian manual frontend M01 & M02.
     * [ ] Lakukan review akhir untuk semua dokumen di `memory-bank/` dan pastikan konsistensi.
 5.  **Backend & Testing:**
-    * [x] Semua tes backend otomatis telah berhasil dijalankan (SESUAI INFO USER).
+    * [x] Semua tes backend otomatis telah berhasil dijalankan (SESUAI INFO USER, VERIFIED BY AUTOMATED EXECUTION).
     * [ ] Pertimbangkan untuk menambahkan tes E2E setelah M01 dan M02 stabil.
 
 ## Technical Debt & Future Considerations (Status Unchanged, Priority After Current Phase):
@@ -84,4 +84,4 @@
 * **Finalize Documentation Revisions:** Confirm the final changes to technical documentation.
 * **Strategy for Fixing Failed Tests:** Allocate time and resources for fixing the remaining backend test failures.
 
-*(Note: This file was last updated to reflect the completion of all backend tests and the shift to frontend implementation of M01 & M02.)*
+*(Note: This file was last updated to reflect the completion of Frontend Mockup-01 (Login) and Mockup-02 (Registration) implementations, and verification of all backend tests.)*
