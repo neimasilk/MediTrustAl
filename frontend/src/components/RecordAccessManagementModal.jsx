@@ -13,7 +13,8 @@ import {
   CircularProgress,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import { grantAccessToRecord, revokeAccessFromRecord } from '../services/medicalRecordService'; // Import services
+import { grantAccessToRecord, revokeAccessFromRecord } from '../services/medicalRecordService';
+import { getErrorMessage, logError } from '../utils/errorHandler';
 
 const style = {
   position: 'absolute',
@@ -59,8 +60,9 @@ const RecordAccessManagementModal = ({ open, onClose, record }) => {
       setMessage({ text: response.message || `Akses berhasil diberikan kepada ${doctorAddress.trim()}`, type: 'success' });
       // setDoctorAddress(''); // Keep address for potential revoke
     } catch (error) {
-      const errorDetail = error.data?.detail || error.message || 'Error tidak diketahui';
-      setMessage({ text: `Gagal memberikan akses: ${errorDetail}`, type: 'error' });
+      const { userMessage } = getErrorMessage(error);
+      logError('Grant Access', error, { recordId: record.id, doctorAddress });
+      setMessage({ text: `Gagal memberikan akses: ${userMessage}`, type: 'error' });
     } finally {
       setIsLoadingGrant(false); // Use specific loader
     }
@@ -79,9 +81,9 @@ const RecordAccessManagementModal = ({ open, onClose, record }) => {
       setMessage({ text: response.message || `Akses berhasil dicabut dari ${doctorAddress.trim()}`, type: 'success' });
       // setDoctorAddress(''); // Keep address for potential grant
     } catch (error) {
-      // Error structure from revokeAccessFromRecord might be error.response.data.detail
-      const errorDetail = error.response?.data?.detail || error.data?.detail || error.message || 'Error tidak diketahui';
-      setMessage({ text: `Gagal mencabut akses: ${errorDetail}`, type: 'error' });
+      const { userMessage } = getErrorMessage(error);
+      logError('Revoke Access', error, { recordId: record.id, doctorAddress });
+      setMessage({ text: `Gagal mencabut akses: ${userMessage}`, type: 'error' });
     } finally {
       setIsLoadingRevoke(false); // Use specific loader
     }

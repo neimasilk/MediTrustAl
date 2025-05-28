@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 import uuid
-from ..models.user import User, UserCreate, UserRole # Added UserRole import
+from ..models.user import User
+from ..schemas.user import UserCreate, UserRole # UserCreate and UserRole are in schemas, not models
 from ..core.security import get_password_hash
 
 def get_user_by_email(db: Session, email: str) -> User | None:
@@ -48,4 +49,4 @@ def update_user_blockchain_address(db: Session, user_id: uuid.UUID, blockchain_a
         db_user.blockchain_address = blockchain_address
         db.commit()
         db.refresh(db_user)
-    return db_user 
+    return db_user

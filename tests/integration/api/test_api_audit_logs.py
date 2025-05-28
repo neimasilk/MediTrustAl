@@ -7,7 +7,8 @@ from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from src.app.core.config import API_V1_STR
-from src.app.models.user import User, UserCreate # Corrected import for UserCreate
+from src.app.models.user import User
+from src.app.schemas.user import UserCreate # UserCreate is in schemas, not models
 from src.app.models.audit_log import AuditDataAccessLog
 from src.app.crud.crud_user import create_user
 from src.app.crud.crud_audit_log import create_audit_log as crud_create_audit_log # Renamed to avoid conflict

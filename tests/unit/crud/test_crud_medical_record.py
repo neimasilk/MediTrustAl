@@ -3,9 +3,11 @@ import pytest
 from sqlalchemy.orm import Session
 
 from src.app.crud import crud_user, crud_medical_record
-from src.app.models.user import UserCreate, UserRole
+from src.app.models.user import User
+from src.app.schemas.user import UserCreate, UserRole
 from src.app.models.medical_record import MedicalRecordCreate, RecordType
 from src.app.core.encryption import encrypt_data, hash_data, generate_encryption_key
+from src.app.core.security_config import get_encryption_key
 
 # Helper to create a test user directly for CRUD tests
 def create_test_user(db: Session, user_id: uuid.UUID = None) -> crud_user.User:
@@ -55,9 +57,8 @@ def create_test_user(db: Session, user_id: uuid.UUID = None) -> crud_user.User:
 def test_patient(db_session: Session) -> crud_user.User:
     return create_test_user(db_session)
 
-# Generate a fixed encryption key for consistent testing of encrypted data
-# In real scenarios, keys should be managed securely, not hardcoded or fixed.
-TEST_ENCRYPTION_KEY = generate_encryption_key()
+# Use the same encryption key function as the main application
+TEST_ENCRYPTION_KEY = get_encryption_key()
 
 
 def test_create_medical_record(db_session: Session, test_patient: crud_user.User):

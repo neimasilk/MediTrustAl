@@ -4,7 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Container, Box, Typography, TextField, Button, Alert, CircularProgress, Link } from '@mui/material';
 import * as authService from '../services/authService';
-import { loginStart, loginSuccess, loginFailure } from '../store/slices/authSlice';
+import { loginStart, loginSuccess, loginFailure, logout } from '../store/slices/authSlice';
+import { getErrorMessage, logError, handleAuthError } from '../utils/errorHandler';
 // tokenManager is not directly used here anymore for saving, Redux handles it.
 
 const LoginPage = () => {
@@ -30,24 +31,19 @@ const LoginPage = () => {
         dispatch(loginSuccess({ token: response.data.access_token, user: response.data.user || null }));
         navigate('/dashboard');
       } else {
-        let errorMessage = 'Login failed. Please check your credentials.';
-        if (response && response.data && (response.data.detail || response.data.message)) {
-          errorMessage = response.data.detail || response.data.message;
-        } else if (response && response.status) {
-          errorMessage = `Login failed with status: ${response.status}`;
-        }
-        dispatch(loginFailure({ error: errorMessage }));
+        const { userMessage } = getErrorMessage({ response });
+        logError('Login - Unexpected response', { response }, { usernameOrEmail });
+        dispatch(loginFailure({ error: userMessage }));
       }
     } catch (err) {
-      let errorMessage = 'An unexpected error occurred during login.';
-      if (err.response && err.response.data && (err.response.data.detail || err.response.data.message)) {
-        errorMessage = err.response.data.detail || err.response.data.message;
-      } else if (err.response && err.response.status) {
-        errorMessage = `Error: ${err.response.status} - ${err.response.statusText}`;
-      } else if (err.message) {
-        errorMessage = err.message;
+      // Check if it's an authentication error that requires logout
+      if (handleAuthError(err, () => dispatch(logout()))) {
+        return; // Auth error handled, don't proceed with normal error handling
       }
-      dispatch(loginFailure({ error: errorMessage }));
+      
+      const { userMessage } = getErrorMessage(err);
+      logError('Login - API call failed', err, { usernameOrEmail });
+      dispatch(loginFailure({ error: userMessage }));
     }
   };
 

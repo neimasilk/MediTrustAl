@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { Container, Box, Typography, TextField, Button, Alert, CircularProgress, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import * as authService from '../services/authService';
+import { getErrorMessage, logError } from '../utils/errorHandler';
 // Placeholder for registration-specific actions if needed in Redux
 // import { registerStart, registerSuccess, registerFailure } from '../store/slices/authSlice'; 
 
@@ -46,17 +47,14 @@ const RegisterPage = () => {
         console.log('Registration successful, navigating to login.');
         navigate('/login?registrationSuccess=true'); // Redirect to login with a success message
       } else {
-        let errorMessage = 'Registration failed. Please try again.';
-        if (response && response.data && (response.data.detail || response.data.message)) {
-          errorMessage = response.data.detail || response.data.message;
-        }
-        console.error('Registration failed with error message:', errorMessage, 'Response data:', response ? response.data : 'No response data');
-        setError(errorMessage);
+        const { userMessage } = getErrorMessage({ response });
+        logError('Registration - Unexpected response', { response }, { username, email, fullName, role });
+        setError(userMessage);
       }
     } catch (err) {
-      console.error('An unexpected error occurred during registration:', err);
-      setError('An unexpected error occurred during registration.');
-      console.error('Full registration error object:', err.response || err.message || err);
+      const { userMessage } = getErrorMessage(err);
+      logError('Registration - API call failed', err, { username, email, fullName, role });
+      setError(userMessage);
     } finally {
       console.log('Finished registration attempt, setting isLoading to false.');
       setIsLoading(false);

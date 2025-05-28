@@ -3,7 +3,8 @@ from pydantic import BaseModel # This can be removed if not used by other local 
 from sqlalchemy.orm import Session
 from ...core.blockchain import get_blockchain_service
 from ...core.database import get_db
-from ...models import user as models_user # Import as models_user to avoid naming conflicts
+from ...models.user import User
+from ...schemas.user import UserCreate, UserResponse
 from ..endpoints.auth import get_current_active_user
 
 router = APIRouter()
@@ -19,7 +20,7 @@ router = APIRouter()
 #     is_registered: bool
 
 @router.post("/register", response_model=dict)
-async def register_user(user: models_user.UserCreate): # Changed to use UserCreate from models.user for consistency if needed, though this endpoint seems blockchain specific
+async def register_user(user: UserCreate):
     """
     Register a new user in the blockchain
     """
@@ -29,15 +30,15 @@ async def register_user(user: models_user.UserCreate): # Changed to use UserCrea
         raise HTTPException(status_code=400, detail=result['error'])
     return result
 
-@router.get("/me", response_model=models_user.UserResponse) # Use UserResponse from models.user
-async def read_users_me(current_user: models_user.User = Depends(get_current_active_user)):
+@router.get("/me", response_model=UserResponse)
+async def read_users_me(current_user: User = Depends(get_current_active_user)):
     """
     Get current logged-in user's details.
     Requires authentication.
     """
-    # The UserResponse model from models.user has from_attributes = True,
+    # The UserResponse model from schemas.user has from_attributes = True,
     # but we explicitly call model_validate to ensure correct Pydantic model construction.
-    return models_user.UserResponse.model_validate(current_user)
+    return UserResponse.model_validate(current_user)
 
 @router.get("/{user_id}/role", response_model=dict)
 async def get_user_role(user_id: str):
@@ -52,4 +53,4 @@ async def get_user_role(user_id: str):
         'user_id': result['user_id'],
         'role': result['role'],
         'is_registered': result['is_registered']
-    } 
+    }

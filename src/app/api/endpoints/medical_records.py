@@ -29,17 +29,8 @@ from src.app.models.user import User, UserRole # Added UserRole
 
 router = APIRouter()
 
-def get_encryption_key() -> bytes:
-    """
-    Derives a 32-byte encryption key from the JWT secret key.
-    This is a placeholder/MVP approach. In a real system, use a dedicated key management service.
-    """
-    jwt_secret = JWT_CONFIG.get("secret_key", "default-fallback-secret-key-for-encryption") # Fallback for safety
-    if len(jwt_secret) >= 32:
-        return jwt_secret[:32].encode('utf-8')
-    else:
-        # Pad the key if it's shorter than 32 bytes
-        return (jwt_secret + '0'*(32-len(jwt_secret))).encode('utf-8')
+# Import the improved encryption function
+from ...core.security_config import get_encryption_key
 
 
 @router.post(

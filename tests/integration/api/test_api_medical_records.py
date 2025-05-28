@@ -8,21 +8,16 @@ from sqlalchemy.orm import Session
 
 from src.app.core.config import JWT_CONFIG # For deriving encryption key
 from src.app.core.encryption import encrypt_data, decrypt_data, hash_data
+from src.app.core.security_config import get_encryption_key
 from src.app.crud import crud_user, crud_medical_record
-from src.app.models.user import UserCreate, UserRole
+from src.app.models.user import User
+from src.app.schemas.user import UserCreate, UserRole
 from src.app.models.medical_record import MedicalRecord, MedicalRecordCreate, RecordType, MedicalRecordDetailResponse, MedicalRecordResponse
 from src.app.main import app # To ensure app context for client
 from src.app.core.blockchain import get_blockchain_service # Import for overriding
 
-# Helper to get a consistent encryption key for testing
-def get_test_encryption_key() -> bytes:
-    jwt_secret = JWT_CONFIG.get("secret_key", "test-secret-key-for-jwt")
-    if len(jwt_secret) >= 32:
-        return jwt_secret[:32].encode('utf-8')
-    else:
-        return (jwt_secret + '0'*(32-len(jwt_secret))).encode('utf-8')
-
-TEST_ENCRYPTION_KEY = get_test_encryption_key()
+# Use the same encryption key function as the main application
+TEST_ENCRYPTION_KEY = get_encryption_key()
 
 # Fixture to create a user and get an auth token
 @pytest.fixture

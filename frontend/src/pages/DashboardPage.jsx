@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { logout } from '../store/slices/authSlice';
 import { getMyMedicalRecords } from '../services/medicalRecordService';
+import { getErrorMessage, logError, handleAuthError } from '../utils/errorHandler';
 import {
   Button, Container, Typography, Box, Table, TableBody,
   TableCell, TableContainer, TableHead, TableRow, Paper,
@@ -41,20 +42,17 @@ const DashboardPage = () => {
         const response = await getMyMedicalRecords();
         setRecords(response.data || []); // Ensure response.data is not undefined
       } catch (error) {
-        let errorMessage = 'Failed to fetch records. Please try again later.';
-        if (error.data && error.data.detail) {
-          errorMessage = error.data.detail;
-        } else if (error.message) {
-          errorMessage = error.message;
-        } else if (error.status) {
-          errorMessage = `Error: ${error.status} - Failed to fetch records.`;
-        }
-        setErrorRecords(errorMessage);
-        if (error.status === 401 || error.status === 403 || error.message === 'No token found') {
-          // If unauthorized or token is invalid/missing, logout user
+        // Check if it's an authentication error that requires logout
+        if (handleAuthError(error, () => {
           dispatch(logout());
           navigate('/login');
+        })) {
+          return; // Auth error handled, don't set error message
         }
+        
+        const { userMessage } = getErrorMessage(error);
+        logError('Dashboard - Fetch medical records', error);
+        setErrorRecords(userMessage);
       } finally {
         setIsLoadingRecords(false);
       }

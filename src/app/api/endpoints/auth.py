@@ -9,7 +9,8 @@ from ...core.security import create_access_token, verify_password, decode_access
 from ...core.utils import generate_did
 from ...core.blockchain import get_blockchain_service
 from ...crud import crud_user
-from ...models.user import User, UserCreate, UserResponse, Token, TokenData, UserLogin
+from ...models.user import User
+from ...schemas.user import UserCreate, UserResponse, Token, TokenData, UserLogin
 
 router = APIRouter()
 
@@ -147,4 +148,4 @@ async def get_current_active_user(
 ) -> User:
     if not current_user.is_active:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user")
-    return current_user 
+    return current_user

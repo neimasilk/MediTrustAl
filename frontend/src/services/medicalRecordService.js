@@ -1,33 +1,40 @@
 // frontend/src/services/medicalRecordService.js
 import axios from 'axios';
 import { getToken } from '../utils/tokenManager';
+import { authenticatedFetch, validateTokenBeforeRequest, getAuthHeader } from '../utils/apiInterceptor';
 
 /**
  * Fetches the medical records for the currently authenticated patient.
  * @returns {Promise<object>} The response from the server.
  */
 export const getMyMedicalRecords = async () => {
-  const token = getToken();
-
-  if (!token) {
-    return Promise.reject('No token found');
+  // Validate token before making request
+  if (!validateTokenBeforeRequest()) {
+    return Promise.reject({ 
+      status: 401,
+      data: { detail: 'Authentication required' }
+    });
   }
 
   try {
     const apiUrl = process.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
-    const response = await axios.get(`${apiUrl}/medical-records/patient/me`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-    });
-    return response;
+    const response = await authenticatedFetch(`${apiUrl}/medical-records/patient/me`);
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ detail: 'Request failed' }));
+      return Promise.reject({
+        status: response.status,
+        data: errorData
+      });
+    }
+    
+    const data = await response.json();
+    return { data }; // Mimic axios response structure
   } catch (error) {
-    console.error('Failed to fetch medical records:', error.response || error.message);
-    // Return the error response from axios, or a custom error object if no response
-    return Promise.reject(error.response || { 
-      status: 500, // or some other default error code
-      data: { detail: 'An unexpected error occurred while fetching records.' } 
+    console.error('Failed to fetch medical records:', error.message);
+    return Promise.reject({ 
+      status: 500,
+      data: { detail: error.message || 'An unexpected error occurred while fetching records.' } 
     });
   }
 };
@@ -39,29 +46,39 @@ export const getMyMedicalRecords = async () => {
  * @returns {Promise<object>} The response from the server.
  */
 export const grantAccessToRecord = async (recordId, doctorAddress) => {
-  const token = getToken();
-  if (!token) {
-    return Promise.reject('No token found');
+  // Validate token before making request
+  if (!validateTokenBeforeRequest()) {
+    return Promise.reject({ 
+      status: 401,
+      data: { detail: 'Authentication required' }
+    });
   }
 
   try {
-const apiUrl = process.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
-    const response = await axios.post(
+    const apiUrl = process.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+    const response = await authenticatedFetch(
       `${apiUrl}/medical-records/${recordId}/grant-access`,
-      { doctor_address: doctorAddress },
       {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
+        method: 'POST',
+        body: JSON.stringify({ doctor_address: doctorAddress }),
       }
     );
-    return response.data; // Return data directly on success
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ detail: 'Request failed' }));
+      return Promise.reject({
+        status: response.status,
+        data: errorData
+      });
+    }
+    
+    const data = await response.json();
+    return data; // Return data directly on success
   } catch (error) {
-    console.error('Failed to grant access to medical record:', error.response || error.message);
-    return Promise.reject(error.response || { 
+    console.error('Failed to grant access to medical record:', error.message);
+    return Promise.reject({ 
       status: 500, 
-      data: { detail: 'An unexpected error occurred while granting access.' } 
+      data: { detail: error.message || 'An unexpected error occurred while granting access.' } 
     });
   }
 };
@@ -73,29 +90,39 @@ const apiUrl = process.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
  * @returns {Promise<object>} The response from the server.
  */
 export const revokeAccessFromRecord = async (recordId, doctorAddress) => {
-  const token = getToken();
-  if (!token) {
-    return Promise.reject('No token found');
+  // Validate token before making request
+  if (!validateTokenBeforeRequest()) {
+    return Promise.reject({ 
+      status: 401,
+      data: { detail: 'Authentication required' }
+    });
   }
 
   try {
-const apiUrl = process.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
-    const response = await axios.post(
+    const apiUrl = process.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+    const response = await authenticatedFetch(
       `${apiUrl}/medical-records/${recordId}/revoke-access`,
-      { doctor_address: doctorAddress },
       {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
+        method: 'POST',
+        body: JSON.stringify({ doctor_address: doctorAddress }),
       }
     );
-    return response.data; // Return data directly on success
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ detail: 'Request failed' }));
+      return Promise.reject({
+        status: response.status,
+        data: errorData
+      });
+    }
+    
+    const data = await response.json();
+    return data; // Return data directly on success
   } catch (error) {
-    console.error('Failed to revoke access from medical record:', error.response || error.message);
-    return Promise.reject(error.response || { 
+    console.error('Failed to revoke access from medical record:', error.message);
+    return Promise.reject({ 
       status: 500, 
-      data: { detail: 'An unexpected error occurred while revoking access.' } 
+      data: { detail: error.message || 'An unexpected error occurred while revoking access.' } 
     });
   }
 };
@@ -107,27 +134,35 @@ const apiUrl = process.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
  * @returns {Promise<object>} The response from the server, typically indicating access status.
  */
 export const checkRecordAccessForDoctor = async (recordId, doctorAddress) => {
-  const token = getToken();
-  if (!token) {
-    return Promise.reject('No token found');
+  // Validate token before making request
+  if (!validateTokenBeforeRequest()) {
+    return Promise.reject({ 
+      status: 401,
+      data: { detail: 'Authentication required' }
+    });
   }
 
   try {
-const apiUrl = process.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
-    const response = await axios.get(
-      `${apiUrl}/medical-records/${recordId}/check-access/${doctorAddress}`,
-      {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      }
+    const apiUrl = process.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+    const response = await authenticatedFetch(
+      `${apiUrl}/medical-records/${recordId}/check-access/${doctorAddress}`
     );
-    return response.data; // Return data directly on success
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ detail: 'Request failed' }));
+      return Promise.reject({
+        status: response.status,
+        data: errorData
+      });
+    }
+    
+    const data = await response.json();
+    return data; // Return data directly on success
   } catch (error) {
-    console.error('Failed to check access for medical record:', error.response || error.message);
-    return Promise.reject(error.response || { 
+    console.error('Failed to check access for medical record:', error.message);
+    return Promise.reject({ 
       status: 500, 
-      data: { detail: 'An unexpected error occurred while checking access.' } 
+      data: { detail: error.message || 'An unexpected error occurred while checking access.' } 
     });
   }
 };
