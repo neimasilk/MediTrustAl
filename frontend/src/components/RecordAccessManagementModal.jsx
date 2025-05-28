@@ -199,44 +199,4 @@ const RecordAccessManagementModal = ({ open, onClose, record }) => {
 };
 
 export default RecordAccessManagementModal;
-                sx={{
-                  position: 'absolute',
-                  top: '50%',
-                  left: '50%',
-                  marginTop: '-12px',
-                  marginLeft: '-12px',
-                }}
-              />
-            )}
-          </Button>
-          {message.text && (
-            <Typography 
-              color={message.type === 'success' ? 'green' : 'error'} 
-              sx={{ mt: 2 }}
-            >
-              {message.text}
-            </Typography>
-          )}
-        </Box>
 
-        {/* Placeholder for Revoke Access and Current Access List */}
-        <Box mt={3} p={2} border={1} borderColor="grey.300" borderRadius={1}>
-            <Typography variant="subtitle1" gutterBottom>
-                Future Features
-            </Typography>
-            <Typography variant="body2">
-                Revoke access and view current access list functionality will be implemented here.
-            </Typography>
-        </Box>
-
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} color="secondary">
-          Close
-        </Button>
-      </DialogActions>
-    </Dialog>
-  );
-};
-
-export default RecordAccessManagementModal;

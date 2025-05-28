@@ -41,7 +41,14 @@ const DashboardPage = () => {
         const response = await getMyMedicalRecords();
         setRecords(response.data || []); // Ensure response.data is not undefined
       } catch (error) {
-        const errorMessage = error.data?.detail || error.message || 'Failed to fetch records';
+        let errorMessage = 'Failed to fetch records. Please try again later.';
+        if (error.data && error.data.detail) {
+          errorMessage = error.data.detail;
+        } else if (error.message) {
+          errorMessage = error.message;
+        } else if (error.status) {
+          errorMessage = `Error: ${error.status} - Failed to fetch records.`;
+        }
         setErrorRecords(errorMessage);
         if (error.status === 401 || error.status === 403 || error.message === 'No token found') {
           // If unauthorized or token is invalid/missing, logout user
@@ -146,9 +153,9 @@ const DashboardPage = () => {
         )}
 
         {!isLoadingRecords && !errorRecords && records.length === 0 && (
-          <Typography sx={{ mt: 4 }}>
-            You have no medical records.
-          </Typography>
+          <Alert severity="info" sx={{ mt: 4, width: '100%' }}>
+            You currently have no medical records available.
+          </Alert>
         )}
       </Box>
       {selectedRecord && (

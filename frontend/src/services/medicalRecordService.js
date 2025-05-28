@@ -14,7 +14,8 @@ export const getMyMedicalRecords = async () => {
   }
 
   try {
-    const response = await axios.get('http://localhost:8000/api/v1/medical-records/patient/me', {
+    const apiUrl = process.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+    const response = await axios.get(`${apiUrl}/medical-records/patient/me`, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
@@ -44,8 +45,9 @@ export const grantAccessToRecord = async (recordId, doctorAddress) => {
   }
 
   try {
+const apiUrl = process.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
     const response = await axios.post(
-      `http://localhost:8000/api/v1/medical-records/${recordId}/grant-access`,
+      `${apiUrl}/medical-records/${recordId}/grant-access`,
       { doctor_address: doctorAddress },
       {
         headers: {
@@ -77,8 +79,9 @@ export const revokeAccessFromRecord = async (recordId, doctorAddress) => {
   }
 
   try {
+const apiUrl = process.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
     const response = await axios.post(
-      `http://localhost:8000/api/v1/medical-records/${recordId}/revoke-access`,
+      `${apiUrl}/medical-records/${recordId}/revoke-access`,
       { doctor_address: doctorAddress },
       {
         headers: {
@@ -110,8 +113,9 @@ export const checkRecordAccessForDoctor = async (recordId, doctorAddress) => {
   }
 
   try {
+const apiUrl = process.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
     const response = await axios.get(
-      `http://localhost:8000/api/v1/medical-records/${recordId}/check-access/${doctorAddress}`,
+      `${apiUrl}/medical-records/${recordId}/check-access/${doctorAddress}`,
       {
         headers: {
           'Authorization': `Bearer ${token}`,

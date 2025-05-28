@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from enum import Enum as PyEnum
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict, validator
+from pydantic import BaseModel, ConfigDict, field_validator
 from sqlalchemy import Column, DateTime, ForeignKey, String, Enum as SQLEnum, LargeBinary
 from sqlalchemy.dialects.postgresql import JSONB, UUID as PGUUID
 from sqlalchemy.orm import relationship
@@ -65,7 +65,7 @@ class MedicalRecordDetailResponse(MedicalRecordResponse):
     raw_data: Optional[str] = None
 
 
-from pydantic import BaseModel, ConfigDict, validator # Added validator
+from pydantic import BaseModel, ConfigDict, field_validator # Added field_validator
 
 # ... (rest of the existing imports) ...
 
@@ -78,7 +78,8 @@ from pydantic import BaseModel, ConfigDict, validator # Added validator
 class GrantAccessRequest(BaseModel):
     doctor_address: str
 
-    @validator('doctor_address')
+    @field_validator('doctor_address')
+    @classmethod
     def validate_doctor_address(cls, v: str) -> str:
         # Basic validation for Ethereum address format (0x followed by 40 hex chars)
         # More robust validation can be done using Web3.is_address if web3 is easily available here

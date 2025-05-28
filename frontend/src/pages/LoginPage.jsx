@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { Container, Box, Typography, TextField, Button, Alert, CircularProgress } from '@mui/material';
+import { Container, Box, Typography, TextField, Button, Alert, CircularProgress, Link } from '@mui/material';
 import * as authService from '../services/authService';
 import { loginStart, loginSuccess, loginFailure } from '../store/slices/authSlice';
 // tokenManager is not directly used here anymore for saving, Redux handles it.
@@ -30,11 +30,23 @@ const LoginPage = () => {
         dispatch(loginSuccess({ token: response.data.access_token, user: response.data.user || null }));
         navigate('/dashboard');
       } else {
-        const errorMessage = response?.data?.detail || response?.data?.message || 'Login failed. Please check your credentials.';
+        let errorMessage = 'Login failed. Please check your credentials.';
+        if (response && response.data && (response.data.detail || response.data.message)) {
+          errorMessage = response.data.detail || response.data.message;
+        } else if (response && response.status) {
+          errorMessage = `Login failed with status: ${response.status}`;
+        }
         dispatch(loginFailure({ error: errorMessage }));
       }
     } catch (err) {
-      const errorMessage = err.response?.data?.detail || err.response?.data?.message || err.message || 'An unexpected error occurred during login.';
+      let errorMessage = 'An unexpected error occurred during login.';
+      if (err.response && err.response.data && (err.response.data.detail || err.response.data.message)) {
+        errorMessage = err.response.data.detail || err.response.data.message;
+      } else if (err.response && err.response.status) {
+        errorMessage = `Error: ${err.response.status} - ${err.response.statusText}`;
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
       dispatch(loginFailure({ error: errorMessage }));
     }
   };
@@ -82,7 +94,7 @@ const LoginPage = () => {
           {error && (
             <Alert severity="error" sx={{ mt: 2, width: '100%' }}>
               {/* Ensure error is a string if it's an object */}
-              {typeof error === 'object' ? JSON.stringify(error) : error}
+              {error}
             </Alert>
           )}
           <Button
@@ -94,6 +106,11 @@ const LoginPage = () => {
           >
             {isLoading ? <CircularProgress size={24} /> : 'Login'}
           </Button>
+          <Box sx={{ mt: 2, textAlign: 'center' }}>
+            <Link href="/register" variant="body2">
+              {"Don't have an account? Sign Up"}
+            </Link>
+          </Box>
         </Box>
       </Box>
     </Container>
