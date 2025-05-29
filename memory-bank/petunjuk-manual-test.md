@@ -1,314 +1,314 @@
-# Petunjuk Manual Test untuk Frontend Patient Portal
+# Manual Test Instructions for Frontend Patient Portal
 
-Dokumen ini berisi langkah-langkah untuk melakukan tes manual pada fungsionalitas frontend, dengan fokus awal pada Halaman Login (Mockup-01) dan Halaman Registrasi (Mockup-02).
+This document contains steps for manually testing frontend functionality, with an initial focus on the Login Page (Mockup-01) and Registration Page (Mockup-02).
 
-**Catatan Penting:** Semua tes backend otomatis telah berhasil dijalankan. Fokus pengujian manual saat ini adalah pada verifikasi implementasi frontend.
+**Important Note:** All automated backend tests have passed successfully. The current focus of manual testing is on verifying the frontend implementation.
 
-## Prerequisites (Persiapan Awal):
+## Prerequisites (Initial Preparation):
 
-1.  **Backend Server Berjalan:**
-    *   Pastikan server backend FastAPI sudah berjalan. Biasanya dijalankan dengan perintah seperti `python -m src.app.main` (jika di root) atau `python -m app.main` dari dalam direktori `src/`.
-    *   Verifikasi backend dapat diakses, misalnya di `http://localhost:8000/docs`.
+1.  **Backend Server Running:**
+    *   Ensure the FastAPI backend server is running. Usually started with a command like `python -m src.app.main` (if in root) or `python -m app.main` from within the `src/` directory.
+    *   Verify the backend is accessible, for example, at `http://localhost:8000/docs`.
 
-2.  **Frontend Development Server Berjalan:**
-    *   Pastikan server development frontend Vite sudah berjalan.
-    *   Masuk ke direktori `frontend` (`cd frontend`).
-    *   Jalankan dengan perintah `npm run dev`.
-    *   Frontend akan tersedia di `http://localhost:5173` (atau port lain jika 5173 sudah digunakan).
+2.  **Frontend Development Server Running:**
+    *   Ensure the Vite frontend development server is running.
+    *   Navigate to the `frontend` directory (`cd frontend`).
+    *   Run with the command `npm run dev`.
+    *   The frontend will be available at `http://localhost:5173` (or another port if 5173 is already in use).
 
-3.  **Data Pengguna (User):**
-    *   Siapkan setidaknya dua akun pasien (Pasien A, Pasien B) dan dua akun dokter (Dokter X, Dokter Y) yang sudah terdaftar di sistem. Pastikan Dokter X dan Dokter Y memiliki alamat blockchain yang valid dan terkonfigurasi di database.
-    *   Anda bisa mendaftarkan pengguna baru melalui endpoint API backend (`POST /api/v1/auth/register`) menggunakan tools seperti Postman atau curl.
-    *   Catat username dan password semua pengguna tersebut untuk login.
+3.  **User Data:**
+    *   Prepare at least two patient accounts (Patient A, Patient B) and two doctor accounts (Doctor X, Doctor Y) already registered in the system. Ensure Doctor X and Doctor Y have valid blockchain addresses configured in the database.
+    *   You can register new users via the backend API endpoint (`POST /api/v1/auth/register`) using tools like Postman or curl.
+    *   Note down the username and password for all these users for login.
 
-4.  **Data Rekam Medis (Opsional):**
-    *   Untuk menguji tampilan daftar rekam medis di dashboard, pengguna yang login sebaiknya memiliki beberapa data rekam medis.
-    *   Jika tidak ada, dashboard diharapkan menampilkan pesan "Anda belum memiliki rekam medis" atau sejenisnya. Anda bisa membuat rekam medis melalui endpoint API backend (`POST /api/v1/medical-records`) atas nama pengguna yang akan login. Pastikan rekam medis ini memiliki `data_hash`.
+4.  **Medical Record Data (Optional):**
+    *   To test the display of the medical records list on the dashboard, the logged-in user should ideally have some medical record data.
+    *   If not, the dashboard is expected to display a message like "You do not have any medical records yet" or similar. You can create medical records via the backend API endpoint (`POST /api/v1/medical-records`) on behalf of the user who will log in. Ensure these medical records have a `data_hash`.
 
-5.  **Akses Database:**
-    *   Siapkan akses ke database backend untuk memverifikasi entri tabel `audit_data_access_logs`.
+5.  **Database Access:**
+    *   Prepare access to the backend database to verify entries in the `audit_data_access_logs` table.
 
-## Test Cases Frontend:
+## Frontend Test Cases:
 
-## A. Test Cases Frontend: Halaman Login (Mockup-01)
+## A. Frontend Test Cases: Login Page (Mockup-01)
 
-### A.1. Tampilan Halaman Login (Login Page UI)
+### A.1. Login Page UI Display
 
-*   **Tindakan:**
-    1.  Buka browser (misalnya Chrome, Firefox).
-    2.  Navigasi ke alamat frontend, contoh: `http://localhost:5173`.
-*   **Hasil yang Diharapkan:**
-    *   Anda akan secara otomatis diarahkan ke halaman `/login`.
-    *   Halaman login harus menampilkan:
-        *   Judul (misalnya, "Login" atau "Masuk").
-        *   Input field untuk "Username or Email".
-        *   Input field untuk "Password".
-        *   Tombol "Login" (atau "Masuk").
+*   **Actions:**
+    1.  Open a browser (e.g., Chrome, Firefox).
+    2.  Navigate to the frontend address, e.g., `http://localhost:5173`.
+*   **Expected Results:**
+    *   You will be automatically redirected to the `/login` page.
+    *   The login page should display:
+        *   A title (e.g., "Login" or "Sign In").
+        *   An input field for "Username or Email".
+        *   An input field for "Password".
+        *   A "Login" (or "Sign In") button.
 
-### A.2. Login dengan Kredensial Tidak Valid
+### A.2. Login with Invalid Credentials
 
-*   **Tindakan:**
-    1.  Di halaman login, masukkan kombinasi username/email dan password yang salah atau tidak terdaftar.
-    2.  Klik tombol "Login".
-*   **Hasil yang Diharapkan:**
-    *   Sebuah pesan error akan ditampilkan di halaman login (misalnya, "Login Gagal. Periksa kembali username/email dan password Anda," atau pesan error dari backend).
-    *   Anda tetap berada di halaman `/login`.
-    *   Periksa _browser console_ (Developer Tools > Console): tidak boleh ada error fatal yang menghentikan aplikasi. Error terkait respons API (misalnya 401 atau 400) boleh ada.
+*   **Actions:**
+    1.  On the login page, enter an incorrect or unregistered username/email and password combination.
+    2.  Click the "Login" button.
+*   **Expected Results:**
+    *   An error message will be displayed on the login page (e.g., "Login Failed. Please check your username/email and password," or the error message from the backend).
+    *   You remain on the `/login` page.
+    *   Check the browser console (Developer Tools > Console): there should be no fatal errors stopping the application. API response errors (e.g., 401 or 400) are acceptable.
 
-### A.3. Login dengan Kredensial Valid
+### A.3. Login with Valid Credentials
 
-*   **Tindakan:**
-    1.  Di halaman login, masukkan username/email dan password yang benar untuk Pasien A.
-    2.  Klik tombol "Login".
-*   **Hasil yang Diharapkan:**
-    *   Anda akan diarahkan ke halaman `/dashboard`.
-    *   Buka Developer Tools > Application > Local Storage: sebuah item `access_token` (atau nama serupa yang didefinisikan di `tokenManager.js`) harus ada dan berisi token JWT.
+*   **Actions:**
+    1.  On the login page, enter the correct username/email and password for Patient A.
+    2.  Click the "Login" button.
+*   **Expected Results:**
+    *   You will be redirected to the `/dashboard` page.
+    *   Open Developer Tools > Application > Local Storage: an item `access_token` (or a similar name defined in `tokenManager.js`) should exist and contain a JWT token.
 
-### A.4. Tampilan Halaman Dashboard (Setelah Login)
+### A.4. Dashboard Page Display (After Login)
 
-*   **Tindakan:**
-    1.  Setelah berhasil login sebagai Pasien A, Anda berada di halaman `/dashboard`.
-*   **Hasil yang Diharapkan:**
-    *   Sebuah pesan selamat datang ditampilkan (misalnya, "Selamat Datang di Dashboard Anda, [username Pasien A]").
-    *   Tombol "Logout" (atau "Keluar") terlihat.
-    *   **Jika Pasien A memiliki rekam medis:**
-        *   Sebuah tabel atau daftar rekam medis akan ditampilkan.
-        *   Kolom yang ada minimal: ID Rekam Medis, Tipe Rekam Medis, Tanggal Dibuat (terformat), Hash Data, dan tombol/ikon "Kelola Akses".
-        *   Data yang ditampilkan harus sesuai dengan rekam medis milik Pasien A.
-    *   **Jika Pasien A tidak memiliki rekam medis:**
-        *   Pesan seperti "Anda belum memiliki rekam medis" atau "Tidak ada data rekam medis" akan ditampilkan.
+*   **Actions:**
+    1.  After successfully logging in as Patient A, you are on the `/dashboard` page.
+*   **Expected Results:**
+    *   A welcome message is displayed (e.g., "Welcome to Your Dashboard, [Patient A's username]").
+    *   A "Logout" (or "Sign Out") button is visible.
+    *   **If Patient A has medical records:**
+        *   A table or list of medical records will be displayed.
+        *   Minimum columns: Record ID, Record Type, Date Created (formatted), Data Hash, and a "Manage Access" button/icon.
+        *   The data displayed must correspond to Patient A's medical records.
+    *   **If Patient A has no medical records:**
+        *   A message like "You do not have any medical records yet" or "No medical record data" will be displayed.
 
-### A.5. Akses Rute Terproteksi (Dashboard)
+### A.5. Accessing Protected Route (Dashboard)
 
-*   **Tindakan (Ketika Belum Login):**
-    1.  Pastikan Anda sudah logout atau buka _incognito window_ baru.
-    2.  Coba akses langsung ke `http://localhost:5173/dashboard`.
-*   **Hasil yang Diharapkan (Ketika Belum Login):**
-    *   Anda akan secara otomatis diarahkan kembali ke halaman `/login`.
+*   **Actions (When Not Logged In):**
+    1.  Ensure you are logged out or open a new incognito window.
+    2.  Try accessing `http://localhost:5173/dashboard` directly.
+*   **Expected Results (When Not Logged In):**
+    *   You will be automatically redirected back to the `/login` page.
 
-*   **Tindakan (Ketika Sudah Login):**
-    1.  Login ke aplikasi sebagai Pasien A sehingga Anda berada di halaman `/dashboard`.
-    2.  Refresh halaman `/dashboard` (tekan F5 atau tombol refresh browser).
-*   **Hasil yang Diharapkan (Ketika Sudah Login):**
-    *   Anda tetap berada di halaman `/dashboard`.
-    *   Data di dashboard (termasuk daftar rekam medis) akan dimuat ulang dengan benar.
+*   **Actions (When Logged In):**
+    1.  Log in to the application as Patient A, so you are on the `/dashboard` page.
+    2.  Refresh the `/dashboard` page (press F5 or the browser's refresh button).
+*   **Expected Results (When Logged In):**
+    *   You remain on the `/dashboard` page.
+    *   Data on the dashboard (including the list of medical records) will reload correctly.
 
-### A.6. Fungsionalitas Logout
+### A.6. Logout Functionality
 
-## B. Test Cases Frontend: Halaman Registrasi (Mockup-02)
+## B. Frontend Test Cases: Registration Page (Mockup-02)
 
-### B.1. Tampilan Halaman Registrasi (Registration Page UI)
+### B.1. Registration Page UI Display
 
-*   **Tindakan:**
-    1.  Buka browser (misalnya Chrome, Firefox).
-    2.  Navigasi ke alamat frontend, lalu klik link "Daftar di sini" dari halaman login, atau langsung ke `http://localhost:5173/register`.
-*   **Hasil yang Diharapkan:**
-    *   Anda akan berada di halaman `/register`.
-    *   Halaman registrasi harus menampilkan:
-        *   Judul (misalnya, "Buat Akun Baru" atau "Registrasi").
-        *   Input field untuk "Email".
-        *   Input field untuk "Username".
-        *   Input field untuk "Nama Lengkap".
-        *   Input field untuk "Password".
-        *   Input field untuk "Konfirmasi Password".
-        *   (Opsional, jika ada di UI) Input field atau pilihan untuk "Role" (misalnya, default ke 'patient').
-        *   (Opsional, jika ada di UI) Input field untuk "Alamat Blockchain".
-        *   Tombol "Daftar" (atau "Register").
-        *   Link ke halaman login (misalnya, "Sudah punya akun? Login di sini").
+*   **Actions:**
+    1.  Open a browser (e.g., Chrome, Firefox).
+    2.  Navigate to the frontend address, then click the "Register here" link from the login page, or go directly to `http://localhost:5173/register`.
+*   **Expected Results:**
+    *   You will be on the `/register` page.
+    *   The registration page should display:
+        *   A title (e.g., "Create New Account" or "Register").
+        *   An input field for "Email".
+        *   An input field for "Username".
+        *   An input field for "Full Name".
+        *   An input field for "Password".
+        *   An input field for "Confirm Password".
+        *   (Optional, if in UI) An input field or selection for "Role" (e.g., defaults to 'patient').
+        *   (Optional, if in UI) An input field for "Blockchain Address".
+        *   A "Register" button.
+        *   A link to the login page (e.g., "Already have an account? Login here").
 
-### B.2. Registrasi dengan Data Tidak Valid atau Tidak Lengkap
+### B.2. Registration with Invalid or Incomplete Data
 
-*   **Tindakan (Password Tidak Cocok):**
-    1.  Di halaman registrasi, isi semua field dengan data valid, namun masukkan password yang berbeda di field "Password" dan "Konfirmasi Password".
-    2.  Klik tombol "Daftar".
-*   **Hasil yang Diharapkan (Password Tidak Cocok):**
-    *   Sebuah pesan error validasi frontend ditampilkan (misalnya, "Password dan Konfirmasi Password tidak cocok.").
-    *   Anda tetap berada di halaman `/register`.
-    *   Tidak ada request yang dikirim ke backend.
+*   **Actions (Passwords Do Not Match):**
+    1.  On the registration page, fill all fields with valid data, but enter different passwords in the "Password" and "Confirm Password" fields.
+    2.  Click the "Register" button.
+*   **Expected Results (Passwords Do Not Match):**
+    *   A frontend validation error message is displayed (e.g., "Password and Confirm Password do not match.").
+    *   You remain on the `/register` page.
+    *   No request is sent to the backend.
 
-*   **Tindakan (Email Tidak Valid):**
-    1.  Di halaman registrasi, masukkan format email yang tidak valid (misalnya, "test@test").
-    2.  Isi field lain dengan benar.
-    3.  Klik tombol "Daftar".
-*   **Hasil yang Diharapkan (Email Tidak Valid):**
-    *   Sebuah pesan error validasi frontend ditampilkan (misalnya, "Format email tidak valid.").
-    *   Anda tetap berada di halaman `/register`.
+*   **Actions (Invalid Email):**
+    1.  On the registration page, enter an invalid email format (e.g., "test@test").
+    2.  Fill other fields correctly.
+    3.  Click the "Register" button.
+*   **Expected Results (Invalid Email):**
+    *   A frontend validation error message is displayed (e.g., "Invalid email format.").
+    *   You remain on the `/register` page.
 
-*   **Tindakan (Field Wajib Kosong):**
-    1.  Kosongkan salah satu field wajib (misalnya, Username).
-    2.  Isi field lain dengan benar.
-    3.  Klik tombol "Daftar".
-*   **Hasil yang Diharapkan (Field Wajib Kosong):**
-    *   Sebuah pesan error validasi frontend ditampilkan (misalnya, "Username tidak boleh kosong.").
-    *   Anda tetap berada di halaman `/register`.
+*   **Actions (Required Field Empty):**
+    1.  Leave a required field empty (e.g., Username).
+    2.  Fill other fields correctly.
+    3.  Click the "Register" button.
+*   **Expected Results (Required Field Empty):**
+    *   A frontend validation error message is displayed (e.g., "Username cannot be empty.").
+    *   You remain on the `/register` page.
 
-### B.3. Registrasi dengan Username atau Email yang Sudah Ada
+### B.3. Registration with Existing Username or Email
 
-*   **Persiapan:**
-    *   Pastikan ada pengguna yang sudah terdaftar dengan username `existinguser` dan email `existing@example.com`.
-*   **Tindakan (Username Sudah Ada):**
-    1.  Di halaman registrasi, masukkan `existinguser` di field Username.
-    2.  Isi field lain dengan data baru yang valid.
-    3.  Klik tombol "Daftar".
-*   **Hasil yang Diharapkan (Username Sudah Ada):**
-    *   Sebuah pesan error dari backend ditampilkan di UI (misalnya, "Username sudah digunakan." atau "User with this username already exists").
-    *   Anda tetap berada di halaman `/register`.
+*   **Preparation:**
+    *   Ensure a user is already registered with the username `existinguser` and email `existing@example.com`.
+*   **Actions (Username Already Exists):**
+    1.  On the registration page, enter `existinguser` in the Username field.
+    2.  Fill other fields with new, valid data.
+    3.  Click the "Register" button.
+*   **Expected Results (Username Already Exists):**
+    *   An error message from the backend is displayed in the UI (e.g., "Username already taken." or "User with this username already exists").
+    *   You remain on the `/register` page.
 
-*   **Tindakan (Email Sudah Ada):**
-    1.  Di halaman registrasi, masukkan `existing@example.com` di field Email.
-    2.  Isi field lain dengan data baru yang valid.
-    3.  Klik tombol "Daftar".
-*   **Hasil yang Diharapkan (Email Sudah Ada):**
-    *   Sebuah pesan error dari backend ditampilkan di UI (misalnya, "Email sudah terdaftar." atau "User with this email already exists").
-    *   Anda tetap berada di halaman `/register`.
+*   **Actions (Email Already Exists):**
+    1.  On the registration page, enter `existing@example.com` in the Email field.
+    2.  Fill other fields with new, valid data.
+    3.  Click the "Register" button.
+*   **Expected Results (Email Already Exists):**
+    *   An error message from the backend is displayed in the UI (e.g., "Email already registered." or "User with this email already exists").
+    *   You remain on the `/register` page.
 
-### B.4. Registrasi Berhasil
+### B.4. Successful Registration
 
-*   **Tindakan:**
-    1.  Di halaman registrasi, isi semua field dengan data yang valid dan unik (belum terdaftar).
-    2.  Pastikan password dan konfirmasi password cocok.
-    3.  Klik tombol "Daftar".
-*   **Hasil yang Diharapkan:**
-    *   Sebuah pesan sukses ditampilkan di UI (misalnya, "Registrasi berhasil! Silakan login.").
-    *   Anda diarahkan ke halaman `/login`.
-    *   Verifikasi di database backend: pengguna baru telah dibuat di tabel `users` dengan data yang sesuai.
-    *   (Opsional, jika ada) Verifikasi di blockchain (Ganache): jika registrasi juga mendaftarkan user di `UserRegistry`, pastikan entri baru ada.
+*   **Actions:**
+    1.  On the registration page, fill all fields with valid and unique (unregistered) data.
+    2.  Ensure password and confirm password match.
+    3.  Click the "Register" button.
+*   **Expected Results:**
+    *   A success message is displayed in the UI (e.g., "Registration successful! Please login.").
+    *   You are redirected to the `/login` page.
+    *   Verify in the backend database: the new user has been created in the `users` table with the corresponding data.
+    *   (Optional, if applicable) Verify on the blockchain (Ganache): if registration also registers the user in `UserRegistry`, ensure a new entry exists.
 
-### B.5. Link ke Halaman Login
+### B.5. Link to Login Page
 
-*   **Tindakan:**
-    1.  Di halaman registrasi, klik link "Sudah punya akun? Login di sini" (atau teks serupa).
-*   **Hasil yang Diharapkan:**
-    *   Anda diarahkan ke halaman `/login`.
+*   **Actions:**
+    1.  On the registration page, click the "Already have an account? Login here" link (or similar text).
+*   **Expected Results:**
+    *   You are redirected to the `/login` page.
 
-## C. Test Cases Frontend Lanjutan (Setelah Login & Registrasi Stabil)
-(Bagian ini akan diisi kemudian setelah M01 dan M02 selesai dan stabil)
+## C. Advanced Frontend Test Cases (After Login & Registration are Stable)
+(This section will be filled in later after M01 and M02 are completed and stable)
 
 
-*   **Tindakan:**
-    1.  Pastikan Anda sedang login dan berada di halaman `/dashboard`.
-    2.  Klik tombol "Logout".
-*   **Hasil yang Diharapkan:**
-    *   Anda akan diarahkan kembali ke halaman `/login`.
-    *   Buka Developer Tools > Application > Local Storage: item `access_token` harus sudah terhapus.
-    *   Mencoba mengakses `http://localhost:5173/dashboard` secara langsung setelah logout akan mengarahkan Anda kembali ke `/login`.
+*   **Actions:**
+    1.  Ensure you are logged in and on the `/dashboard` page.
+    2.  Click the "Logout" button.
+*   **Expected Results:**
+    *   You will be redirected back to the `/login` page.
+    *   Open Developer Tools > Application > Local Storage: the `access_token` item should be removed.
+    *   Attempting to access `http://localhost:5173/dashboard` directly after logout will redirect you back to `/login`.
 
 ### 7. UI Consent Management - Grant Access (Test Case 5.1.3)
 
-*   **Persiapan:**
-    *   Pastikan Pasien A memiliki setidaknya satu rekam medis.
-    *   Pastikan Dokter Y memiliki akun dan alamat blockchain yang valid.
-*   **Tindakan:**
-    1.  Login sebagai Pasien A di frontend.
-    2.  Navigasi ke Dashboard.
-    3.  Untuk salah satu rekam medis milik Pasien A, klik tombol "Kelola Akses" (atau ikon serupa) untuk membuka modal "Manage Access for Record: [Record ID]".
-    4.  Dalam modal, masukkan alamat blockchain Dokter Y yang valid di field "Alamat Blockchain Dokter".
-    5.  Klik tombol "Berikan Akses".
-*   **Hasil yang Diharapkan:**
-    *   UI menampilkan indikator loading pada tombol "Berikan Akses".
-    *   Setelah beberapa saat, UI menampilkan pesan sukses (misalnya, "Akses berhasil diberikan kepada [Alamat Dokter Y]").
-    *   Input field alamat dokter mungkin dikosongkan atau tetap berisi alamat Dokter Y.
-    *   **Verifikasi Backend:** Cek tabel `audit_data_access_logs`. Harus ada entri baru dengan `actor_user_id` = ID Pasien A, `owner_user_id` = ID Pasien A, `action_type` = `'GRANT_ACCESS_SUCCESS'`, `target_address` = alamat Dokter Y, dan IP address.
-*   **Tindakan (Input Tidak Valid):**
-    1.  Di modal yang sama, kosongkan field "Alamat Blockchain Dokter".
-    2.  Klik tombol "Berikan Akses".
-*   **Hasil yang Diharapkan (Input Tidak Valid):**
-    *   UI menampilkan pesan error validasi (misalnya, "Alamat dokter tidak boleh kosong.").
-*   **Tindakan (Input Alamat Tidak Valid Format):**
-    1.  Di modal yang sama, masukkan alamat blockchain yang tidak valid formatnya (misal, "0x123").
-    2.  Klik tombol "Berikan Akses".
-*   **Hasil yang Diharapkan (Input Alamat Tidak Valid Format):**
-    *   Jika validasi frontend ada, tampilkan error. Jika tidak, backend akan mengembalikan error 422 atau 400. Pesan error API (misal, "Invalid Ethereum address format") harus ditampilkan di UI.
+*   **Preparation:**
+    *   Ensure Patient A has at least one medical record.
+    *   Ensure Doctor Y has an account and a valid blockchain address.
+*   **Actions:**
+    1.  Log in as Patient A on the frontend.
+    2.  Navigate to the Dashboard.
+    3.  For one of Patient A's medical records, click the "Manage Access" button (or similar icon) to open the "Manage Access for Record: [Record ID]" modal.
+    4.  In the modal, enter Doctor Y's valid blockchain address in the "Doctor's Blockchain Address" field.
+    5.  Click the "Grant Access" button.
+*   **Expected Results:**
+    *   The UI displays a loading indicator on the "Grant Access" button.
+    *   After a moment, the UI displays a success message (e.g., "Access successfully granted to [Doctor Y's Address]").
+    *   The doctor's address input field might be cleared or remain filled with Doctor Y's address.
+    *   **Backend Verification:** Check the `audit_data_access_logs` table. There should be a new entry with `actor_user_id` = Patient A's ID, `owner_user_id` = Patient A's ID, `action_type` = `'GRANT_ACCESS_SUCCESS'`, `target_address` = Doctor Y's address, and the IP address.
+*   **Actions (Invalid Input):**
+    1.  In the same modal, clear the "Doctor's Blockchain Address" field.
+    2.  Click the "Grant Access" button.
+*   **Expected Results (Invalid Input):**
+    *   The UI displays a validation error message (e.g., "Doctor's address cannot be empty.").
+*   **Actions (Invalid Address Format Input):**
+    1.  In the same modal, enter an invalid blockchain address format (e.g., "0x123").
+    2.  Click the "Grant Access" button.
+*   **Expected Results (Invalid Address Format Input):**
+    *   If frontend validation exists, display an error. If not, the backend will return a 422 or 400 error. The API error message (e.g., "Invalid Ethereum address format") should be displayed in the UI.
 
 ### 8. UI Consent Management - Revoke Access (Test Case 5.1.4)
 
-*   **Persiapan:**
-    *   Pastikan Dokter Y sudah memiliki akses ke salah satu rekam medis Pasien A (misalnya dari hasil Test Case 5.1.3).
-*   **Tindakan:**
-    1.  Login sebagai Pasien A di frontend.
-    2.  Navigasi ke Dashboard.
-    3.  Buka modal "Kelola Akses" untuk rekam medis yang aksesnya telah diberikan kepada Dokter Y.
-    4.  Masukkan alamat blockchain Dokter Y di field "Alamat Blockchain Dokter".
-    5.  Klik tombol "Cabut Akses".
-*   **Hasil yang Diharapkan:**
-    *   UI menampilkan indikator loading pada tombol "Cabut Akses".
-    *   Setelah beberapa saat, UI menampilkan pesan sukses (misalnya, "Akses berhasil dicabut dari [Alamat Dokter Y]").
-    *   **Verifikasi Backend:** Cek tabel `audit_data_access_logs`. Harus ada entri baru dengan `actor_user_id` = ID Pasien A, `owner_user_id` = ID Pasien A, `action_type` = `'REVOKE_ACCESS_SUCCESS'`, `target_address` = alamat Dokter Y, dan IP address.
-*   **Tindakan (Input Tidak Valid):**
-    1.  Di modal yang sama, kosongkan field "Alamat Blockchain Dokter".
-    2.  Klik tombol "Cabut Akses".
-*   **Hasil yang Diharapkan (Input Tidak Valid):**
-    *   UI menampilkan pesan error validasi (misalnya, "Alamat dokter untuk dicabut tidak boleh kosong.").
+*   **Preparation:**
+    *   Ensure Doctor Y already has access to one of Patient A's medical records (e.g., from Test Case 5.1.3 results).
+*   **Actions:**
+    1.  Log in as Patient A on the frontend.
+    2.  Navigate to the Dashboard.
+    3.  Open the "Manage Access" modal for the medical record to which Doctor Y has access.
+    4.  Enter Doctor Y's blockchain address in the "Doctor's Blockchain Address" field.
+    5.  Click the "Revoke Access" button.
+*   **Expected Results:**
+    *   The UI displays a loading indicator on the "Revoke Access" button.
+    *   After a moment, the UI displays a success message (e.g., "Access successfully revoked from [Doctor Y's Address]").
+    *   **Backend Verification:** Check the `audit_data_access_logs` table. There should be a new entry with `actor_user_id` = Patient A's ID, `owner_user_id` = Patient A's ID, `action_type` = `'REVOKE_ACCESS_SUCCESS'`, `target_address` = Doctor Y's address, and the IP address.
+*   **Actions (Invalid Input):**
+    1.  In the same modal, clear the "Doctor's Blockchain Address" field.
+    2.  Click the "Revoke Access" button.
+*   **Expected Results (Invalid Input):**
+    *   The UI displays a validation error message (e.g., "Doctor's address to revoke cannot be empty.").
 
-## Test Cases Backend & API (Menggunakan Tools seperti Postman/curl):
+## Backend & API Test Cases (Using Tools like Postman/curl):
 
-### 1. Verifikasi Log Audit untuk `get_medical_record_detail` (Test Case 4.2.3)
+### 1. Audit Log Verification for `get_medical_record_detail` (Test Case 4.2.3)
 
-*   **Persiapan:**
-    *   Pasien A memiliki rekam medis (RM_A1).
-    *   Dokter X memiliki akses ke RM_A1 (diberikan sebelumnya atau sebagai bagian dari persiapan tes).
-    *   Dokter Y tidak memiliki akses ke RM_A1.
-*   **Tindakan 1: Pasien A akses rekam medisnya sendiri**
-    1.  Login sebagai Pasien A (dapatkan token).
-    2.  Panggil API `GET /api/v1/medical-records/{RM_A1_ID}` dengan token Pasien A.
-*   **Hasil yang Diharapkan 1:**
-    *   Respons sukses (200 OK) dengan detail RM_A1.
-    *   Cek tabel `audit_data_access_logs` di database: Entri baru dengan `actor_user_id` = ID Pasien A, `owner_user_id` = ID Pasien A, `record_id` = RM_A1_ID, `action_type` = `'VIEW_RECORD_SUCCESS'`, dan IP address pemanggil.
-*   **Tindakan 2: Dokter X (berhak) akses rekam medis Pasien A**
-    1.  Login sebagai Dokter X (dapatkan token).
-    2.  Panggil API `GET /api/v1/medical-records/{RM_A1_ID}` dengan token Dokter X.
-*   **Hasil yang Diharapkan 2:**
-    *   Respons sukses (200 OK) dengan detail RM_A1.
-    *   Cek tabel `audit_data_access_logs`: Entri baru dengan `actor_user_id` = ID Dokter X, `owner_user_id` = ID Pasien A, `record_id` = RM_A1_ID, `action_type` = `'VIEW_RECORD_SUCCESS'`, dan IP address pemanggil.
-*   **Tindakan 3: Dokter Y (tidak berhak) coba akses rekam medis Pasien A**
-    1.  Login sebagai Dokter Y (dapatkan token).
-    2.  Panggil API `GET /api/v1/medical-records/{RM_A1_ID}` dengan token Dokter Y.
-*   **Hasil yang Diharapkan 3:**
-    *   Respons gagal (403 Forbidden atau error lain yang sesuai jika akses blockchain gagal).
-    *   Cek tabel `audit_data_access_logs`: Entri baru dengan `actor_user_id` = ID Dokter Y, `owner_user_id` = ID Pasien A, `record_id` = RM_A1_ID, `action_type` sesuai skenario kegagalan (misalnya, `'VIEW_RECORD_FAILURE_FORBIDDEN'`, `'VIEW_RECORD_FAILURE_BC_CHECK_FAILED'`), dan IP address pemanggil.
+*   **Preparation:**
+    *   Patient A has a medical record (RM_A1).
+    *   Doctor X has access to RM_A1 (granted previously or as part of test prep).
+    *   Doctor Y does not have access to RM_A1.
+*   **Action 1: Patient A accesses their own medical record**
+    1.  Log in as Patient A (get token).
+    2.  Call API `GET /api/v1/medical-records/{RM_A1_ID}` with Patient A's token.
+*   **Expected Result 1:**
+    *   Successful response (200 OK) with RM_A1 details.
+    *   Check `audit_data_access_logs` table in the database: New entry with `actor_user_id` = Patient A's ID, `owner_user_id` = Patient A's ID, `record_id` = RM_A1_ID, `action_type` = `'VIEW_RECORD_SUCCESS'`, and caller's IP address.
+*   **Action 2: Doctor X (authorized) accesses Patient A's medical record**
+    1.  Log in as Doctor X (get token).
+    2.  Call API `GET /api/v1/medical-records/{RM_A1_ID}` with Doctor X's token.
+*   **Expected Result 2:**
+    *   Successful response (200 OK) with RM_A1 details.
+    *   Check `audit_data_access_logs` table: New entry with `actor_user_id` = Doctor X's ID, `owner_user_id` = Patient A's ID, `record_id` = RM_A1_ID, `action_type` = `'VIEW_RECORD_SUCCESS'`, and caller's IP address.
+*   **Action 3: Doctor Y (unauthorized) tries to access Patient A's medical record**
+    1.  Log in as Doctor Y (get token).
+    2.  Call API `GET /api/v1/medical-records/{RM_A1_ID}` with Doctor Y's token.
+*   **Expected Result 3:**
+    *   Failed response (403 Forbidden or other appropriate error if blockchain access fails).
+    *   Check `audit_data_access_logs` table: New entry with `actor_user_id` = Doctor Y's ID, `owner_user_id` = Patient A's ID, `record_id` = RM_A1_ID, `action_type` according to failure scenario (e.g., `'VIEW_RECORD_FAILURE_FORBIDDEN'`, `'VIEW_RECORD_FAILURE_BC_CHECK_FAILED'`), and caller's IP address.
 
-### 2. Verifikasi Log Audit untuk `grant_medical_record_access` (Test Case 4.2.4)
+### 2. Audit Log Verification for `grant_medical_record_access` (Test Case 4.2.4)
 
-*   **Persiapan:**
-    *   Pasien A memiliki rekam medis (RM_A2) yang belum diakseskan ke Dokter X.
-    *   Pasien B memiliki rekam medis (RM_B1).
-*   **Tindakan 1: Pasien A memberikan akses RM_A2 ke Dokter X**
-    1.  Login sebagai Pasien A (dapatkan token).
-    2.  Panggil API `POST /api/v1/medical-records/{RM_A2_ID}/grant-access` dengan token Pasien A dan payload `{"doctor_address": "ALAMAT_BLOCKCHAIN_DOKTER_X"}`.
-*   **Hasil yang Diharapkan 1:**
-    *   Respons sukses (200 OK).
-    *   Cek tabel `audit_data_access_logs`: Entri baru dengan `actor_user_id` = ID Pasien A, `owner_user_id` = ID Pasien A, `record_id` = RM_A2_ID, `action_type` = `'GRANT_ACCESS_SUCCESS'`, `target_address` = ALAMAT_BLOCKCHAIN_DOKTER_X, dan IP address pemanggil.
-*   **Tindakan 2: Pasien A coba memberikan akses RM_B1 (milik Pasien B) ke Dokter Y**
-    1.  Login sebagai Pasien A (dapatkan token).
-    2.  Panggil API `POST /api/v1/medical-records/{RM_B1_ID}/grant-access` dengan token Pasien A dan payload `{"doctor_address": "ALAMAT_BLOCKCHAIN_DOKTER_Y"}`.
-*   **Hasil yang Diharapkan 2:**
-    *   Respons gagal (403 Forbidden).
-    *   Cek tabel `audit_data_access_logs`: Entri baru dengan `actor_user_id` = ID Pasien A, `owner_user_id` = ID Pasien A (karena Pasien A adalah aktornya, owner_user_id di sini juga ID Pasien A, bukan Pasien B, karena audit log mencatat aksi dari `current_user`), `record_id` = RM_B1_ID, `action_type` = `'GRANT_ACCESS_FAILURE_FORBIDDEN'`.
+*   **Preparation:**
+    *   Patient A has a medical record (RM_A2) not yet accessed by Doctor X.
+    *   Patient B has a medical record (RM_B1).
+*   **Action 1: Patient A grants access to RM_A2 to Doctor X**
+    1.  Log in as Patient A (get token).
+    2.  Call API `POST /api/v1/medical-records/{RM_A2_ID}/grant-access` with Patient A's token and payload `{"doctor_address": "DOCTOR_X_BLOCKCHAIN_ADDRESS"}`.
+*   **Expected Result 1:**
+    *   Successful response (200 OK).
+    *   Check `audit_data_access_logs` table: New entry with `actor_user_id` = Patient A's ID, `owner_user_id` = Patient A's ID, `record_id` = RM_A2_ID, `action_type` = `'GRANT_ACCESS_SUCCESS'`, `target_address` = DOCTOR_X_BLOCKCHAIN_ADDRESS, and caller's IP address.
+*   **Action 2: Patient A tries to grant access to RM_B1 (Patient B's record) to Doctor Y**
+    1.  Log in as Patient A (get token).
+    2.  Call API `POST /api/v1/medical-records/{RM_B1_ID}/grant-access` with Patient A's token and payload `{"doctor_address": "DOCTOR_Y_BLOCKCHAIN_ADDRESS"}`.
+*   **Expected Result 2:**
+    *   Failed response (403 Forbidden).
+    *   Check `audit_data_access_logs` table: New entry with `actor_user_id` = Patient A's ID, `owner_user_id` = Patient A's ID (as Patient A is the actor, owner_user_id here is also Patient A's ID, not Patient B's, because the audit log records the action from `current_user`), `record_id` = RM_B1_ID, `action_type` = `'GRANT_ACCESS_FAILURE_FORBIDDEN'`.
 
-### 3. Verifikasi Log Audit untuk `revoke_medical_record_access` (Test Case 4.2.5)
+### 3. Audit Log Verification for `revoke_medical_record_access` (Test Case 4.2.5)
 
-*   **Persiapan:**
-    *   Pasien A memiliki rekam medis (RM_A2) yang aksesnya sudah diberikan ke Dokter X.
-*   **Tindakan: Pasien A mencabut akses RM_A2 dari Dokter X**
-    1.  Login sebagai Pasien A (dapatkan token).
-    2.  Panggil API `POST /api/v1/medical-records/{RM_A2_ID}/revoke-access` dengan token Pasien A dan payload `{"doctor_address": "ALAMAT_BLOCKCHAIN_DOKTER_X"}`.
-*   **Hasil yang Diharapkan:**
-    *   Respons sukses (200 OK).
-    *   Cek tabel `audit_data_access_logs`: Entri baru dengan `actor_user_id` = ID Pasien A, `owner_user_id` = ID Pasien A, `record_id` = RM_A2_ID, `action_type` = `'REVOKE_ACCESS_SUCCESS'`, `target_address` = ALAMAT_BLOCKCHAIN_DOKTER_X, dan IP address pemanggil.
+*   **Preparation:**
+    *   Patient A has a medical record (RM_A2) to which access has been granted to Doctor X.
+*   **Action: Patient A revokes access to RM_A2 from Doctor X**
+    1.  Log in as Patient A (get token).
+    2.  Call API `POST /api/v1/medical-records/{RM_A2_ID}/revoke-access` with Patient A's token and payload `{"doctor_address": "DOCTOR_X_BLOCKCHAIN_ADDRESS"}`.
+*   **Expected Result:**
+    *   Successful response (200 OK).
+    *   Check `audit_data_access_logs` table: New entry with `actor_user_id` = Patient A's ID, `owner_user_id` = Patient A's ID, `record_id` = RM_A2_ID, `action_type` = `'REVOKE_ACCESS_SUCCESS'`, `target_address` = DOCTOR_X_BLOCKCHAIN_ADDRESS, and caller's IP address.
 
-### 4. Verifikasi API Riwayat Akses Pasien (Test Case 4.2.6)
+### 4. Patient Access History API Verification (Test Case 4.2.6)
 
-*   **Persiapan:**
-    *   Pasien A sudah melakukan beberapa aksi yang menghasilkan log audit (misalnya, dari tes 1, 2, dan 3 di atas).
-*   **Tindakan:**
-    1.  Login sebagai Pasien A (dapatkan token).
-    2.  Panggil API `GET /api/v1/audit/my-record-access-history` dengan token Pasien A.
-*   **Hasil yang Diharapkan:**
-    *   Respons sukses (200 OK).
-    *   Body respons berisi daftar (array) log audit.
-    *   Setiap entri dalam daftar memiliki `owner_user_id` yang sama dengan ID Pasien A.
-    *   Verifikasi bahwa log-log yang relevan dari aksi-aksi sebelumnya (misalnya, `VIEW_RECORD_SUCCESS` oleh Pasien A sendiri, `VIEW_RECORD_SUCCESS` oleh Dokter X, `GRANT_ACCESS_SUCCESS` oleh Pasien A, `REVOKE_ACCESS_SUCCESS` oleh Pasien A) muncul dalam daftar dengan urutan timestamp terbaru di awal.
-    *   Cek parameter `skip` dan `limit` untuk fungsionalitas paginasi.
+*   **Preparation:**
+    *   Patient A has performed several actions resulting in audit logs (e.g., from tests 1, 2, and 3 above).
+*   **Action:**
+    1.  Log in as Patient A (get token).
+    2.  Call API `GET /api/v1/audit/my-record-access-history` with Patient A's token.
+*   **Expected Result:**
+    *   Successful response (200 OK).
+    *   Response body contains a list (array) of audit logs.
+    *   Each entry in the list has `owner_user_id` equal to Patient A's ID.
+    *   Verify that relevant logs from previous actions (e.g., `VIEW_RECORD_SUCCESS` by Patient A, `VIEW_RECORD_SUCCESS` by Doctor X, `GRANT_ACCESS_SUCCESS` by Patient A, `REVOKE_ACCESS_SUCCESS` by Patient A) appear in the list in reverse chronological order (newest first).
+    *   Check `skip` and `limit` parameters for pagination functionality.
 
 ---
 Jika ada masalah atau hasil yang tidak sesuai harapan, catat langkah-langkahnya, hasil yang didapat, dan hasil yang diharapkan untuk dilaporkan.

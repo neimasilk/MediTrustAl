@@ -1,32 +1,32 @@
-# **MediTrustAl \- MVP Implementation Plan (implementation-plan.md)**
+# **MediTrustAl - MVP Implementation Plan (implementation-plan.md)**
 
-## **0\. Introduction & Guiding Principles**
+## **0. Introduction & Guiding Principles**
 
-**Catatan:** Sebagian besar langkah implementasi fitur teknis dalam dokumen ini telah diselesaikan untuk MVP per tanggal 2025-05-28 (lihat `memory-bank/progress.md`). Dokumen ini kini berfungsi sebagai arsip perencanaan awal MVP dan referensi untuk standar API serta penanganan error.
+**Note:** Most of the technical feature implementation steps in this document have been completed for the MVP as of 2025-05-28 (see `memory-bank/progress.md`). This document now serves as an archive of the initial MVP planning and a reference for API standards and error handling.
 
 This document outlines the step-by-step plan for developing the Minimum Viable Product (MVP) of the MediTrustAl platform. This plan is intended for an AI developer (e.g., Claude Sonnet 3.7 Thinking in Cursor) and should be executed sequentially.
 
 **Key Principles for AI Developer:**
 
-* **Adherence to Documents:** Strictly follow the guidelines, requirements, and technology choices outlined in:  
-  * memory-bank/product-design-document.md (Product Requirements Document)  
-  * memory-bank/tech-stack.md (Tech Stack Recommendation)  
-  * memory-bank/coding-rules.md (Cursor Rules) \- especially the "Always" rules and modularity principles.  
-* **Modularity:** Implement features in a modular way, creating separate files and components as per the Cursor Rules.  
-* **Incremental Development:** Each step should result in a testable increment of functionality.  
-* **No Code in This Plan:** This document contains instructions and tests, not code.  
-* **Focus:** This plan focuses on the MVP features. Advanced features will be planned separately.  
-* **Testing:** After each step, the AI should wait for the human developer to validate the described tests before proceeding.  
+* **Adherence to Documents:** Strictly follow the guidelines, requirements, and technology choices outlined in:
+  * memory-bank/product-design-document.md (Product Requirements Document)
+  * memory-bank/tech-stack.md (Tech Stack Recommendation)
+  * memory-bank/coding-rules.md (Cursor Rules) - especially the "Always" rules and modularity principles.
+* **Modularity:** Implement features in a modular way, creating separate files and components as per the Cursor Rules.
+* **Incremental Development:** Each step should result in a testable increment of functionality.
+* **No Code in This Plan:** This document contains instructions and tests, not code.
+* **Focus:** This plan focuses on the MVP features. Advanced features will be planned separately.
+* **Testing:** After each step, the AI should wait for the human developer to validate the described tests before proceeding.
 * **Documentation:** After successful validation of a step, the AI will be instructed to update progress.md and architecture.md.
 
-## **1\. Phase 1: Core Backend Setup & Blockchain Foundation (MVP Focus)**
+## **1. Phase 1: Core Backend Setup & Blockchain Foundation (MVP Focus)**
 
 ### **Step 1.1: Project Setup and Basic Backend Structure**
 
 * **Instruction:**
   1. Initialize a new project directory structure as follows:
      ```
-     / (Root Repositori Anda)
+     / (Your Repository Root)
      ├── src/
      │   └── app/
      │       ├── api/      # For API endpoint definitions (e.g., status_routes.py)
@@ -89,7 +89,7 @@ This document outlines the step-by-step plan for developing the Minimum Viable P
 
 ### **Step 1.2: Basic Blockchain Network Setup (Local Development)**
 
-* **Instruction:**  
+* **Instruction:**
   1. Set up a local development instance of Ganache for the MVP phase:
      ```bash
      # Install Ganache globally
@@ -104,7 +104,7 @@ This document outlines the step-by-step plan for developing the Minimum Viable P
      * Timestamp of registration
   3. Use Hardhat to compile and deploy the smart contract to the local Ganache network.
   4. Write a backend service (blockchain_service.py) to connect to Ganache and interact with the deployed contract using Web3.py.
-* **Test:**  
+* **Test:**
   * Ganache network can be started and is accessible at http://127.0.0.1:8545
   * The UserRegistry smart contract is successfully compiled and deployed
   * The backend service can connect to Ganache and interact with the deployed contract
@@ -112,7 +112,7 @@ This document outlines the step-by-step plan for developing the Minimum Viable P
 
 ### **Step 1.3: User Identity and Basic Authentication (Application Layer)**
 
-* **Instruction:**  
+* **Instruction:**
   1. Implement a basic user registration endpoint in the application backend (e.g., /api/v1/auth/register). This endpoint should accept user details:
      ```json
      {
@@ -128,106 +128,106 @@ This document outlines the step-by-step plan for developing the Minimum Viable P
      * Generate DID using format: `did:meditrustal:{base58(sha256(user_id))}` where user_id is the UUID
      * Store in PostgreSQL with the UUID as primary key
   3. Invoke the blockchain service to register the user's DID and role by calling the registerUser function of the UserRegistry smart contract.
-  4. Implement a basic user login endpoint (e.g., /api/v1/auth/login) that validates credentials and returns a simple token (e.g., JWT \- JSON Web Token).  
-  5. Implement basic middleware to protect certain future API endpoints, requiring a valid token.  
-* **Test:**  
-  * A new user can register via the /api/v1/auth/register endpoint.  
-  * User credentials (hashed password) are stored in the application database.  
-  * The corresponding user ID and role are recorded on the local blockchain via the chaincode.  
-  * A registered user can log in via /api/v1/auth/login and receive a token.  
+  4. Implement a basic user login endpoint (e.g., /api/v1/auth/login) that validates credentials and returns a simple token (e.g., JWT - JSON Web Token).
+  5. Implement basic middleware to protect certain future API endpoints, requiring a valid token.
+* **Test:**
+  * A new user can register via the /api/v1/auth/register endpoint.
+  * User credentials (hashed password) are stored in the application database.
+  * The corresponding user ID and role are recorded on the local blockchain via the chaincode.
+  * A registered user can log in via /api/v1/auth/login and receive a token.
   * A test protected endpoint returns an unauthorized error without a token and a success response with a valid token.
 
-## **2\. Phase 2: Patient Data Management \- MVP Core (Blockchain Interaction)**
+## **2. Phase 2: Patient Data Management - MVP Core (Blockchain Interaction)**
 
 ### **Step 2.1: Basic Patient Health Record (PHR) Structure on Blockchain**
 
-* **Instruction:**  
-  1. Extend the chaincode/smart contract to include a function to create a basic, placeholder "Health Record" linked to a patient's DID. For MVP, this record might initially just be a reference or a hash of an off-chain document.  
-  2. The "Health Record" should have a unique ID, a timestamp, and a field for a data hash (e.g., dataHash).  
-  3. Implement a backend API endpoint (e.g., POST /api/v1/phr) for an authenticated patient to create a new placeholder health record. This endpoint will generate a dummy hash for now.  
-  4. The endpoint should invoke the chaincode to store this basic health record structure linked to the patient's DID.  
-* **Test:**  
-  * An authenticated patient can call the POST /api/v1/phr endpoint.  
-  * A new health record entry (with ID, timestamp, dummy dataHash) linked to the patient's DID is created on the blockchain.  
+* **Instruction:**
+  1. Extend the chaincode/smart contract to include a function to create a basic, placeholder "Health Record" linked to a patient's DID. For MVP, this record might initially just be a reference or a hash of an off-chain document.
+  2. The "Health Record" should have a unique ID, a timestamp, and a field for a data hash (e.g., dataHash).
+  3. Implement a backend API endpoint (e.g., POST /api/v1/phr) for an authenticated patient to create a new placeholder health record. This endpoint will generate a dummy hash for now.
+  4. The endpoint should invoke the chaincode to store this basic health record structure linked to the patient's DID.
+* **Test:**
+  * An authenticated patient can call the POST /api/v1/phr endpoint.
+  * A new health record entry (with ID, timestamp, dummy dataHash) linked to the patient's DID is created on the blockchain.
   * The transaction is successful and can be verified by querying the blockchain (if a basic query function is added to the chaincode).
 
 ### **Step 2.2: Basic Off-Chain Data Storage Setup**
 
-* **Instruction:**  
+* **Instruction:**
   1. Set up the chosen off-chain storage solution locally:
      * Use PostgreSQL with pgcrypto extension for encrypted storage
      * Use AES-256-GCM for data encryption
-  2. Modify the POST /api/v1/phr endpoint:  
+  2. Modify the POST /api/v1/phr endpoint:
      * Accept structured medical data in FHIR R4 format
      * Calculate SHA-256 hash of the normalized JSON data
      * Store encrypted data in PostgreSQL
      * Store hash on blockchain with format: `sha256(timestamp + did + normalized_json)`
-* **Test:**  
-  * When a patient calls POST /api/v1/phr with structured medical data:  
-    * The data is stored in the configured off-chain storage.  
-    * A SHA-256 hash of the normalized JSON data is calculated.  
+* **Test:**
+  * When a patient calls POST /api/v1/phr with structured medical data:
+    * The data is stored in the configured off-chain storage.
+    * A SHA-256 hash of the normalized JSON data is calculated.
     * The health record on the blockchain contains the correct dataHash and a reference to the off-chain data.
 
 ### **Step 2.3: Basic Patient Data Retrieval**
 
-* **Instruction:**  
-  1. Implement a chaincode/smart contract function to query health records for a given patient DID.  
-  2. Implement a backend API endpoint (e.g., GET /api/v1/phr) for an authenticated patient to retrieve a list of their health record metadata (ID, timestamp, dataHash, off-chain reference) from the blockchain.  
-  3. Implement another backend API endpoint (e.g., GET /api/v1/phr/{recordId}/data) for an authenticated patient to retrieve the actual data from off-chain storage, using the off-chain reference obtained from the blockchain record.  
-* **Test:**  
-  * An authenticated patient can call GET /api/v1/phr and receive a list of their health record metadata stored on the blockchain.  
-  * An authenticated patient can call GET /api/v1/phr/{recordId}/data and retrieve the correct structured medical data from off-chain storage that corresponds to the blockchain record.  
+* **Instruction:**
+  1. Implement a chaincode/smart contract function to query health records for a given patient DID.
+  2. Implement a backend API endpoint (e.g., GET /api/v1/phr) for an authenticated patient to retrieve a list of their health record metadata (ID, timestamp, dataHash, off-chain reference) from the blockchain.
+  3. Implement another backend API endpoint (e.g., GET /api/v1/phr/{recordId}/data) for an authenticated patient to retrieve the actual data from off-chain storage, using the off-chain reference obtained from the blockchain record.
+* **Test:**
+  * An authenticated patient can call GET /api/v1/phr and receive a list of their health record metadata stored on the blockchain.
+  * An authenticated patient can call GET /api/v1/phr/{recordId}/data and retrieve the correct structured medical data from off-chain storage that corresponds to the blockchain record.
   * Attempting to access another patient's data should fail (basic authorization check).
 
-## **3\. Phase 3: Basic NLP & AI Placeholder and Frontend Shell**
+## **3. Phase 3: Basic NLP & AI Placeholder and Frontend Shell**
 
 ### **Step 3.1: Placeholder NLP Service (Foundation for DeepSeek API Integration)**
 
-* **Instruction:**  
+* **Instruction:**
   1. Create a very simple NLP service (e.g., a separate Python Flask/FastAPI microservice, or a module within the main backend if simpler for MVP). This serves as the initial placeholder.
   2. This service should have one endpoint (e.g., POST /nlp/extract-entities) that accepts text. The request and response structures should be designed keeping in mind future integration with a more powerful NLP API.
-  3. For the initial MVP placeholder, this service will not perform real NLP. It should simply return a predefined, dummy JSON response indicating mock entities (e.g., {"entities": \[{"text": "Blood Pressure", "type": "VitalSign"}, {"text": "120/80 mmHg", "type": "Measurement"}\]}).
+  3. For the initial MVP placeholder, this service will not perform real NLP. It should simply return a predefined, dummy JSON response indicating mock entities (e.g., {"entities": [{"text": "Blood Pressure", "type": "VitalSign"}, {"text": "120/80 mmHg", "type": "Measurement"}]}).
   4. **Note on Future Enhancement:** The long-term goal for the MVP is to replace this placeholder logic with actual calls to an external NLP service. The current preferred candidate for this is the DeepSeek API. Further tasks will involve integrating this API to provide real entity extraction capabilities.
-* **Test:**  
-  * The placeholder NLP service can be started.  
+* **Test:**
+  * The placeholder NLP service can be started.
   * Sending text to POST /nlp/extract-entities returns the predefined dummy JSON entity structure.
   * (Future Test after DeepSeek Integration): Sending text to POST /nlp/extract-entities will return entities extracted by the DeepSeek API.
 
 ### **Step 3.2: Placeholder AI Predictive Service**
 
-* **Instruction:**  
-  1. Create a very simple AI service (similar setup to NLP service).  
-  2. This service should have one endpoint (e.g., POST /ai/predict-risk) that accepts some structured dummy data (e.g., {"age": 50, "systolic\_bp": 120}).  
-  3. For MVP, this service will not perform real AI prediction. It should return a predefined dummy JSON risk score (e.g., {"risk\_level": "low", "score": 0.1}).  
-* **Test:**  
-  * The placeholder AI service can be started.  
+* **Instruction:**
+  1. Create a very simple AI service (similar setup to NLP service).
+  2. This service should have one endpoint (e.g., POST /ai/predict-risk) that accepts some structured dummy data (e.g., {"age": 50, "systolic_bp": 120}).
+  3. For MVP, this service will not perform real AI prediction. It should return a predefined dummy JSON risk score (e.g., {"risk_level": "low", "score": 0.1}).
+* **Test:**
+  * The placeholder AI service can be started.
   * Sending dummy structured data to POST /ai/predict-risk returns the predefined dummy JSON risk score.
 
 ### **Step 3.3: Basic Frontend Shell (Patient Portal)**
 
-* **Instruction:**  
-  1. Set up a basic frontend project using the chosen framework (e.g., React/Vue, as per tech-stack.md).  
-  2. Implement a simple login page that calls the backend's /api/v1/auth/login endpoint. Upon successful login, store the token (e.g., in localStorage or a state management solution).  
-  3. Create a basic dashboard page accessible after login.  
-  4. On the dashboard, implement a section to display a list of the patient's health records by calling the backend's GET /api/v1/phr endpoint. Display the metadata (ID, timestamp).  
-  5. (Optional for MVP, can be deferred) Add a button next to each record to view details, which would call GET /api/v1/phr/{recordId}/data and display the raw text.  
-* **Test:**  
-  * The frontend application can be built and started.  
-  * A user can enter credentials on the login page, and upon successful authentication, is redirected to the dashboard.  
-  * The dashboard page successfully fetches and displays a list of the logged-in patient's health record metadata.  
+* **Instruction:**
+  1. Set up a basic frontend project using the chosen framework (e.g., React/Vue, as per tech-stack.md).
+  2. Implement a simple login page that calls the backend's /api/v1/auth/login endpoint. Upon successful login, store the token (e.g., in localStorage or a state management solution).
+  3. Create a basic dashboard page accessible after login.
+  4. On the dashboard, implement a section to display a list of the patient's health records by calling the backend's GET /api/v1/phr endpoint. Display the metadata (ID, timestamp).
+  5. (Optional for MVP, can be deferred) Add a button next to each record to view details, which would call GET /api/v1/phr/{recordId}/data and display the raw text.
+* **Test:**
+  * The frontend application can be built and started.
+  * A user can enter credentials on the login page, and upon successful authentication, is redirected to the dashboard.
+  * The dashboard page successfully fetches and displays a list of the logged-in patient's health record metadata.
   * (If implemented) Clicking a "view details" button shows the raw text data for that record.
 
-## **4\. Phase 4: Basic Consent Mechanism (Simplified for MVP)**
+## **4. Phase 4: Basic Consent Mechanism (Simplified for MVP)**
 
 ### **Step 4.1: Simplified Consent Logic in Chaincode**
 
-* **Instruction:**  
-  1. Modify the "Health Record" structure in the chaincode to include a very simple access list, e.g., an array of DIDs (doctor DIDs) that are allowed to read this specific record. Initially, this list is empty or only contains the patient's DID.  
-  2. Implement a chaincode function grantAccess(recordId, doctorDid) that allows a patient (owner of the record) to add a doctor's DID to the access list of a specific health record.  
-  3. Modify the chaincode function for querying health records (from Step 2.3) so that it checks if the requester's DID (e.g., a doctor's DID) is in the access list for that record before returning data. (For MVP, the actual data retrieval from off-chain will still be via a separate API call, but the blockchain will gatekeep metadata access).  
-* **Test:**  
-  * A patient can successfully call a new backend endpoint (e.g., POST /api/v1/phr/{recordId}/grant-access) which invokes the grantAccess chaincode function, adding a (pre-registered dummy) doctor's DID to a health record's access list on the blockchain.  
-  * A (dummy) doctor attempting to query metadata for that specific record (via a new test endpoint simulating doctor access) succeeds if access was granted, and fails if not.  
+* **Instruction:**
+  1. Modify the "Health Record" structure in the chaincode to include a very simple access list, e.g., an array of DIDs (doctor DIDs) that are allowed to read this specific record. Initially, this list is empty or only contains the patient's DID.
+  2. Implement a chaincode function grantAccess(recordId, doctorDid) that allows a patient (owner of the record) to add a doctor's DID to the access list of a specific health record.
+  3. Modify the chaincode function for querying health records (from Step 2.3) so that it checks if the requester's DID (e.g., a doctor's DID) is in the access list for that record before returning data. (For MVP, the actual data retrieval from off-chain will still be via a separate API call, but the blockchain will gatekeep metadata access).
+* **Test:**
+  * A patient can successfully call a new backend endpoint (e.g., POST /api/v1/phr/{recordId}/grant-access) which invokes the grantAccess chaincode function, adding a (pre-registered dummy) doctor's DID to a health record's access list on the blockchain.
+  * A (dummy) doctor attempting to query metadata for that specific record (via a new test endpoint simulating doctor access) succeeds if access was granted, and fails if not.
   * The patient can still access their own record metadata.
 
 This MVP implementation plan focuses on establishing the foundational layers and core interactions. Real NLP/AI, comprehensive PIPL compliance, advanced consent models, and other portal functionalities will be part of subsequent development phases.

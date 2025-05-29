@@ -1,248 +1,248 @@
-# Baby Steps: Implementasi Frontend Mockup-01 (Login) & Mockup-02 (Registrasi)
+# Baby Steps: Implementing Frontend Mockup-01 (Login) & Mockup-02 (Registration)
 
-Dokumen ini berisi panduan langkah demi langkah (baby steps) untuk mengimplementasikan fungsionalitas frontend berdasarkan Mockup-01 (Halaman Login) dan Mockup-02 (Halaman Registrasi). Tujuannya adalah untuk menghilangkan ambiguitas dan mempermudah developer (terutama junior) dalam proses pengembangan.
+This document provides a step-by-step guide (baby steps) for implementing frontend functionality based on Mockup-01 (Login Page) and Mockup-02 (Registration Page). The goal is to eliminate ambiguity and simplify the development process for developers (especially juniors).
 
-**Referensi Utama:**
+**Primary References:**
 *   `frontend/mockups/mockup-01-login.html`
 *   `frontend/mockups/mockup-02-register.html`
-*   `memory-bank/outline-mockup.md` (untuk spesifikasi detail jika ada)
-*   `src/app/api/v1/endpoints/auth.py` (untuk detail endpoint API Login & Registrasi)
-*   `frontend/src/services/api.js` (atau file serupa untuk interaksi API di frontend)
-*   `frontend/src/store/authSlice.js` (atau file serupa untuk manajemen state autentikasi)
+*   `memory-bank/outline-mockup.md` (for detailed specifications, if any)
+*   `src/app/api/v1/endpoints/auth.py` (for Login & Registration API endpoint details)
+*   `frontend/src/services/api.js` (or similar file for API interaction in the frontend)
+*   `frontend/src/store/authSlice.js` (or similar file for authentication state management)
 
-## A. Persiapan Umum Frontend
+## A. General Frontend Preparation
 
-Sebelum memulai implementasi spesifik untuk Login dan Registrasi, pastikan hal berikut sudah ada atau dibuat jika belum:
+Before starting the specific implementation for Login and Registration, ensure the following are already in place or created if not:
 
-1.  **Struktur Direktori Komponen & Halaman:**
-    *   Pastikan ada direktori `frontend/src/pages` untuk komponen halaman (e.g., `LoginPage.jsx`, `RegisterPage.jsx`).
-    *   Pastikan ada direktori `frontend/src/components` untuk komponen UI yang reusable (e.g., `InputField.jsx`, `Button.jsx`, `Notification.jsx`).
+1.  **Component & Page Directory Structure:**
+    *   Ensure there is a `frontend/src/pages` directory for page components (e.g., `LoginPage.jsx`, `RegisterPage.jsx`).
+    *   Ensure there is a `frontend/src/components` directory for reusable UI components (e.g., `InputField.jsx`, `Button.jsx`, `Notification.jsx`).
 
 2.  **Routing:**
-    *   Konfigurasi routing dasar menggunakan `react-router-dom`.
-    *   Buat rute untuk `/login` yang mengarah ke `LoginPage`.
-    *   Buat rute untuk `/register` yang mengarah ke `RegisterPage`.
-    *   Implementasikan `PublicRoute` yang mengarahkan pengguna yang sudah login dari `/login` dan `/register` ke `/dashboard`.
-    *   Implementasikan `PrivateRoute` yang mengarahkan pengguna yang belum login dari rute terproteksi (e.g., `/dashboard`) ke `/login`.
+    *   Basic routing configuration using `react-router-dom`.
+    *   Create a route for `/login` pointing to `LoginPage`.
+    *   Create a route for `/register` pointing to `RegisterPage`.
+    *   Implement `PublicRoute` that redirects logged-in users from `/login` and `/register` to `/dashboard`.
+    *   Implement `PrivateRoute` that redirects users not logged in from protected routes (e.g., `/dashboard`) to `/login`.
 
-3.  **Layanan API (API Service):**
-    *   Buat atau pastikan ada file `frontend/src/services/api.js` (atau nama serupa) yang berisi fungsi untuk melakukan request ke backend.
-    *   Gunakan `axios` atau `fetch` API.
-    *   Konfigurasi base URL untuk API backend (e.g., `http://localhost:8000/api/v1`).
-    *   Implementasikan fungsi `loginUser(credentials)` yang melakukan `POST` request ke `/auth/token`.
-    *   Implementasikan fungsi `registerUser(userData)` yang melakukan `POST` request ke `/auth/register`.
-    *   Sertakan error handling yang baik untuk menangkap respons error dari API.
+3.  **API Service:**
+    *   Create or ensure there is a `frontend/src/services/api.js` file (or similar name) containing functions to make requests to the backend.
+    *   Use `axios` or the `fetch` API.
+    *   Configure the base URL for the backend API (e.g., `http://localhost:8000/api/v1`).
+    *   Implement a `loginUser(credentials)` function that makes a `POST` request to `/auth/token`.
+    *   Implement a `registerUser(userData)` function that makes a `POST` request to `/auth/register`.
+    *   Include good error handling to catch error responses from the API.
 
-4.  **Manajemen State (State Management):**
-    *   Gunakan Redux Toolkit (atau Context API jika proyek lebih kecil dan disepakati).
-    *   Buat `authSlice` yang akan menangani state terkait autentikasi:
-        *   `user`: null atau objek user jika login.
-        *   `token`: null atau token JWT jika login.
-        *   `isLoading`: boolean (untuk indikator loading saat proses login/register).
-        *   `error`: null atau pesan error jika terjadi kesalahan.
-    *   Buat _reducers_ dan _actions_ untuk:
+4.  **State Management:**
+    *   Use Redux Toolkit (or Context API if the project is smaller and agreed upon).
+    *   Create an `authSlice` that will handle authentication-related state:
+        *   `user`: null or user object if logged in.
+        *   `token`: null or JWT token if logged in.
+        *   `isLoading`: boolean (for loading indicator during login/register process).
+        *   `error`: null or error message if an error occurs.
+    *   Create reducers and actions for:
         *   `loginStart`, `loginSuccess`, `loginFailure`
         *   `registerStart`, `registerSuccess`, `registerFailure`
         *   `logout`
-    *   Implementasikan _thunks_ (jika menggunakan Redux Toolkit) untuk menghandle logika asynchronous login dan registrasi yang memanggil fungsi dari `api.js` dan men-dispatch actions yang sesuai.
+    *   Implement thunks (if using Redux Toolkit) to handle asynchronous login and registration logic that calls functions from `api.js` and dispatches the appropriate actions.
 
-5.  **Utilitas Token:**
-    *   Buat file utilitas (misalnya `frontend/src/utils/tokenManager.js`) untuk menyimpan dan mengambil token JWT dari `localStorage`.
-    *   Fungsi: `saveToken(token)`, `getToken()`, `removeToken()`.
-    *   Pastikan `axios` (atau `fetch`) instance dikonfigurasi untuk menyertakan token JWT di header `Authorization` untuk request yang memerlukan autentikasi.
+5.  **Token Utilities:**
+    *   Create a utility file (e.g., `frontend/src/utils/tokenManager.js`) to save and retrieve JWT tokens from `localStorage`.
+    *   Functions: `saveToken(token)`, `getToken()`, `removeToken()`.
+    *   Ensure the `axios` (or `fetch`) instance is configured to include the JWT token in the `Authorization` header for requests requiring authentication.
 
-6.  **Komponen UI Dasar (Reusable Components):**
-    *   Buat komponen dasar jika belum ada:
-        *   `InputField.jsx`: Komponen input generik dengan props untuk `type`, `placeholder`, `value`, `onChange`, `label`, `error`.
-        *   `Button.jsx`: Komponen tombol generik dengan props untuk `text`, `onClick`, `type` (`submit`, `button`), `disabled`, `variant` (primary, secondary, etc.).
-        *   `Notification.jsx`: Komponen untuk menampilkan pesan notifikasi (sukses, error, warning). Bisa menggunakan library seperti `react-toastify` atau buat custom.
-        *   `LoadingSpinner.jsx`: Komponen untuk indikator loading.
+6.  **Basic UI Components (Reusable Components):**
+    *   Create basic components if they don't already exist:
+        *   `InputField.jsx`: Generic input component with props for `type`, `placeholder`, `value`, `onChange`, `label`, `error`.
+        *   `Button.jsx`: Generic button component with props for `text`, `onClick`, `type` (`submit`, `button`), `disabled`, `variant` (primary, secondary, etc.).
+        *   `Notification.jsx`: Component for displaying notification messages (success, error, warning). Can use a library like `react-toastify` or create a custom one.
+        *   `LoadingSpinner.jsx`: Component for loading indicator.
 
-## B. Implementasi Mockup-01: Halaman Login (`LoginPage.jsx`)
+## B. Implementing Mockup-01: Login Page (`LoginPage.jsx`)
 
-**Tujuan:** Membuat halaman login yang memungkinkan pengguna memasukkan username/email dan password, mengirimkannya ke backend, dan menangani respons.
+**Objective:** Create a login page that allows users to enter their username/email and password, send it to the backend, and handle the response.
 
-**File Target:** `frontend/src/pages/LoginPage.jsx`
+**Target File:** `frontend/src/pages/LoginPage.jsx`
 
-**Langkah-langkah:**
+**Steps:**
 
-1.  **Struktur Komponen `LoginPage.jsx`:**
-    *   Import React, `useState`, `useDispatch`, `useSelector` (dari `react-redux`), `Link` (dari `react-router-dom`), dan _thunk_ login dari `authSlice`.
-    *   Import komponen UI yang dibutuhkan (`InputField`, `Button`, `Notification`, `LoadingSpinner`).
-    *   Buat state lokal menggunakan `useState` untuk field input:
+1.  **`LoginPage.jsx` Component Structure:**
+    *   Import React, `useState`, `useDispatch`, `useSelector` (from `react-redux`), `Link` (from `react-router-dom`), and the login thunk from `authSlice`.
+    *   Import necessary UI components (`InputField`, `Button`, `Notification`, `LoadingSpinner`).
+    *   Create local state using `useState` for input fields:
         *   `usernameOrEmail`
         *   `password`
-    *   Gunakan `useDispatch` untuk mendapatkan fungsi `dispatch`.
-    *   Gunakan `useSelector` untuk mendapatkan state `isLoading` dan `error` dari `authSlice`.
+    *   Use `useDispatch` to get the `dispatch` function.
+    *   Use `useSelector` to get `isLoading` and `error` state from `authSlice`.
 
-2.  **Layout dan Styling (JSX & CSS):**
-    *   Replikasi tampilan dari `mockup-01-login.html`.
-    *   Gunakan CSS Modules atau styled-components untuk styling (sesuai konvensi proyek).
-    *   Pastikan halaman responsif.
-    *   Struktur dasar JSX:
+2.  **Layout and Styling (JSX & CSS):**
+    *   Replicate the appearance from `mockup-01-login.html`.
+    *   Use CSS Modules or styled-components for styling (according to project conventions).
+    *   Ensure the page is responsive.
+    *   Basic JSX structure:
         ```jsx
         <div className="login-container">
-          <h2>Login Akun</h2>
+          <h2>Login to Account</h2>
           <form onSubmit={handleSubmit}>
             <InputField
-              label="Username atau Email"
-              type="text" // atau email jika backend hanya menerima email untuk login
+              label="Username or Email"
+              type="text" // or email if backend only accepts email for login
               value={usernameOrEmail}
               onChange={(e) => setUsernameOrEmail(e.target.value)}
-              // Tambahkan error handling jika ada
+              // Add error handling if any
             />
             <InputField
               label="Password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              // Tambahkan error handling jika ada
+              // Add error handling if any
             />
             {error && <Notification type="error" message={error} />}
             <Button type="submit" text="Login" disabled={isLoading} />
             {isLoading && <LoadingSpinner />}
           </form>
-          <p>Belum punya akun? <Link to="/register">Daftar di sini</Link></p>
+          <p>Don't have an account? <Link to="/register">Register here</Link></p>
         </div>
         ```
 
-3.  **Logika Handle Submit (`handleSubmit`):**
-    *   Buat fungsi `handleSubmit` yang akan dipanggil saat form di-submit.
-    *   Panggil `event.preventDefault()`.
-    *   Lakukan validasi input dasar di sisi frontend (opsional, karena backend juga melakukan validasi, tapi baik untuk UX):
-        *   Pastikan `usernameOrEmail` dan `password` tidak kosong.
-        *   Jika ada error validasi, tampilkan pesan menggunakan komponen `Notification` atau state error lokal.
-    *   Jika validasi lolos, dispatch _thunk_ login dengan `usernameOrEmail` dan `password` sebagai argumen:
+3.  **Handle Submit Logic (`handleSubmit`):**
+    *   Create the `handleSubmit` function to be called on form submission.
+    *   Call `event.preventDefault()`.
+    *   Perform basic frontend input validation (optional, as the backend also validates, but good for UX):
+        *   Ensure `usernameOrEmail` and `password` are not empty.
+        *   If there's a validation error, display a message using the `Notification` component or local error state.
+    *   If validation passes, dispatch the login thunk with `usernameOrEmail` and `password` as arguments:
         ```javascript
         dispatch(loginUserThunk({ username: usernameOrEmail, password })); 
-        // Sesuaikan payload dengan yang diharapkan backend /auth/token (biasanya form data: username & password)
+        // Adjust payload to what backend /auth/token expects (usually form data: username & password)
         ```
 
-4.  **Menangani Hasil Login:**
-    *   `authSlice` akan menangani respons dari API.
-    *   Jika login sukses (`loginSuccess` di-dispatch):
-        *   Token dan data user akan disimpan di Redux state.
-        *   Token akan disimpan di `localStorage` (dilakukan di dalam _thunk_ atau _reducer_).
-        *   Pengguna akan diarahkan ke `/dashboard`. Gunakan `useNavigate` dari `react-router-dom` atau lakukan ini di dalam _thunk_ setelah sukses.
-    *   Jika login gagal (`loginFailure` di-dispatch):
-        *   Pesan error dari backend akan disimpan di Redux state (`error`).
-        *   Komponen `Notification` akan menampilkan pesan error tersebut.
+4.  **Handling Login Result:**
+    *   `authSlice` will handle the API response.
+    *   If login is successful (`loginSuccess` is dispatched):
+        *   Token and user data will be stored in Redux state.
+        *   Token will be stored in `localStorage` (done within the thunk or reducer).
+        *   The user will be redirected to `/dashboard`. Use `useNavigate` from `react-router-dom` or do this within the thunk after success.
+    *   If login fails (`loginFailure` is dispatched):
+        *   The error message from the backend will be stored in Redux state (`error`).
+        *   The `Notification` component will display this error message.
 
-5.  **Indikator Loading:**
-    *   Tombol "Login" harus di-disable saat `isLoading` adalah `true`.
-    *   Tampilkan komponen `LoadingSpinner` saat `isLoading` adalah `true`.
+5.  **Loading Indicator:**
+    *   The "Login" button should be disabled when `isLoading` is `true`.
+    *   Display the `LoadingSpinner` component when `isLoading` is `true`.
 
-6.  **Link ke Halaman Registrasi:**
-    *   Pastikan ada link yang mengarah ke `/register` untuk pengguna yang belum memiliki akun.
+6.  **Link to Registration Page:**
+    *   Ensure there is a link to `/register` for users who don't have an account.
 
-7.  **Pengujian Manual Awal:**
-    *   Jalankan frontend dan backend.
-    *   Coba login dengan kredensial salah, pastikan pesan error muncul.
-    *   Coba login dengan kredensial benar, pastikan diarahkan ke dashboard (jika sudah ada) atau halaman lain yang sesuai.
-    *   Periksa `localStorage` untuk token JWT setelah login berhasil.
-    *   Periksa Redux DevTools untuk melihat perubahan state.
+7.  **Initial Manual Testing:**
+    *   Run the frontend and backend.
+    *   Try logging in with incorrect credentials, ensure an error message appears.
+    *   Try logging in with correct credentials, ensure redirection to the dashboard (if it exists) or another appropriate page.
+    *   Check `localStorage` for the JWT token after successful login.
+    *   Check Redux DevTools to see state changes.
 
-## C. Implementasi Mockup-02: Halaman Registrasi (`RegisterPage.jsx`)
+## C. Implementing Mockup-02: Registration Page (`RegisterPage.jsx`)
 
-**Tujuan:** Membuat halaman registrasi yang memungkinkan pengguna baru mendaftar dengan mengisi data yang diperlukan, mengirimkannya ke backend, dan menangani respons.
+**Objective:** Create a registration page that allows new users to sign up by filling in the required data, sending it to the backend, and handling the response.
 
-**File Target:** `frontend/src/pages/RegisterPage.jsx`
+**Target File:** `frontend/src/pages/RegisterPage.jsx`
 
-**Langkah-langkah:**
+**Steps:**
 
-1.  **Struktur Komponen `RegisterPage.jsx`:**
-    *   Mirip dengan `LoginPage.jsx`: import React, hooks, actions, komponen UI.
-    *   State lokal untuk field input registrasi (sesuaikan dengan `UserCreate` schema di backend `src/app/schemas/user.py` dan `mockup-02-register.html`):
+1.  **`RegisterPage.jsx` Component Structure:**
+    *   Similar to `LoginPage.jsx`: import React, hooks, actions, UI components.
+    *   Local state for registration input fields (align with `UserCreate` schema in backend `src/app/schemas/user.py` and `mockup-02-register.html`):
         *   `email`
         *   `username`
         *   `full_name`
         *   `password`
-        *   `confirmPassword` (untuk validasi di frontend)
-        *   `role` (jika bisa dipilih pengguna, default ke 'patient')
-        *   `blockchain_address` (opsional saat registrasi, atau auto-generate jika desainnya begitu)
-    *   Gunakan `useSelector` untuk `isLoading` dan `error` dari `authSlice`.
+        *   `confirmPassword` (for frontend validation)
+        *   `role` (if user-selectable, defaults to 'patient')
+        *   `blockchain_address` (optional during registration, or auto-generate if designed that way)
+    *   Use `useSelector` for `isLoading` and `error` from `authSlice`.
 
-2.  **Layout dan Styling (JSX & CSS):**
-    *   Replikasi tampilan dari `mockup-02-register.html`.
-    *   Pastikan halaman responsif.
-    *   Struktur dasar JSX (contoh, sesuaikan fieldnya):
+2.  **Layout and Styling (JSX & CSS):**
+    *   Replicate the appearance from `mockup-02-register.html`.
+    *   Ensure the page is responsive.
+    *   Basic JSX structure (example, adjust fields accordingly):
         ```jsx
         <div className="register-container">
-          <h2>Buat Akun Baru</h2>
+          <h2>Create New Account</h2>
           <form onSubmit={handleSubmit}>
             <InputField label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
             <InputField label="Username" type="text" value={username} onChange={(e) => setUsername(e.target.value)} />
-            <InputField label="Nama Lengkap" type="text" value={full_name} onChange={(e) => setFullName(e.target.value)} />
+            <InputField label="Full Name" type="text" value={full_name} onChange={(e) => setFullName(e.target.value)} />
             <InputField label="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
-            <InputField label="Konfirmasi Password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
-            {/* Tambahkan field lain jika ada, misal Role, Blockchain Address */} 
+            <InputField label="Confirm Password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+            {/* Add other fields if any, e.g., Role, Blockchain Address */} 
             {error && <Notification type="error" message={error} />}
-            <Button type="submit" text="Daftar" disabled={isLoading} />
+            <Button type="submit" text="Register" disabled={isLoading} />
             {isLoading && <LoadingSpinner />}
           </form>
-          <p>Sudah punya akun? <Link to="/login">Login di sini</Link></p>
+          <p>Already have an account? <Link to="/login">Login here</Link></p>
         </div>
         ```
 
-3.  **Logika Handle Submit (`handleSubmit`):**
-    *   Buat fungsi `handleSubmit`.
-    *   Panggil `event.preventDefault()`.
-    *   Lakukan validasi input di sisi frontend:
-        *   Semua field wajib diisi (kecuali yang opsional).
-        *   Format email valid.
-        *   Password dan `confirmPassword` harus cocok.
-        *   Panjang minimal password (jika ada aturan).
-        *   Jika ada error validasi, tampilkan pesan.
-    *   Jika validasi lolos, buat objek `userData` yang akan dikirim ke backend (sesuai schema `UserCreate`):
+3.  **Handle Submit Logic (`handleSubmit`):**
+    *   Create the `handleSubmit` function.
+    *   Call `event.preventDefault()`.
+    *   Perform frontend input validation:
+        *   All required fields must be filled (except optional ones).
+        *   Valid email format.
+        *   Password and `confirmPassword` must match.
+        *   Minimum password length (if there are rules).
+        *   If there's a validation error, display a message.
+    *   If validation passes, create a `userData` object to be sent to the backend (according to `UserCreate` schema):
         ```javascript
         const userData = { email, username, full_name, password, role: 'patient' /*, blockchain_address */ };
         ```
-    *   Dispatch _thunk_ registrasi:
+    *   Dispatch the registration thunk:
         ```javascript
         dispatch(registerUserThunk(userData));
         ```
 
-4.  **Menangani Hasil Registrasi:**
-    *   `authSlice` akan menangani respons dari API.
-    *   Jika registrasi sukses (`registerSuccess` di-dispatch):
-        *   Tampilkan pesan sukses (misalnya, "Registrasi berhasil! Silakan login.").
-        *   Arahkan pengguna ke halaman `/login` (atau otomatis login jika desainnya begitu, tapi umumnya ke login dulu).
-    *   Jika registrasi gagal (`registerFailure` di-dispatch):
-        *   Pesan error dari backend (misalnya, "Username sudah ada", "Email sudah terdaftar") akan disimpan di Redux state (`error`).
-        *   Komponen `Notification` akan menampilkan pesan error tersebut.
+4.  **Handling Registration Result:**
+    *   `authSlice` will handle the API response.
+    *   If registration is successful (`registerSuccess` is dispatched):
+        *   Display a success message (e.g., "Registration successful! Please login.").
+        *   Redirect the user to the `/login` page (or auto-login if designed that way, but usually to login first).
+    *   If registration fails (`registerFailure` is dispatched):
+        *   Error messages from the backend (e.g., "Username already exists", "Email already registered") will be stored in Redux state (`error`).
+        *   The `Notification` component will display this error message.
 
-5.  **Indikator Loading:**
-    *   Sama seperti di `LoginPage.jsx`.
+5.  **Loading Indicator:**
+    *   Same as in `LoginPage.jsx`.
 
-6.  **Link ke Halaman Login:**
-    *   Pastikan ada link yang mengarah ke `/login` untuk pengguna yang sudah memiliki akun.
+6.  **Link to Login Page:**
+    *   Ensure there is a link to `/login` for users who already have an account.
 
-7.  **Pengujian Manual Awal:**
-    *   Jalankan frontend dan backend.
-    *   Coba registrasi dengan data valid. Pastikan sukses dan diarahkan ke login.
-    *   Coba registrasi dengan username atau email yang sudah ada. Pastikan pesan error yang sesuai muncul.
-    *   Coba registrasi dengan password dan konfirmasi password yang tidak cocok. Pastikan error validasi frontend muncul.
-    *   Periksa database untuk memastikan user baru tersimpan dengan benar setelah registrasi sukses.
-    *   Periksa Redux DevTools.
+7.  **Initial Manual Testing:**
+    *   Run the frontend and backend.
+    *   Try registering with valid data. Ensure success and redirection to login.
+    *   Try registering with an existing username or email. Ensure appropriate error messages appear.
+    *   Try registering with mismatched password and confirm password. Ensure frontend validation error appears.
+    *   Check the database to ensure the new user is saved correctly after successful registration.
+    *   Check Redux DevTools.
 
-## D. Langkah Selanjutnya Setelah Implementasi Awal
+## D. Next Steps After Initial Implementation
 
-1.  **Refinement & Styling Lanjutan:**
-    *   Pastikan styling benar-benar sesuai dengan mockup HTML.
-    *   Perhatikan detail UX seperti pesan error yang jelas, feedback saat interaksi.
+1.  **Refinement & Advanced Styling:**
+    *   Ensure styling perfectly matches the HTML mockups.
+    *   Pay attention to UX details like clear error messages and feedback on interaction.
 
-2.  **Error Handling Lebih Detail:**
-    *   Tangani berbagai jenis error dari backend (400, 401, 403, 409, 500) dengan pesan yang lebih spesifik jika memungkinkan.
+2.  **More Detailed Error Handling:**
+    *   Handle various types of errors from the backend (400, 401, 403, 409, 500) with more specific messages if possible.
 
-3.  **Integrasi dengan Komponen Lain:**
-    *   Pastikan alur navigasi setelah login/registrasi berjalan lancar ke halaman dashboard atau halaman lain yang relevan.
+3.  **Integration with Other Components:**
+    *   Ensure the navigation flow after login/registration works smoothly to the dashboard or other relevant pages.
 
-4.  **Penulisan Unit Test (jika sudah masuk tahap itu):**
-    *   Tulis unit test untuk komponen `LoginPage` dan `RegisterPage`.
-    *   Tulis unit test untuk `authSlice` (reducers, actions, thunks).
+4.  **Writing Unit Tests (if at that stage):**
+    *   Write unit tests for `LoginPage` and `RegisterPage` components.
+    *   Write unit tests for `authSlice` (reducers, actions, thunks).
 
-5.  **Review dan Iterasi:**
-    *   Lakukan review kode.
-    *   Uji kembali secara manual untuk memastikan semua skenario tertangani dengan baik.
+5.  **Review and Iteration:**
+    *   Conduct code reviews.
+    *   Test manually again to ensure all scenarios are handled well.
 
-Dengan mengikuti langkah-langkah ini, implementasi halaman Login dan Registrasi diharapkan menjadi lebih terstruktur dan minim ambiguitas.
+By following these steps, the implementation of the Login and Registration pages is expected to be more structured and less ambiguous.

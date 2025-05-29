@@ -1,11 +1,11 @@
 # MediTrustAl: Project Status, To-Do List, and Suggestions
 
 ## Current Project Status (as of latest update):
-* **Project Phase:** Feature Freeze - Fokus pada implementasi Frontend berdasarkan Mockup yang sudah selesai dan persiapan untuk pengujian manual.
+* **Project Phase:** Feature Freeze - Focus on Frontend implementation based on completed Mockups and preparation for manual testing.
 * **Description:**
     * All planned MVP functionalities (Steps 1.1 to 5.2, including Frontend Security Enhancements) have been implemented.
     * The current focus has shifted to refining technical documentation and creating representative frontend mockups for client/stakeholder presentations.
-    * Semua tes backend otomatis telah berhasil dijalankan.
+    * All automated backend tests have passed successfully.
 * **Last Completed Major Milestones (summarizing `implementation-plan.md`):**
     * Step 1.1: Project Setup and Basic Backend Structure - ✅ COMPLETED.
     * Step 1.2: Basic Blockchain Network Setup (Local Development - UserRegistry) - ✅ COMPLETED.
@@ -22,37 +22,37 @@
     * Step 5.2: Live Integration with DeepSeek NLP API (Replacing Placeholder) - ✅ COMPLETED.
     * Frontend Security Enhancement - Comprehensive Token Management & API Security - ✅ COMPLETED.
 * **Current Focus (Feature Freeze):**
-    * Implementasi fungsionalitas Frontend berdasarkan mockup M01-M11 yang telah selesai.
-    * Persiapan dan pelaksanaan pengujian manual untuk alur Login (M01) dan Registrasi (M02).
-    * Pembuatan dokumentasi `baby-step.md` untuk panduan implementasi frontend bagi junior developer.
-    * Pembaruan `petunjuk-manual-test.md` dengan instruksi lengkap untuk pengujian frontend.
+    * Implementation of Frontend functionality based on completed M01-M11 mockups.
+    * Preparation and execution of manual testing for Login (M01) and Registration (M02) flows.
+    * Creation of `baby-step.md` documentation for frontend implementation guidance for junior developers.
+    * Updating `petunjuk-manual-test.md` (manual test instructions) with complete instructions for frontend testing.
 
-## Immediate Next Steps (Baby-Step To-Do List) - Fokus Implementasi Frontend Awal:
+## Immediate Next Steps (Baby-Step To-Do List) - Initial Frontend Implementation Focus:
 
-1.  **Implementasi Frontend - Mockup-01 (Login Page):**
-    * [ ] Buat komponen `LoginPage.jsx` di `frontend/src/pages/`.
-    * [ ] Implementasikan UI berdasarkan `frontend/mockups/mockup-01-login.html`.
-    * [ ] Hubungkan dengan state management (Redux `authSlice`) untuk menangani input, loading, dan error.
-    * [ ] Integrasikan dengan `api.js` untuk memanggil endpoint `/auth/token`.
-    * [ ] Handle respons sukses (simpan token, navigasi ke dashboard) dan error (tampilkan pesan).
-    * [ ] Pastikan ada link ke halaman registrasi.
-2.  **Implementasi Frontend - Mockup-02 (Registration Page):**
-    * [ ] Buat komponen `RegisterPage.jsx` di `frontend/src/pages/`.
-    * [ ] Implementasikan UI berdasarkan `frontend/mockups/mockup-02-register.html`.
-    * [ ] Hubungkan dengan state management (Redux `authSlice`) untuk menangani input, loading, dan error.
-    * [ ] Integrasikan dengan `api.js` untuk memanggil endpoint `/auth/register`.
-    * [ ] Handle respons sukses (tampilkan pesan, navigasi ke login) dan error (tampilkan pesan).
-    * [ ] Pastikan ada link ke halaman login.
-3.  **Pengujian Manual Awal (Login & Registrasi):**
-    * [ ] Lakukan pengujian manual untuk alur login dan registrasi sesuai `petunjuk-manual-test.md` (setelah diupdate).
-    * [ ] Verifikasi fungsionalitas, penanganan error, dan penyimpanan token.
-4.  **Dokumentasi Pendukung Implementasi:**
-    * [x] Buat file `baby-step.md` di `memory-bank/` dengan detail langkah implementasi M01 & M02 (SELESAI).
-    * [ ] Update `petunjuk-manual-test.md` dengan instruksi lengkap untuk pengujian manual frontend M01 & M02.
-    * [ ] Lakukan review akhir untuk semua dokumen di `memory-bank/` dan pastikan konsistensi.
+1.  **Frontend Implementation - Mockup-01 (Login Page):**
+    * [ ] Create `LoginPage.jsx` component in `frontend/src/pages/`.
+    * [ ] Implement UI based on `frontend/mockups/mockup-01-login.html`.
+    * [ ] Connect with state management (Redux `authSlice`) to handle input, loading, and errors.
+    * [ ] Integrate with `api.js` to call the `/auth/token` endpoint.
+    * [ ] Handle success response (save token, navigate to dashboard) and errors (display messages).
+    * [ ] Ensure there is a link to the registration page.
+2.  **Frontend Implementation - Mockup-02 (Registration Page):**
+    * [ ] Create `RegisterPage.jsx` component in `frontend/src/pages/`.
+    * [ ] Implement UI based on `frontend/mockups/mockup-02-register.html`.
+    * [ ] Connect with state management (Redux `authSlice`) to handle input, loading, and errors.
+    * [ ] Integrate with `api.js` to call the `/auth/register` endpoint.
+    * [ ] Handle success response (display message, navigate to login) and errors (display messages).
+    * [ ] Ensure there is a link to the login page.
+3.  **Initial Manual Testing (Login & Registration):**
+    * [ ] Perform manual testing for login and registration flows according to `petunjuk-manual-test.md` (once updated).
+    * [ ] Verify functionality, error handling, and token storage.
+4.  **Implementation Support Documentation:**
+    * [x] Create `baby-step.md` file in `memory-bank/` with detailed implementation steps for M01 & M02 (COMPLETED).
+    * [ ] Update `petunjuk-manual-test.md` with complete instructions for manual frontend testing of M01 & M02.
+    * [ ] Conduct a final review of all documents in `memory-bank/` and ensure consistency.
 5.  **Backend & Testing:**
-    * [x] Semua tes backend otomatis telah berhasil dijalankan (SESUAI INFO USER).
-    * [ ] Pertimbangkan untuk menambahkan tes E2E setelah M01 dan M02 stabil.
+    * [x] All automated backend tests have passed successfully (PER USER INFO).
+    * [ ] Consider adding E2E tests after M01 and M02 are stable.
 
 ## Technical Debt & Future Considerations (Status Unchanged, Priority After Current Phase):
 

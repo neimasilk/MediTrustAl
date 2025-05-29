@@ -19,7 +19,7 @@ This document tracks the completed baby-steps during the development of the Medi
 **Additional Notes:** All security features are production-ready with recommendations for httpOnly cookies, CSP implementation, and token refresh mechanisms. Frontend now has comprehensive protection against token expiry, unauthorized access, and security vulnerabilities.
 ---
 **Date:** 2025-05-28
-**Major Step Completed:** Step 4.2 - Peningkatan Pencatatan Audit Akses Data untuk Kepatuhan PIPL
+**Major Step Completed:** Step 4.2 - Enhancement of Data Access Audit Logging for PIPL Compliance
 **Summary:**
 *   Created `audit_data_access_logs` table and SQLAlchemy model (`src/app/models/audit_log.py`).
 *   Implemented CRUD operations for audit logs (`src/app/crud/crud_audit_log.py`).
@@ -30,7 +30,7 @@ This document tracks the completed baby-steps during the development of the Medi
 **Additional Notes:** Some backend tests related to medical records API (DetachedInstanceError, IntegrityError) are still failing and require manual verification for those specific edge cases. Backend test coverage is now 79%.
 ---
 **Date:** 2025-05-28
-**Major Step Completed:** Step 5.1 - Antarmuka Pengguna (UI) Frontend untuk Manajemen Persetujuan Pasien
+**Major Step Completed:** Step 5.1 - Frontend User Interface (UI) for Patient Consent Management
 **Summary:**
 *   Added frontend services (`grantAccessToRecord`, `revokeAccessFromRecord`, `checkRecordAccessForDoctor`) in `frontend/src/services/medicalRecordService.js`.
 *   Created `RecordAccessManagementModal.jsx` component in `frontend/src/components/` for managing consent.
@@ -39,7 +39,7 @@ This document tracks the completed baby-steps during the development of the Medi
 **Additional Notes:** -
 ---
 **Date:** 2025-05-28
-**Major Step Completed:** Step 5.2 - Integrasi Nyata dengan API NLP DeepSeek
+**Major Step Completed:** Step 5.2 - Actual Integration with DeepSeek NLP API
 **Summary:**
 *   Stored DeepSeek API key in `.env` and updated `src/app/core/config.py` to load it using `pydantic-settings`.
 *   Implemented calls to the DeepSeek API in `src/app/services/nlp_service.py`, replacing the placeholder function. This includes constructing the payload with a system prompt for medical entity extraction.
