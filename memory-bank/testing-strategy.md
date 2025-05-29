@@ -2,16 +2,16 @@
 
 ## Overview
 
-MediTrustAl mengadopsi pendekatan testing yang komprehensif untuk memastikan kualitas dan keandalan sistem. Strategy ini mencakup berbagai level testing dari unit tests hingga end-to-end tests.
+MediTrustAl adopts a comprehensive testing approach to ensure system quality and reliability. This strategy covers various levels of testing from unit tests to end-to-end tests.
 
 ## Test Levels
 
 ### 1. Unit Testing
 
 #### Requirements
-- Minimum coverage: 80% untuk code baru
-- Menggunakan pytest sebagai test framework
-- Setiap fungsi baru harus memiliki unit test
+- Minimum coverage: 80% for new code
+- Use pytest as the test framework
+- Every new function must have a unit test
 - Mock external dependencies (database, blockchain, etc.)
 
 #### Structure
@@ -47,9 +47,9 @@ def test_should_do_something():
 - External service integrations
 
 #### Requirements
-- Menggunakan test database terpisah
-- Clean state sebelum setiap test
-- Minimal satu happy path dan satu error case untuk setiap endpoint
+- Use a separate test database
+- Clean state before each test
+- Minimum one happy path and one error case for each endpoint
 
 #### Structure
 ```
@@ -63,10 +63,10 @@ tests/
 ### 3. Contract Testing
 
 #### Smart Contract Testing
-- Unit tests untuk setiap function dalam contract
+- Unit tests for each function in the contract
 - Gas optimization tests
 - Security vulnerability tests
-- Integration tests dengan backend
+- Integration tests with the backend
 
 #### API Contract Testing
 - OpenAPI/Swagger validation
@@ -81,9 +81,9 @@ tests/
 - Real environment testing
 
 #### Tools
-- Selenium/Playwright untuk UI testing
-- Postman/Newman untuk API testing
-- GitHub Actions untuk CI/CD integration
+- Selenium/Playwright for UI testing
+- Postman/Newman for API testing
+- GitHub Actions for CI/CD integration
 
 ## Test Environment
 

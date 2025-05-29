@@ -2,12 +2,12 @@
 
 ## Overview
 
-MediTrustAl menggunakan PostgreSQL sebagai database utama untuk menyimpan data aplikasi. Schema database dirancang untuk mendukung integrasi dengan blockchain dan memenuhi kebutuhan autentikasi serta manajemen data medis.
+MediTrustAl uses PostgreSQL as its primary database to store application data. The database schema is designed to support blockchain integration and meet authentication and medical data management needs.
 
 ## Tables
 
 ### 1. users
-Menyimpan informasi pengguna dan kredensial autentikasi.
+Stores user information and authentication credentials.
 
 ```sql
 CREATE TABLE users (
@@ -29,7 +29,7 @@ CREATE INDEX idx_users_blockchain_address ON users(blockchain_address);
 ```
 
 ### 2. sessions
-(Catatan: Tabel sessions saat ini belum diimplementasikan dalam migrasi Alembic. Relevansinya akan ditinjau kembali untuk implementasi refresh token atau manajemen sesi server-side di masa mendatang.)
+(Note: The sessions table is currently not implemented in Alembic migrations. Its relevance will be reviewed for future refresh token implementation or server-side session management.)
 ```sql
 CREATE TABLE sessions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -50,7 +50,7 @@ CREATE INDEX idx_sessions_refresh_token ON sessions(refresh_token);
 CREATE TABLE medical_records (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     patient_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    blockchain_record_id VARCHAR(66) UNIQUE NOT NULL,  -- Ethereum transaction hash (tx_hash) yang dihasilkan saat mencatat data_hash ke blockchain. Ini adalah ID transaksi di blockchain.
+    blockchain_record_id VARCHAR(66) UNIQUE NOT NULL,  -- Ethereum transaction hash (tx_hash) generated when recording data_hash to the blockchain. This is the transaction ID on the blockchain.
     record_type VARCHAR(50) NOT NULL CHECK (record_type IN (
         'DIAGNOSIS',
         'LAB_RESULT',
@@ -61,7 +61,7 @@ CREATE TABLE medical_records (
         'IMAGING',
         'VACCINATION'
     )),
-    record_metadata JSONB,  -- Additional metadata specific to record type (sesuai dengan nama di model ORM dan Pydantic)
+    record_metadata JSONB,  -- Additional metadata specific to record type (consistent with ORM and Pydantic model names)
     encrypted_data BYTEA NOT NULL, -- Encrypted FHIR R4 data (AES-256-GCM suggested)
     data_hash VARCHAR(64) NOT NULL,  -- SHA-256 hash of unencrypted data
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -129,21 +129,21 @@ CREATE INDEX idx_medical_records_record_metadata ON medical_records USING gin (r
 ## Indexing Strategy
 
 1. **Primary Keys**
-   - Menggunakan UUID untuk primary keys (dengan gen_random_uuid())
-   - Memberikan skalabilitas yang lebih baik untuk sistem terdistribusi
-   - Menghindari potensi konflik saat penggabungan data dari berbagai sumber
+   - Using UUID for primary keys (with gen_random_uuid())
+   - Provides better scalability for distributed systems
+   - Avoids potential conflicts when merging data from various sources
 
 2. **Foreign Keys**
-   - Selalu menggunakan foreign key constraints untuk menjaga referential integrity
-   - Index pada foreign key columns untuk optimasi JOIN operations
+   - Always use foreign key constraints to maintain referential integrity
+   - Index on foreign key columns for JOIN operation optimization
 
 3. **Unique Constraints**
-   - Email dan username pada users table
-   - Blockchain address untuk mencegah duplikasi
-   - Refresh tokens untuk security
+   - Email and username in the users table
+   - Blockchain address to prevent duplicates
+   - Refresh tokens for security
 
 4. **Composite Indexes**
-   - Akan ditambahkan berdasarkan query patterns yang muncul dalam development
+   - Will be added based on query patterns that emerge during development
 
 ## Migration Management
 
@@ -151,34 +151,34 @@ CREATE INDEX idx_medical_records_record_metadata ON medical_records USING gin (r
    ```
    YYYYMMDDHHMMSS_descriptive_name.py
    ```
-   Contoh: `20240315123000_create_users_table.py`
+   Example: `20240315123000_create_users_table.py`
 
 2. **Migration History**
    - Initial migration: Create users table
-   - Future migrations akan ditambahkan sesuai kebutuhan
-   - Setiap migration harus memiliki fungsi `upgrade()` dan `downgrade()`
+   - Future migrations will be added as needed
+   - Each migration must have `upgrade()` and `downgrade()` functions
 
 3. **Backup Strategy**
    - Daily automated backups
-   - Backup sebelum setiap migration
+   - Backup before each migration
    - Retention policy: 30 hari
 
 ## Schema Evolution Guidelines
 
 1. **Backward Compatibility**
-   - Hindari menghapus kolom yang masih digunakan
-   - Gunakan nullable columns untuk penambahan field baru
-   - Pertahankan existing indexes saat melakukan modifikasi
+   - Avoid deleting columns that are still in use
+   - Use nullable columns for adding new fields
+   - Maintain existing indexes when making modifications
 
 2. **Performance Considerations**
-   - Monitor ukuran index
-   - Evaluasi query performance setelah schema changes
-   - Gunakan EXPLAIN ANALYZE untuk optimasi
+   - Monitor index size
+   - Evaluate query performance after schema changes
+   - Use EXPLAIN ANALYZE for optimization
 
 3. **Security**
-   - Enkripsi data sensitif sebelum penyimpanan
-   - Audit trail untuk perubahan data penting
-   - Regular security review untuk access patterns 
+   - Encrypt sensitive data before storage
+   - Audit trail for important data changes
+   - Regular security review for access patterns
 
 ## Database Management
 

@@ -84,7 +84,7 @@ Project Directory (~20GB):
    createdb meditrustal
    
    # Run migrations
-   # Pastikan Anda berada di root direktori proyek
+   # Ensure you are in the project root directory
    python -m alembic upgrade head
    ```
 
@@ -97,7 +97,7 @@ Project Directory (~20GB):
    npm install -g ganache@7.9.2
    
    # Start local blockchain
-   # Pastikan port 7545 tersedia
+   # Ensure port 7545 is available
    ganache --port 7545 --deterministic --chain.chainId 1337 --database.dbPath ./.ganache-db
    ```
 

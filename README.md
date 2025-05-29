@@ -1,43 +1,43 @@
 # MediTrustAI
 
-Sistem manajemen rekam medis berbasis blockchain dengan integrasi AI untuk analisis data kesehatan.
+A blockchain-based medical record management system with AI integration for health data analysis.
 
-## Persyaratan Sistem
+## System Requirements
 
-- Python 3.11 atau lebih tinggi
+- Python 3.11 or higher
 - PostgreSQL 15.x
-- Node.js 20.x LTS atau lebih tinggi (untuk smart contract development)
-- Ganache (untuk blockchain development lokal)
+- Node.js 20.x LTS or higher (for smart contract development)
+- Ganache (for local blockchain development)
 
-## Setup Environment Development
+## Development Environment Setup
 
-### 1. Setup Database (PostgreSQL)
+### 1. Database Setup (PostgreSQL)
 
-1. Download PostgreSQL 15.x dari [situs resmi](https://www.enterprisedb.com/downloads/postgres-postgresql-downloads)
-2. Jalankan installer dengan konfigurasi berikut:
+1. Download PostgreSQL 15.x from the [official website](https://www.enterprisedb.com/downloads/postgres-postgresql-downloads)
+2. Run the installer with the following configuration:
    - Port: 5432 (default)
-   - Password untuk user 'postgres': postgres
+   - Password for 'postgres' user: postgres
    - Locale: Default
-   - Komponen yang diinstal: minimal PostgreSQL Server dan pgAdmin 4
+   - Components to install: minimal PostgreSQL Server and pgAdmin 4
 
-3. Setelah instalasi, buat database baru:
-   - Buka pgAdmin 4
-   - Buat database baru dengan nama: `meditrustal`
+3. After installation, create a new database:
+   - Open pgAdmin 4
+   - Create a new database named: `meditrustal`
 
-### 2. Setup Python Environment
+### 2. Python Environment Setup
 
-1. Clone repository:
+1. Clone the repository:
    ```bash
    git clone https://github.com/yourusername/MediTrustAl.git
    cd MediTrustAl
    ```
 
-2. Buat virtual environment:
+2. Create a virtual environment:
    ```bash
    python -m venv venv
-   source venv/bin/activate  # Untuk Linux/Mac
-   # ATAU
-   .\venv\Scripts\activate  # Untuk Windows
+   source venv/bin/activate  # For Linux/Mac
+   # OR
+   .\venv\Scripts\activate  # For Windows
    ```
 
 3. Install dependencies:
@@ -45,12 +45,12 @@ Sistem manajemen rekam medis berbasis blockchain dengan integrasi AI untuk anali
    pip install -r requirements.txt
    ```
 
-### 3. Setup Blockchain Development
+### 3. Blockchain Development Setup
 
 1. Install Ganache:
-   - Download dari [Truffle Suite](https://trufflesuite.com/ganache/)
-   - Install dan jalankan
-   - Buat workspace baru dengan port RPC SERVER: 7545
+   - Download from [Truffle Suite](https://trufflesuite.com/ganache/)
+   - Install and run
+   - Create a new workspace with RPC SERVER port: 7545
 
 2. Setup smart contract:
    ```bash
@@ -60,112 +60,113 @@ Sistem manajemen rekam medis berbasis blockchain dengan integrasi AI untuk anali
    npx hardhat run scripts/deploy.js --network ganache
    ```
 
-### 4. Konfigurasi Environment
+### 4. Environment Configuration
 
-1. Buat file `.env` di root project:
+1. Create a `.env` file in the project root:
    ```env
-   GANACHE_RPC_URL=http://127.0.0.1:7545 # Pastikan Ganache berjalan di port 7545
+   GANACHE_RPC_URL=http://127.0.0.1:7545 # Ensure Ganache is running on port 7545
    DATABASE_URL=postgresql://postgres:postgres@localhost:5432/meditrustal
    JWT_SECRET_KEY=your-secret-key-for-jwt
    ```
 
-2. Jalankan migrasi database:
+2. Run database migrations:
    ```bash
    python -m alembic -c ./alembic.ini upgrade head
    ```
-   *Catatan: Pastikan Anda menjalankan perintah ini dari direktori root proyek.*
+   *Note: Ensure you run this command from the project root directory.*
 
-### 5. Menjalankan Aplikasi
+### 5. Running the Application
 
-1. Jalankan backend:
+1. Run the backend:
    ```bash
    uvicorn src.app.main:app --reload
    ```
 
-2. Akses API documentation:
+2. Access API documentation:
    - http://localhost:8000/docs (Swagger UI)
    - http://localhost:8000/redoc (ReDoc)
 
-## Status Implementasi
+## Implementation Status
 
-- [x] Implementasi manajemen rekam medis (MVP Core)
-- [x] Integrasi blockchain (UserRegistry & MedicalRecordRegistry)
-- [x] Sistem autentikasi dan registrasi pengguna
-- [x] Integrasi AI/NLP (Placeholder implemented)
-- [x] Unit & integration testing untuk fitur utama
+- [x] Medical record management implementation (MVP Core)
+- [x] Blockchain integration (UserRegistry & MedicalRecordRegistry)
+- [x] User authentication and registration system
+- [x] AI/NLP integration (Placeholder implemented)
+- [x] Unit & integration testing for main features
 - [ ] AI Predictive Service (Placeholder, next step)
 
 ## Testing
 
 ### Unit Testing
 ```bash
-# Menjalankan semua test
+# Run all tests
 pytest
 
-# Menjalankan test dengan coverage report
+# Run tests with coverage report
 pytest --cov=src
 
-# Menjalankan test spesifik
+# Run specific tests
 pytest tests/test_specific_file.py
 ```
 
 ### Smart Contract Testing
 ```bash
-# Di direktori blockchain/
+# In the blockchain/ directory
 npx hardhat test
 ```
 
-### Catatan untuk Developer (Developer Notes)
-- **Endpoint `/api/v1/medical-records/patient/me`**: Pengambilan rekam medis melalui endpoint ini bergantung pada `BlockchainService` yang mengembalikan hash rekam medis (data_hash) terkait DID pasien melalui metode `get_record_hashes_for_patient`. Perhatikan bahwa:
-  - Fungsi `get_record_hashes_for_patient` mengembalikan array hash rekam medis (data_hash) dari blockchain, bukan transaction hash.
-  - Kolom `blockchain_record_id` di database menyimpan transaction hash (tx_hash) yang dihasilkan saat mencatat data_hash ke blockchain, bukan data_hash itu sendiri.
-  - Pencocokan antara hash dari blockchain dan rekam medis di database dilakukan menggunakan kolom `data_hash`, bukan `blockchain_record_id`.
-  - Dalam pengembangan lokal dan pengujian integrasi, pastikan metode `get_record_hashes_for_patient` dari `BlockchainService` (yang di-mock dalam `tests/conftest.py`) dikonfigurasi untuk mengembalikan hash yang sesuai dengan kolom `data_hash` di database agar rekam medis muncul.
+### Developer Notes
+- **Endpoint `/api/v1/medical-records/patient/me`**: Retrieving medical records through this endpoint depends on the `BlockchainService` which returns the medical record hashes (data_hash) associated with the patient's DID via the `get_record_hashes_for_patient` method. Note that:
+  - The `get_record_hashes_for_patient` function returns an array of medical record hashes (data_hash) from the blockchain, not transaction hashes.
+  - The `blockchain_record_id` column in the database stores the transaction hash (tx_hash) generated when recording the data_hash to the blockchain, not the data_hash itself.
+  - Matching between hashes from the blockchain and medical records in the database is done using the `data_hash` column, not `blockchain_record_id`.
+  - In local development and integration testing, ensure the `get_record_hashes_for_patient` method of the `BlockchainService` (mocked in `tests/conftest.py`) is configured to return hashes that correspond to the `data_hash` column in the database for medical records to appear.
 
-- **Nama Kolom Database vs Model ORM**: Perhatikan bahwa terdapat perbedaan penamaan antara kolom di database dan atribut di model ORM:
-  - Kolom `record_metadata` di database (sebelumnya bernama `metadata` di file migrasi) dipetakan ke atribut `record_metadata` di model ORM dan Pydantic.
-  - Jika Anda menggunakan SQL langsung atau alat database lain, pastikan untuk merujuk ke nama kolom yang benar (`record_metadata`).
+- **Database Column Names vs ORM Model Attributes**: Note that there are naming differences between columns in the database and attributes in the ORM model:
+  - The `record_metadata` column in the database (previously named `metadata` in migration files) is mapped to the `record_metadata` attribute in the ORM and Pydantic models.
+  - If you are using direct SQL or other database tools, make sure to refer to the correct column name (`record_metadata`).
+
 
 ## Troubleshooting
 
 ### Database Issues
 1. **Error: Connection refused**
-   - Pastikan PostgreSQL service berjalan
-   - Verifikasi port 5432 tidak digunakan aplikasi lain
-   - Cek kredensial di `.env` sesuai dengan setup PostgreSQL
+   - Ensure PostgreSQL service is running
+   - Verify port 5432 is not used by another application
+   - Check credentials in `.env` match PostgreSQL setup
 
 2. **Error: Database meditrustal does not exist**
-   - Buat database melalui pgAdmin 4
-   - Atau gunakan command: `createdb meditrustal`
+   - Create the database via pgAdmin 4
+   - Or use the command: `createdb meditrustal`
 
 ### Blockchain Issues
 1. **Error: Cannot connect to Ganache**
-   - Pastikan Ganache berjalan
-   - Verifikasi RPC URL di `.env` sesuai dengan setting Ganache
-   - Port default: 7545
+   - Ensure Ganache is running
+   - Verify RPC URL in `.env` matches Ganache settings
+   - Default port: 7545
 
 2. **Error: Contract deployment failed**
-   - Pastikan ada ETH di account Ganache
-   - Cek network configuration di `hardhat.config.js`
+   - Ensure there is ETH in the Ganache account
+   - Check network configuration in `hardhat.config.js`
 
 ### Python Environment Issues
 1. **Error: Module not found**
-   - Pastikan virtual environment aktif
-   - Jalankan `pip install -r requirements.txt`
-   - Cek `PYTHONPATH` includes project root
+   - Ensure virtual environment is active
+   - Run `pip install -r requirements.txt`
+   - Check `PYTHONPATH` includes project root
 
 2. **Error: Import error src.app**
-   - Jalankan aplikasi dari root directory
-   - Tambahkan project root ke PYTHONPATH
+   - Run the application from the root directory
+   - Add project root to PYTHONPATH
 
-## Struktur Project
+## Project Structure
 
 ```
 MediTrustAl/
 ├── src/
 │   └── app/
-│       ├── core/          # Konfigurasi inti
-│       ├── models/        # Model database
+│       ├── core/          # Core configuration
+│       ├── models/        # Database models
 │       ├── schemas/       # Pydantic schemas
 │       └── api/           # API endpoints
 ├── blockchain/            # Smart contracts
@@ -173,25 +174,25 @@ MediTrustAl/
 └── tests/                # Unit tests
 ```
 
-## Status Implementasi
+## Implementation Status 
 
-- [x] Setup dasar project
-- [x] Implementasi smart contract UserRegistry
-- [x] Integrasi blockchain dengan FastAPI
-- [x] Setup database PostgreSQL
-- [x] Implementasi autentikasi dasar
-- [ ] Implementasi manajemen rekam medis
-- [ ] Integrasi AI untuk analisis
+- [x] Basic project setup
+- [x] UserRegistry smart contract implementation
+- [x] Blockchain integration with FastAPI
+- [x] PostgreSQL database setup
+- [x] Basic authentication implementation
+- [ ] Medical record management implementation
+- [ ] AI integration for analysis
 - [ ] Frontend development
 
-## Kontribusi
+## Contribution
 
-1. Fork repository
-2. Buat branch baru (`git checkout -b feature/AmazingFeature`)
-3. Commit perubahan (`git commit -m 'Add some AmazingFeature'`)
-4. Push ke branch (`git push origin feature/AmazingFeature`)
-5. Buat Pull Request
+1. Fork the repository
+2. Create a new branch (`git checkout -b feature/AmazingFeature`)
+3. Commit changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Create a Pull Request
 
-## Lisensi
+## License
 
 [MIT License](LICENSE)

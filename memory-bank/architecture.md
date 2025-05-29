@@ -72,12 +72,12 @@ Connection Pool (20 max)
 
 ### Blockchain Architecture
 
-**Catatan:** Untuk MVP yang didemokan, interaksi akan terjadi dengan Ganache dan smart contract yang sudah di-deploy secara lokal.
+**Note:** For the demoed MVP, interaction will occur with Ganache and smart contracts already deployed locally.
 ```
 Development/MVP:
 [Ganache Local Node]
        ↓
-[Hardhat Development Environment]  # Sesuai dengan tech-stack.md yang merekomendasikan Hardhat
+[Hardhat Development Environment]  # As per tech-stack.md which recommends Hardhat
        ↓
 [Smart Contracts (Solidity)]
 
@@ -89,10 +89,10 @@ Production (Future):
 [Channels]
 ```
 
-**Catatan Migrasi:**
-- Abstraction layer akan dikembangkan untuk memfasilitasi transisi dari Ganache/Ethereum ke Hyperledger Fabric
-- Pengujian migrasi akan dilakukan di lingkungan staging sebelum implementasi produksi
-- Transisi akan dilakukan secara bertahap sesuai dengan rencana migrasi di tech-stack.md
+**Migration Notes:**
+- An abstraction layer will be developed to facilitate the transition from Ganache/Ethereum to Hyperledger Fabric.
+- Migration testing will be conducted in a staging environment before production implementation.
+- The transition will be carried out gradually according to the migration plan in tech-stack.md.
 
 ### Monitoring Architecture
 ```
@@ -110,7 +110,7 @@ Alerts → PagerDuty
        ↓
 [NLP Pipeline]
 ├── Text Extraction
-├── Entity Recognition  # Currently a placeholder; planned for MVP via DeepSeek API (Implementasi MVP awal menggunakan DeepSeek API, pengembangan lebih lanjut untuk fitur NLP lainnya akan mengikuti)
+├── Entity Recognition  # Currently a placeholder; planned for MVP via DeepSeek API (Initial MVP implementation uses DeepSeek API, further development for other NLP features will follow)
 ├── Relation Extraction
 └── Text Classification
        ↓
